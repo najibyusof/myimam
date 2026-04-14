@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\Masjid;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -52,6 +53,21 @@ class LoginRequest extends FormRequest
         }
 
         $user = Auth::user();
+        if ($user && $user->peranan !== 'superadmin' && $user->id_masjid) {
+            $masjidStatus = Masjid::query()
+                ->whereKey($user->id_masjid)
+                ->value('status');
+
+            if ($masjidStatus === 'suspended') {
+                Auth::logout();
+                RateLimiter::hit($this->throttleKey());
+
+                throw ValidationException::withMessages([
+                    'email' => 'Tenant suspended. Please contact administrator.',
+                ]);
+            }
+        }
+
         if ($user && Hash::needsRehash((string) $user->password)) {
             $user->forceFill([
                 'password' => Hash::make($this->string('password')->toString()),

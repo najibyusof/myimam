@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\CheckSubscription;
+use App\Http\Middleware\CheckTenantActive;
+use App\Http\Middleware\ResolveTenant;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,9 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'role' => RoleMiddleware::class,
-            'permission' => PermissionMiddleware::class,
+            'role'               => RoleMiddleware::class,
+            'permission'         => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'resolve.tenant'     => ResolveTenant::class,
+            'tenant.active'      => CheckTenantActive::class,
+            'tenant.subscription' => CheckSubscription::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -18,8 +18,6 @@ class KategoriBelanjaModuleSmokeTest extends TestCase
 
     public function test_admin_can_open_kategori_belanja_module_and_perform_crud_flow(): void
     {
-        $this->seed();
-
         $permissions = [
             'kategori_belanja.view',
             'kategori_belanja.create',
@@ -40,6 +38,9 @@ class KategoriBelanjaModuleSmokeTest extends TestCase
             'daerah' => 'Kuala Lumpur',
             'negeri' => 'Wilayah Persekutuan',
             'no_pendaftaran' => 'MSJ-KAT-001',
+            'status' => 'active',
+            'subscription_status' => 'active',
+            'subscription_expiry' => now()->addMonth(),
         ]);
 
         $admin = User::create([

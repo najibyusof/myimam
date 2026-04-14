@@ -120,7 +120,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function scopeVisibleTo(Builder $query, User $actor): Builder
     {
-        if ($actor->hasRole('Admin')) {
+        if ($actor->peranan === 'superadmin') {
             return $query;
         }
 

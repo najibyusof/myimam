@@ -160,7 +160,7 @@ class NotificationController extends Controller
      */
     public function statistics(Request $request): JsonResponse
     {
-        abort_unless($request->user()->hasRole('Admin'), 403, 'Unauthorized');
+        abort_unless($request->user()->peranan === 'superadmin', 403, 'Unauthorized');
 
         $from = $request->date('from');
         $to = $request->date('to');

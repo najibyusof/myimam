@@ -23,7 +23,7 @@ class TabungKhasManagementController extends Controller
         $this->authorize('viewAny', TabungKhas::class);
 
         $actor = $request->user();
-        $masjidScope = $actor->hasRole('Admin') ? null : $actor->id_masjid;
+        $masjidScope = $actor->peranan === 'superadmin' ? null : $actor->id_masjid;
         $status = (string) $request->query('status', 'all');
         $search = trim((string) $request->query('q', ''));
 
@@ -134,7 +134,7 @@ class TabungKhasManagementController extends Controller
 
     private function masjidOptions(Request $request)
     {
-        if (!$request->user()->hasRole('Admin')) {
+        if ($request->user()->peranan !== 'superadmin') {
             return Masjid::query()->whereKey($request->user()->id_masjid)->get(['id', 'nama']);
         }
 

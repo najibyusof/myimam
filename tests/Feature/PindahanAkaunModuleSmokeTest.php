@@ -32,8 +32,18 @@ class PindahanAkaunModuleSmokeTest extends TestCase
         $role->syncPermissions($permissions);
 
         // --- fixtures ---
-        $masjidA = Masjid::query()->create(['nama' => 'Masjid Pindahan A']);
-        $masjidB = Masjid::query()->create(['nama' => 'Masjid Pindahan B']);
+        $masjidA = Masjid::query()->create([
+            'nama' => 'Masjid Pindahan A',
+            'status' => 'active',
+            'subscription_status' => 'active',
+            'subscription_expiry' => now()->addMonth(),
+        ]);
+        $masjidB = Masjid::query()->create([
+            'nama' => 'Masjid Pindahan B',
+            'status' => 'active',
+            'subscription_status' => 'active',
+            'subscription_expiry' => now()->addMonth(),
+        ]);
 
         $bendahari = User::query()->create([
             'name'      => 'Bendahari Pindahan',
@@ -185,7 +195,7 @@ class PindahanAkaunModuleSmokeTest extends TestCase
         // --- cross-masjid scoping: masjid B record not editable ---
         $this->actingAs($bendahari)
             ->get(route('admin.pindahan-akaun.edit', $recordB))
-            ->assertForbidden();
+            ->assertNotFound();
 
         // --- destroy ---
         $toDelete = PindahanAkaun::query()->create([

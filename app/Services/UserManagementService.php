@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\Hash;
 
 class UserManagementService
 {
-    public function create(array $data): User
+    public function create(User $actor, array $data): User
     {
-        return DB::transaction(function () use ($data): User {
+        return DB::transaction(function () use ($actor, $data): User {
             $user = User::query()->create([
-                'id_masjid' => $data['id_masjid'] ?? null,
+                'id_masjid' => $actor->peranan === 'superadmin' ? ($data['id_masjid'] ?? null) : $actor->id_masjid,
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
@@ -26,11 +26,11 @@ class UserManagementService
         });
     }
 
-    public function update(User $user, array $data): User
+    public function update(User $actor, User $user, array $data): User
     {
-        return DB::transaction(function () use ($user, $data): User {
+        return DB::transaction(function () use ($actor, $user, $data): User {
             $payload = [
-                'id_masjid' => $data['id_masjid'] ?? null,
+                'id_masjid' => $actor->peranan === 'superadmin' ? ($data['id_masjid'] ?? null) : $actor->id_masjid,
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'peranan' => $this->mapPerananFromRole($data['role']),

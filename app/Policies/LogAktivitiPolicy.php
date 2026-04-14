@@ -20,9 +20,7 @@ class LogAktivitiPolicy
 
     private function inScope(User $authUser, LogAktiviti $logAktiviti): bool
     {
-        return $authUser->hasRole('Admin') || (
-            $authUser->id_masjid !== null
-            && $authUser->id_masjid === $logAktiviti->id_masjid
-        );
+        return $authUser->id_masjid !== null
+            && $authUser->id_masjid === $logAktiviti->id_masjid;
     }
 }

@@ -31,9 +31,7 @@ class RunningNoPolicy
 
     private function inScope(User $authUser, RunningNo $runningNo): bool
     {
-        return $authUser->hasRole('Admin') || (
-            $authUser->id_masjid !== null
-            && $authUser->id_masjid === $runningNo->id_masjid
-        );
+        return $authUser->id_masjid !== null
+            && $authUser->id_masjid === $runningNo->id_masjid;
     }
 }

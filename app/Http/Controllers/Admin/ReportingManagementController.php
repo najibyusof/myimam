@@ -20,7 +20,7 @@ class ReportingManagementController extends Controller
         abort_unless($request->user()?->can('reports.view'), 403);
 
         $actor = $request->user();
-        $admin = $actor->hasRole('Admin');
+        $admin = $actor->peranan === 'superadmin';
 
         $masjidId = $admin
             ? (int) $request->query('masjid_id', 0)

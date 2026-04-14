@@ -46,7 +46,7 @@ class SumberHasilManagementService
     private function sanitizePayload(User $actor, array $data): array
     {
         return [
-            'id_masjid' => $actor->hasRole('Admin') ? ($data['id_masjid'] ?? null) : $actor->id_masjid,
+            'id_masjid' => $actor->peranan === 'superadmin' ? ($data['id_masjid'] ?? null) : $actor->id_masjid,
             'kod' => $data['kod'],
             'nama_sumber' => $data['nama_sumber'],
             'jenis' => $data['jenis'],
@@ -56,9 +56,7 @@ class SumberHasilManagementService
 
     private function ensureScoped(SumberHasil $sumberHasil, User $actor): void
     {
-        if ($actor->hasRole('Admin')) {
-            return;
-        }
+    if ($actor->peranan === 'superadmin') {
 
         abort_unless(
             $actor->id_masjid !== null && $sumberHasil->id_masjid === $actor->id_masjid,

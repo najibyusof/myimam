@@ -65,6 +65,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'finance.approve',
             'reports.view',
             'reports.export',
+            'subscriptions.manage',
+            'cms.manage',
             'settings.manage',
             'audit.view',
         ];

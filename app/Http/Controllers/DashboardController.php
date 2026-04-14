@@ -17,7 +17,7 @@ class DashboardController extends Controller
     public function __invoke(Request $request): View
     {
         $user = $request->user();
-        $masjidId = $user->hasRole('Admin') ? null : $user->id_masjid;
+        $masjidId = $user->peranan === 'superadmin' ? null : $user->id_masjid;
         $dashboardRole = $this->resolveDashboardRole($user);
 
         return view('dashboard', [

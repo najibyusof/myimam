@@ -48,9 +48,7 @@ class HasilManagementService
 
     private function sanitizePayload(User $actor, array $data): array
     {
-        $masjidId = $actor->hasRole('Admin') ? ($data['id_masjid'] ?? null) : $actor->id_masjid;
-        $amaun = (float) $data['amaun'];
-
+    $masjidId = $actor->peranan === 'superadmin' ? ($data['id_masjid'] ?? null) : $actor->id_masjid;
         return [
             'id_masjid' => $masjidId,
             'tarikh' => $data['tarikh'],
@@ -103,9 +101,7 @@ class HasilManagementService
 
     private function ensureScoped(Hasil $hasil, User $actor): void
     {
-        if ($actor->hasRole('Admin')) {
-            return;
-        }
+    if ($actor->peranan === 'superadmin') {
 
         abort_unless(
             $actor->id_masjid !== null && $actor->id_masjid === $hasil->id_masjid,

@@ -25,7 +25,7 @@ class UserManagementController extends Controller
         $this->authorize('viewAny', User::class);
 
         $actor = $request->user();
-        $masjidScope = $actor->hasRole('Admin') ? null : $actor->id_masjid;
+        $masjidScope = $actor->peranan === 'superadmin' ? null : $actor->id_masjid;
 
         $query = User::query()
             ->when($masjidScope, fn ($builder) => $builder->byMasjid($masjidScope))
@@ -66,12 +66,12 @@ class UserManagementController extends Controller
         return view('admin.users.index', compact('users', 'search', 'status', 'role', 'roles', 'stats'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         $this->authorize('create', User::class);
 
         $roles = Role::query()->orderBy('name')->pluck('name');
-        $masjidOptions = Masjid::query()->orderBy('nama')->get(['id', 'nama']);
+        $masjidOptions = $this->masjidOptions($request);
 
         return view('admin.users.create', compact('roles', 'masjidOptions'));
     }
@@ -80,19 +80,19 @@ class UserManagementController extends Controller
     {
         $this->authorize('create', User::class);
 
-        $user = $this->service->create($request->validated());
+        $user = $this->service->create($request->user(), $request->validated());
 
         return redirect()
             ->route('admin.users.edit', $user)
             ->with('status', 'User created successfully.');
     }
 
-    public function edit(User $user): View
+    public function edit(Request $request, User $user): View
     {
         $this->authorize('update', $user);
 
         $roles = Role::query()->orderBy('name')->pluck('name');
-        $masjidOptions = Masjid::query()->orderBy('nama')->get(['id', 'nama']);
+        $masjidOptions = $this->masjidOptions($request);
 
         return view('admin.users.edit', compact('user', 'roles', 'masjidOptions'));
     }
@@ -101,7 +101,7 @@ class UserManagementController extends Controller
     {
         $this->authorize('update', $user);
 
-        $this->service->update($user, $request->validated());
+        $this->service->update($request->user(), $user, $request->validated());
 
         return redirect()
             ->route('admin.users.edit', $user)
@@ -145,5 +145,14 @@ class UserManagementController extends Controller
         return redirect()
             ->route('admin.users.edit', $user)
             ->with('status', 'Password reset link sent successfully.');
+    }
+
+    private function masjidOptions(Request $request)
+    {
+        if ($request->user()->peranan === 'superadmin') {
+            return Masjid::query()->orderBy('nama')->get(['id', 'nama']);
+        }
+
+        return Masjid::query()->whereKey($request->user()->id_masjid)->get(['id', 'nama']);
     }
 }

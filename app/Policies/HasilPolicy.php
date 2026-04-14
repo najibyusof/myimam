@@ -34,9 +34,7 @@ class HasilPolicy
 
     private function inScope(User $authUser, Hasil $hasil): bool
     {
-        return $authUser->hasRole('Admin') || (
-            $authUser->id_masjid !== null
-            && $authUser->id_masjid === $hasil->id_masjid
-        );
+        return $authUser->id_masjid !== null
+            && $authUser->id_masjid === $hasil->id_masjid;
     }
 }

@@ -23,7 +23,7 @@ class PindahanAkaunManagementController extends Controller
         $this->authorize('viewAny', PindahanAkaun::class);
 
         $actor = $request->user();
-        $masjidScope = $actor->hasRole('Admin') ? null : $actor->id_masjid;
+        $masjidScope = $actor->peranan === 'superadmin' ? null : $actor->id_masjid;
 
         $akaunId  = (int) $request->query('akaun_id', 0);
         $dateFrom = (string) $request->query('date_from', '');
@@ -122,7 +122,7 @@ class PindahanAkaunManagementController extends Controller
     private function formData(Request $request): array
     {
         $actor = $request->user();
-        $masjidScope = $actor->hasRole('Admin') ? null : $actor->id_masjid;
+        $masjidScope = $actor->peranan === 'superadmin' ? null : $actor->id_masjid;
 
         $akaunOptions = Akaun::query()
             ->when($masjidScope, fn ($q) => $q->byMasjid($masjidScope))

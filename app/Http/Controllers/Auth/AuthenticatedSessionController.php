@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Masjid;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -27,6 +29,20 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $user = Auth::user();
+
+        if ($user && $user->peranan !== 'superadmin' && $user->id_masjid) {
+            $masjidStatus = Masjid::query()
+                ->whereKey($user->id_masjid)
+                ->value('status');
+
+            if ($masjidStatus === 'suspended') {
+                Auth::logout();
+
+                throw ValidationException::withMessages([
+                    'email' => 'Tenant suspended. Please contact administrator.',
+                ]);
+            }
+        }
 
         if ($user && method_exists($user, 'hasTwoFactorEnabled') && $user->hasTwoFactorEnabled()) {
             Auth::logout();

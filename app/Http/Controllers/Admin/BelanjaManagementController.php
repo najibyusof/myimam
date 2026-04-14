@@ -26,7 +26,7 @@ class BelanjaManagementController extends Controller
         $this->authorize('viewAny', Belanja::class);
 
         $actor = $request->user();
-        $masjidScope = $actor->hasRole('Admin') ? null : $actor->id_masjid;
+        $masjidScope = $actor->peranan === 'superadmin' ? null : $actor->id_masjid;
         $status = (string) $request->query('status', 'all');
         $baucarId = (int) $request->query('baucar_id', 0);
 
@@ -127,14 +127,14 @@ class BelanjaManagementController extends Controller
     private function formData(Request $request, ?Belanja $belanja = null): array
     {
         $selectedMasjidId = (int) old('id_masjid', $belanja?->id_masjid ?? $request->user()->id_masjid);
-        $masjidScope = $request->user()->hasRole('Admin') ? null : $request->user()->id_masjid;
+        $masjidScope = $request->user()->peranan === 'superadmin' ? null : $request->user()->id_masjid;
 
         $scope = fn ($builder) => $builder
             ->when($selectedMasjidId > 0, fn ($query) => $query->byMasjid($selectedMasjidId))
             ->when($selectedMasjidId <= 0 && $masjidScope, fn ($query) => $query->byMasjid($masjidScope));
 
         return [
-            'masjidOptions' => $request->user()->hasRole('Admin')
+            'masjidOptions' => $request->user()->peranan === 'superadmin'
                 ? Masjid::query()->orderBy('nama')->get(['id', 'nama'])
                 : Masjid::query()->whereKey($request->user()->id_masjid)->get(['id', 'nama']),
             'akaunOptions' => Akaun::query()->tap($scope)->aktif()->orderBy('nama_akaun')->get(['id', 'nama_akaun']),

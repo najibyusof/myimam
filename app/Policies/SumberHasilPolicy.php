@@ -39,9 +39,7 @@ class SumberHasilPolicy
 
     private function inScope(User $authUser, SumberHasil $sumberHasil): bool
     {
-        return $authUser->hasRole('Admin') || (
-            $authUser->id_masjid !== null
-            && $authUser->id_masjid === $sumberHasil->id_masjid
-        );
+        return $authUser->id_masjid !== null
+            && $authUser->id_masjid === $sumberHasil->id_masjid;
     }
 }

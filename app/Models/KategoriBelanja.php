@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasMasjidScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class KategoriBelanja extends Model
 {
-    use HasFactory;
+    use HasFactory, HasMasjidScope;
 
     protected $table = 'kategori_belanja';
 
@@ -36,11 +37,6 @@ class KategoriBelanja extends Model
     public function belanja(): HasMany
     {
         return $this->hasMany(Belanja::class, 'id_kategori_belanja');
-    }
-
-    public function scopeByMasjid(Builder $query, int $idMasjid): Builder
-    {
-        return $query->where('id_masjid', $idMasjid);
     }
 
     public function scopeAktif(Builder $query): Builder

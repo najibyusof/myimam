@@ -12,7 +12,10 @@
                     <form action="{{ route('admin.masjid.store') }}" method="POST" class="space-y-6">
                         @csrf
 
-                        @include('admin.masjid._form', ['masjid' => null])
+                        @include('admin.masjid._form', [
+                            'masjid' => null,
+                            'adminCandidates' => $adminCandidates,
+                        ])
 
                         <div class="flex justify-between pt-6 border-t">
                             <a href="{{ route('admin.masjid.index') }}"

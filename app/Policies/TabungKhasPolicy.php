@@ -39,9 +39,7 @@ class TabungKhasPolicy
 
     private function inScope(User $authUser, TabungKhas $tabungKhas): bool
     {
-        return $authUser->hasRole('Admin') || (
-            $authUser->id_masjid !== null
-            && $authUser->id_masjid === $tabungKhas->id_masjid
-        );
+        return $authUser->id_masjid !== null
+            && $authUser->id_masjid === $tabungKhas->id_masjid;
     }
 }

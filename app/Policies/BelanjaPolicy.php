@@ -34,9 +34,7 @@ class BelanjaPolicy
 
     private function inScope(User $authUser, Belanja $belanja): bool
     {
-        return $authUser->hasRole('Admin') || (
-            $authUser->id_masjid !== null
-            && $authUser->id_masjid === $belanja->id_masjid
-        );
+        return $authUser->id_masjid !== null
+            && $authUser->id_masjid === $belanja->id_masjid;
     }
 }

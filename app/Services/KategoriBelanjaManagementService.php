@@ -46,7 +46,7 @@ class KategoriBelanjaManagementService
     private function sanitizePayload(User $actor, array $data): array
     {
         return [
-            'id_masjid' => $actor->hasRole('Admin') ? ($data['id_masjid'] ?? null) : $actor->id_masjid,
+            'id_masjid' => $actor->peranan === 'superadmin' ? ($data['id_masjid'] ?? null) : $actor->id_masjid,
             'kod' => $data['kod'],
             'nama_kategori' => $data['nama_kategori'],
             'aktif' => (bool) ($data['aktif'] ?? true),
@@ -55,7 +55,7 @@ class KategoriBelanjaManagementService
 
     private function ensureScoped(KategoriBelanja $kategoriBelanja, User $actor): void
     {
-        if ($actor->hasRole('Admin')) {
+        if ($actor->peranan === 'superadmin') {
             return;
         }
 

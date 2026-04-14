@@ -23,7 +23,7 @@ class AkaunManagementController extends Controller
         $this->authorize('viewAny', Akaun::class);
 
         $actor = $request->user();
-        $masjidScope = $actor->hasRole('Admin') ? null : $actor->id_masjid;
+        $masjidScope = $actor->peranan === 'superadmin' ? null : $actor->id_masjid;
 
         $query = Akaun::query()
             ->when($masjidScope, fn ($builder) => $builder->byMasjid($masjidScope))
@@ -128,7 +128,7 @@ class AkaunManagementController extends Controller
 
     private function masjidOptions(Request $request)
     {
-        if (!$request->user()->hasRole('Admin')) {
+        if ($request->user()->peranan !== 'superadmin') {
             return Masjid::query()
                 ->whereKey($request->user()->id_masjid)
                 ->get(['id', 'nama']);

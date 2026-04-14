@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasMasjidScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Akaun extends Model
 {
-    use HasFactory;
+    use HasFactory, HasMasjidScope;
 
     protected $table = 'akaun';
 
@@ -73,11 +74,6 @@ class Akaun extends Model
         return $this->belongsToMany(self::class, 'pindahan_akaun', 'ke_akaun_id', 'dari_akaun_id')
             ->withPivot(['id_masjid', 'tarikh', 'amaun', 'catatan', 'created_by'])
             ->withTimestamps();
-    }
-
-    public function scopeByMasjid(Builder $query, int $idMasjid): Builder
-    {
-        return $query->where('id_masjid', $idMasjid);
     }
 
     public function scopeAktif(Builder $query): Builder

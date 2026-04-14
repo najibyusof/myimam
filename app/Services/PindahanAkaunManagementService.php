@@ -44,7 +44,7 @@ class PindahanAkaunManagementService
 
     private function sanitizePayload(User $actor, array $data): array
     {
-        $masjidId = $actor->hasRole('Admin') ? ($data['id_masjid'] ?? null) : $actor->id_masjid;
+        $masjidId = $actor->peranan === 'superadmin' ? ($data['id_masjid'] ?? null) : $actor->id_masjid;
 
         return [
             'id_masjid'      => $masjidId,
@@ -96,7 +96,7 @@ class PindahanAkaunManagementService
 
     private function ensureScoped(PindahanAkaun $pindahanAkaun, User $actor): void
     {
-        if ($actor->hasRole('Admin')) {
+        if ($actor->peranan === 'superadmin') {
             return;
         }
 

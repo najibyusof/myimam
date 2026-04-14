@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasMasjidScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Belanja extends Model
 {
-    use HasFactory;
+    use HasFactory, HasMasjidScope;
 
     protected $table = 'belanja';
 
@@ -88,11 +89,6 @@ class Belanja extends Model
     public function baucar(): BelongsTo
     {
         return $this->belongsTo(BaucarBayaran::class, 'id_baucar');
-    }
-
-    public function scopeByMasjid(Builder $query, int $idMasjid): Builder
-    {
-        return $query->where('id_masjid', $idMasjid);
     }
 
     public function scopeNotDeleted(Builder $query): Builder

@@ -23,7 +23,7 @@ class KategoriBelanjaManagementController extends Controller
         $this->authorize('viewAny', KategoriBelanja::class);
 
         $actor = $request->user();
-        $masjidScope = $actor->hasRole('Admin') ? null : $actor->id_masjid;
+        $masjidScope = $actor->peranan === 'superadmin' ? null : $actor->id_masjid;
 
         $query = KategoriBelanja::query()
             ->when($masjidScope, fn ($builder) => $builder->byMasjid($masjidScope))
@@ -129,7 +129,7 @@ class KategoriBelanjaManagementController extends Controller
 
     private function masjidOptions(Request $request)
     {
-        if (!$request->user()->hasRole('Admin')) {
+        if ($request->user()->peranan !== 'superadmin') {
             return Masjid::query()->whereKey($request->user()->id_masjid)->get(['id', 'nama']);
         }
 

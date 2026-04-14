@@ -44,6 +44,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::before(function (User $user) {
+            return $user->peranan === 'superadmin' ? true : null;
+        });
+
         Gate::policy(Akaun::class, AkaunPolicy::class);
         Gate::policy(Belanja::class, BelanjaPolicy::class);
         Gate::policy(Hasil::class, HasilPolicy::class);

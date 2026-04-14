@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasMasjidScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PindahanAkaun extends Model
 {
-    use HasFactory;
+    use HasFactory, HasMasjidScope;
 
     protected $table = 'pindahan_akaun';
 
@@ -49,11 +50,6 @@ class PindahanAkaun extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function scopeByMasjid(Builder $query, int $idMasjid): Builder
-    {
-        return $query->where('id_masjid', $idMasjid);
     }
 
     public function scopeBetweenDates(Builder $query, string $from, string $to): Builder

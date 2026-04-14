@@ -71,7 +71,7 @@ class UserController extends Controller
             'roles' => ['array', 'exists:roles,name'],
         ]);
 
-        $targetMasjidId = $actor->hasRole('Admin')
+        $targetMasjidId = $actor->peranan === 'superadmin'
             ? ($validated['id_masjid'] ?? null)
             : $actor->id_masjid;
 
@@ -125,7 +125,7 @@ class UserController extends Controller
             unset($validated['password']);
         }
 
-        if (!$request->user()->hasRole('Admin')) {
+        if ($request->user()->peranan !== 'superadmin') {
             $validated['id_masjid'] = $request->user()->id_masjid;
         }
 
@@ -199,7 +199,7 @@ class UserController extends Controller
     {
         $actor = $request->user();
 
-        if ($actor->hasRole('Admin')) {
+        if ($actor->peranan === 'superadmin') {
             return;
         }
 

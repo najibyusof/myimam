@@ -26,7 +26,7 @@ class HasilManagementController extends Controller
         $this->authorize('viewAny', Hasil::class);
 
         $actor = $request->user();
-        $masjidScope = $actor->hasRole('Admin') ? null : $actor->id_masjid;
+        $masjidScope = $actor->peranan === 'superadmin' ? null : $actor->id_masjid;
         $from = (string) $request->query('from', '');
         $to = (string) $request->query('to', '');
         $akaunId = (int) $request->query('akaun_id', 0);
@@ -135,7 +135,7 @@ class HasilManagementController extends Controller
     private function formData(Request $request, ?Hasil $hasil = null): array
     {
         $selectedMasjidId = (int) old('id_masjid', $hasil?->id_masjid ?? $request->user()->id_masjid);
-        $masjidScope = $request->user()->hasRole('Admin') ? null : $request->user()->id_masjid;
+        $masjidScope = $request->user()->peranan === 'superadmin' ? null : $request->user()->id_masjid;
 
         $akaunOptions = Akaun::query()
             ->when($selectedMasjidId > 0, fn ($builder) => $builder->byMasjid($selectedMasjidId))
@@ -159,7 +159,7 @@ class HasilManagementController extends Controller
             ->get(['id', 'nama_tabung', 'id_masjid']);
 
         return [
-            'masjidOptions' => $request->user()->hasRole('Admin')
+            'masjidOptions' => $request->user()->peranan === 'superadmin'
                 ? Masjid::query()->orderBy('nama')->get(['id', 'nama'])
                 : Masjid::query()->whereKey($request->user()->id_masjid)->get(['id', 'nama']),
             'akaunOptions' => $akaunOptions,

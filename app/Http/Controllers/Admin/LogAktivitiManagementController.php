@@ -16,7 +16,7 @@ class LogAktivitiManagementController extends Controller
         $this->authorize('viewAny', LogAktiviti::class);
 
         $actor       = $request->user();
-        $masjidScope = $actor->hasRole('Admin') ? null : $actor->id_masjid;
+        $masjidScope = $actor->peranan === 'superadmin' ? null : $actor->id_masjid;
 
         $jenis     = (string) $request->query('jenis', '');
         $modul     = (string) $request->query('modul', '');

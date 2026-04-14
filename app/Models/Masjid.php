@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Masjid extends Model
 {
@@ -15,18 +18,93 @@ class Masjid extends Model
 
     protected $fillable = [
         'nama',
+        'code',
         'alamat',
         'daerah',
         'negeri',
         'no_pendaftaran',
         'tarikh_daftar',
+        'status',
+        'subscription_status',
+        'subscription_expiry',
+        'created_by',
     ];
 
     protected function casts(): array
     {
         return [
-            'tarikh_daftar' => 'date',
+            'tarikh_daftar'       => 'date',
+            'subscription_expiry' => 'datetime',
         ];
+    }
+
+    // -------------------------------------------------------------------------
+    // Status helpers
+    // -------------------------------------------------------------------------
+
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->status === 'suspended';
+    }
+
+    public function hasActiveSubscription(): bool
+    {
+        return $this->subscription_status === 'active'
+            && ($this->subscription_expiry === null || $this->subscription_expiry->isFuture());
+    }
+
+    public function isInGracePeriod(): bool
+    {
+        if ($this->subscription_status !== 'expired' || $this->subscription_expiry === null) {
+            return false;
+        }
+
+        $activeSubscription = $this->activeSubscription;
+        $graceDays = $activeSubscription?->grace_days ?? 0;
+
+        return Carbon::now()->lessThanOrEqualTo(
+            $this->subscription_expiry->addDays($graceDays)
+        );
+    }
+
+    // -------------------------------------------------------------------------
+    // Scopes
+    // -------------------------------------------------------------------------
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeSuspended(Builder $query): Builder
+    {
+        return $query->where('status', 'suspended');
+    }
+
+    // -------------------------------------------------------------------------
+    // Relationships
+    // -------------------------------------------------------------------------
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(TenantSubscription::class, 'masjid_id');
+    }
+
+    public function activeSubscription(): HasOne
+    {
+        return $this->hasOne(TenantSubscription::class, 'masjid_id')
+            ->where('status', 'active')
+            ->latestOfMany('start_date');
     }
 
     public function users(): HasMany
@@ -97,6 +175,7 @@ class Masjid extends Model
 
         return $query->where(function (Builder $q) use ($term) {
             $q->where('nama', 'like', "%{$term}%")
+                ->orWhere('code', 'like', "%{$term}%")
                 ->orWhere('daerah', 'like', "%{$term}%")
                 ->orWhere('negeri', 'like', "%{$term}%")
                 ->orWhere('no_pendaftaran', 'like', "%{$term}%");

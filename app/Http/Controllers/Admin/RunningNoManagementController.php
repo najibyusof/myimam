@@ -23,7 +23,7 @@ class RunningNoManagementController extends Controller
         $this->authorize('viewAny', RunningNo::class);
 
         $actor       = $request->user();
-        $masjidScope = $actor->hasRole('Admin') ? null : $actor->id_masjid;
+        $masjidScope = $actor->peranan === 'superadmin' ? null : $actor->id_masjid;
 
         $prefix = (string) $request->query('prefix', '');
         $tahun  = (int)    $request->query('tahun', 0);
@@ -63,12 +63,12 @@ class RunningNoManagementController extends Controller
         $actor = $request->user();
         $now   = now();
 
-        $masjidOptions = $actor->hasRole('Admin')
+        $masjidOptions = $actor->peranan === 'superadmin'
             ? Masjid::query()->orderBy('nama')->get(['id', 'nama'])
             : collect([$actor->masjid]);
 
         return view('admin.running-no.generate', [
-            'isAdmin'       => $actor->hasRole('Admin'),
+            'isAdmin'       => $actor->peranan === 'superadmin',
             'masjidOptions' => $masjidOptions,
             'defaultTahun'  => $now->year,
             'defaultBulan'  => $now->month,
@@ -81,7 +81,7 @@ class RunningNoManagementController extends Controller
         $this->authorize('generate', RunningNo::class);
 
         $actor    = $request->user();
-        $idMasjid = $actor->hasRole('Admin')
+        $idMasjid = $actor->peranan === 'superadmin'
             ? (int) $request->validated('id_masjid')
             : (int) $actor->id_masjid;
 
@@ -91,12 +91,12 @@ class RunningNoManagementController extends Controller
 
         $nomborRujukan = $this->service->generate($idMasjid, $prefix, $tahun, $bulan);
 
-        $masjidOptions = $actor->hasRole('Admin')
+        $masjidOptions = $actor->peranan === 'superadmin'
             ? Masjid::query()->orderBy('nama')->get(['id', 'nama'])
             : collect([$actor->masjid]);
 
         return view('admin.running-no.generate', [
-            'isAdmin'        => $actor->hasRole('Admin'),
+            'isAdmin'        => $actor->peranan === 'superadmin',
             'masjidOptions'  => $masjidOptions,
             'defaultTahun'   => $tahun,
             'defaultBulan'   => $bulan,

@@ -55,7 +55,7 @@ class TabungKhasManagementService
     private function sanitizePayload(User $actor, array $data): array
     {
         return [
-            'id_masjid' => $actor->hasRole('Admin') ? ($data['id_masjid'] ?? null) : $actor->id_masjid,
+            'id_masjid' => $actor->peranan === 'superadmin' ? ($data['id_masjid'] ?? null) : $actor->id_masjid,
             'nama_tabung' => $data['nama_tabung'],
             'aktif' => (bool) ($data['aktif'] ?? true),
         ];
@@ -63,9 +63,7 @@ class TabungKhasManagementService
 
     private function ensureScoped(TabungKhas $tabungKhas, User $actor): void
     {
-        if ($actor->hasRole('Admin')) {
-            return;
-        }
+    if ($actor->peranan === 'superadmin') {
 
         abort_unless(
             $actor->id_masjid !== null && $actor->id_masjid === $tabungKhas->id_masjid,

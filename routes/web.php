@@ -13,19 +13,37 @@ use App\Http\Controllers\Admin\ProgramMasjidManagementController;
 use App\Http\Controllers\Admin\SumberHasilManagementController;
 use App\Http\Controllers\Admin\TabungKhasManagementController;
 use App\Http\Controllers\Admin\RolePermissionController;
+use App\Http\Controllers\Admin\SubscriptionManagementController;
+use App\Http\Controllers\Admin\CmsLandingController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationCenterController;
+use App\Http\Controllers\PublicLandingController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', PublicLandingController::class)
+    ->middleware('resolve.tenant')
+    ->name('landing');
+
+// ── Tenant error pages (accessible to authenticated users, no tenant-check) ─
+Route::middleware('auth')->group(function () {
+    Route::get('/tenant-suspended', function () {
+        return view('errors.tenant-suspended');
+    })->name('tenant.suspended');
+
+    Route::get('/tenant-pending', function () {
+        return view('errors.tenant-pending');
+    })->name('tenant.pending');
+
+    Route::get('/subscription-expired', function () {
+        return view('errors.subscription-expired');
+    })->name('subscription.expired');
 });
 
-Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified', 'resolve.tenant', 'tenant.active', 'tenant.subscription'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscription'])->group(function () {
     Route::get('/notifications', [NotificationCenterController::class, 'index'])->name('notifications.index');
     Route::patch('/notifications/read-all', [NotificationCenterController::class, 'markAllAsRead'])->name('notifications.read-all');
     Route::patch('/notifications/{notification}/read', [NotificationCenterController::class, 'markAsRead'])->name('notifications.read');
@@ -56,9 +74,57 @@ Route::middleware('auth')->group(function () {
             ->middleware('permission:masjid.update')
             ->name('admin.masjid.update');
 
+        Route::patch('/admin/masjid/{masjid}/suspend', [MasjidManagementController::class, 'suspend'])
+            ->middleware('permission:masjid.update')
+            ->name('admin.masjid.suspend');
+
+        Route::patch('/admin/masjid/{masjid}/activate', [MasjidManagementController::class, 'activate'])
+            ->middleware('permission:masjid.update')
+            ->name('admin.masjid.activate');
+
         Route::delete('/admin/masjid/{masjid}', [MasjidManagementController::class, 'destroy'])
             ->middleware('permission:masjid.delete')
             ->name('admin.masjid.destroy');
+    });
+
+    Route::middleware('role_or_permission:Admin|subscriptions.manage')->group(function () {
+        Route::get('/admin/subscriptions', [SubscriptionManagementController::class, 'index'])
+            ->middleware('permission:subscriptions.manage')
+            ->name('admin.subscriptions.index');
+
+        Route::get('/admin/subscriptions/plans/create', [SubscriptionManagementController::class, 'createPlan'])
+            ->middleware('permission:subscriptions.manage')
+            ->name('admin.subscriptions.plans.create');
+
+        Route::post('/admin/subscriptions/plans', [SubscriptionManagementController::class, 'storePlan'])
+            ->middleware('permission:subscriptions.manage')
+            ->name('admin.subscriptions.plans.store');
+
+        Route::get('/admin/subscriptions/plans/{plan}/edit', [SubscriptionManagementController::class, 'editPlan'])
+            ->middleware('permission:subscriptions.manage')
+            ->name('admin.subscriptions.plans.edit');
+
+        Route::put('/admin/subscriptions/plans/{plan}', [SubscriptionManagementController::class, 'updatePlan'])
+            ->middleware('permission:subscriptions.manage')
+            ->name('admin.subscriptions.plans.update');
+
+        Route::get('/admin/subscriptions/masjid/{masjid}/assign', [SubscriptionManagementController::class, 'assignForm'])
+            ->middleware('permission:subscriptions.manage')
+            ->name('admin.subscriptions.assign');
+
+        Route::post('/admin/subscriptions/masjid/{masjid}/assign', [SubscriptionManagementController::class, 'assignStore'])
+            ->middleware('permission:subscriptions.manage')
+            ->name('admin.subscriptions.assign.store');
+    });
+
+    Route::middleware('role_or_permission:Admin|cms.manage')->group(function () {
+        Route::get('/admin/cms/landing', [CmsLandingController::class, 'edit'])
+            ->middleware('permission:cms.manage')
+            ->name('admin.cms.landing.edit');
+
+        Route::put('/admin/cms/landing', [CmsLandingController::class, 'update'])
+            ->middleware('permission:cms.manage')
+            ->name('admin.cms.landing.update');
     });
 
     Route::middleware('role_or_permission:Admin|akaun.view|akaun.create|akaun.update|akaun.delete')->group(function () {

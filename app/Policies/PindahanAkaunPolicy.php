@@ -37,9 +37,7 @@ class PindahanAkaunPolicy
 
     private function inScope(User $authUser, PindahanAkaun $pindahanAkaun): bool
     {
-        return $authUser->hasRole('Admin') || (
-            $authUser->id_masjid !== null
-            && $authUser->id_masjid === $pindahanAkaun->id_masjid
-        );
+        return $authUser->id_masjid !== null
+            && $authUser->id_masjid === $pindahanAkaun->id_masjid;
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Masjid;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -102,6 +103,19 @@ class TwoFactorAuthenticationController extends Controller
             return redirect()->route('login');
         }
 
+        $pendingUserId = (int) $request->session()->get('auth.2fa.user_id');
+        $user = User::query()->find($pendingUserId);
+        if ($user && $user->peranan !== 'superadmin' && $user->id_masjid) {
+            $masjidStatus = Masjid::query()->whereKey($user->id_masjid)->value('status');
+            if ($masjidStatus === 'suspended') {
+                $request->session()->forget(['auth.2fa.user_id', 'auth.2fa.remember']);
+
+                return redirect()->route('login')->withErrors([
+                    'email' => 'Tenant suspended. Please contact administrator.',
+                ]);
+            }
+        }
+
         return view('auth.two-factor-challenge');
     }
 
@@ -118,6 +132,17 @@ class TwoFactorAuthenticationController extends Controller
         if (!$user || !$user->hasTwoFactorEnabled()) {
             $request->session()->forget(['auth.2fa.user_id', 'auth.2fa.remember']);
             return redirect()->route('login');
+        }
+
+        if ($user->peranan !== 'superadmin' && $user->id_masjid) {
+            $masjidStatus = Masjid::query()->whereKey($user->id_masjid)->value('status');
+            if ($masjidStatus === 'suspended') {
+                $request->session()->forget(['auth.2fa.user_id', 'auth.2fa.remember']);
+
+                throw ValidationException::withMessages([
+                    'code' => 'Tenant suspended. Please contact administrator.',
+                ]);
+            }
         }
 
         $inputCode = trim($request->string('code')->toString());

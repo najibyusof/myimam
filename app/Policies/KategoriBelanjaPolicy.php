@@ -39,9 +39,7 @@ class KategoriBelanjaPolicy
 
     private function inScope(User $authUser, KategoriBelanja $kategoriBelanja): bool
     {
-        return $authUser->hasRole('Admin') || (
-            $authUser->id_masjid !== null
-            && $authUser->id_masjid === $kategoriBelanja->id_masjid
-        );
+        return $authUser->id_masjid !== null
+            && $authUser->id_masjid === $kategoriBelanja->id_masjid;
     }
 }

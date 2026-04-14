@@ -39,9 +39,7 @@ class ProgramMasjidPolicy
 
     private function inScope(User $authUser, ProgramMasjid $programMasjid): bool
     {
-        return $authUser->hasRole('Admin') || (
-            $authUser->id_masjid !== null
-            && $authUser->id_masjid === $programMasjid->id_masjid
-        );
+        return $authUser->id_masjid !== null
+            && $authUser->id_masjid === $programMasjid->id_masjid;
     }
 }

@@ -55,7 +55,7 @@ class ProgramMasjidManagementService
     private function sanitizePayload(User $actor, array $data): array
     {
         return [
-            'id_masjid' => $actor->hasRole('Admin') ? ($data['id_masjid'] ?? null) : $actor->id_masjid,
+            'id_masjid' => $actor->peranan === 'superadmin' ? ($data['id_masjid'] ?? null) : $actor->id_masjid,
             'nama_program' => $data['nama_program'],
             'aktif' => (bool) ($data['aktif'] ?? true),
         ];
@@ -63,9 +63,7 @@ class ProgramMasjidManagementService
 
     private function ensureScoped(ProgramMasjid $programMasjid, User $actor): void
     {
-        if ($actor->hasRole('Admin')) {
-            return;
-        }
+    if ($actor->peranan === 'superadmin') {
 
         abort_unless(
             $actor->id_masjid !== null && $actor->id_masjid === $programMasjid->id_masjid,

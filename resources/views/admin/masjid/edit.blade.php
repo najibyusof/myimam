@@ -19,7 +19,10 @@
                         @csrf
                         @method('PUT')
 
-                        @include('admin.masjid._form', ['masjid' => $masjid])
+                        @include('admin.masjid._form', [
+                            'masjid' => $masjid,
+                            'adminCandidates' => $adminCandidates,
+                        ])
 
                         <div class="flex justify-between pt-6 border-t">
                             <a href="{{ route('admin.masjid.index') }}"

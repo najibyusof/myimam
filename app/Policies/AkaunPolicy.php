@@ -34,9 +34,7 @@ class AkaunPolicy
 
     private function inScope(User $authUser, Akaun $akaun): bool
     {
-        return $authUser->hasRole('Admin') || (
-            $authUser->id_masjid !== null
-            && $akaun->id_masjid === $authUser->id_masjid
-        );
+        return $authUser->id_masjid !== null
+            && $akaun->id_masjid === $authUser->id_masjid;
     }
 }
