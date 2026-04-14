@@ -56,7 +56,9 @@ class SumberHasilManagementService
 
     private function ensureScoped(SumberHasil $sumberHasil, User $actor): void
     {
-    if ($actor->peranan === 'superadmin') {
+        if ($actor->peranan === 'superadmin') {
+            return;
+        }
 
         abort_unless(
             $actor->id_masjid !== null && $sumberHasil->id_masjid === $actor->id_masjid,

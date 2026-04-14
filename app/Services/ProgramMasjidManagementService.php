@@ -63,7 +63,9 @@ class ProgramMasjidManagementService
 
     private function ensureScoped(ProgramMasjid $programMasjid, User $actor): void
     {
-    if ($actor->peranan === 'superadmin') {
+        if ($actor->peranan === 'superadmin') {
+            return;
+        }
 
         abort_unless(
             $actor->id_masjid !== null && $actor->id_masjid === $programMasjid->id_masjid,

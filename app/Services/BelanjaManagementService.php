@@ -55,7 +55,8 @@ class BelanjaManagementService
 
     private function sanitizePayload(User $actor, array $data): array
     {
-    $masjidId = $actor->peranan === 'superadmin' ? ($data['id_masjid'] ?? null) : $actor->id_masjid;
+        $masjidId = $actor->peranan === 'superadmin' ? ($data['id_masjid'] ?? null) : $actor->id_masjid;
+        $submitted = (bool) ($data['is_submitted'] ?? false);
         return [
             'id_masjid' => $masjidId,
             'tarikh' => $data['tarikh'],
@@ -113,7 +114,9 @@ class BelanjaManagementService
 
     private function ensureScoped(Belanja $belanja, User $actor): void
     {
-    if ($actor->peranan === 'superadmin') {
+        if ($actor->peranan === 'superadmin') {
+            return;
+        }
 
         abort_unless(
             $actor->id_masjid !== null && $actor->id_masjid === $belanja->id_masjid,
