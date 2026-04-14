@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             ReferenceDataSeeder::class,
             UserScenarioSeeder::class,
             WorkflowScenarioSeeder::class,
+            MultiTenantDemoSeeder::class,
         ]);
     }
 }

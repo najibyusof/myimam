@@ -16,6 +16,7 @@ use App\Models\SumberHasil;
 use App\Models\TabungKhas;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Seeder;
 
 class WorkflowScenarioSeeder extends Seeder
@@ -25,10 +26,15 @@ class WorkflowScenarioSeeder extends Seeder
         $masjids = Masjid::query()->orderBy('id')->get();
 
         foreach ($masjids as $index => $masjid) {
-            $this->seedRevenueWorkflow($masjid, $index);
-            $this->seedExpenseWorkflow($masjid, $index);
-            $this->seedTransferWorkflow($masjid, $index);
-            $this->seedActivityAndNotificationWorkflow($masjid, $index);
+            try {
+                $this->seedRevenueWorkflow($masjid, $index);
+                $this->seedExpenseWorkflow($masjid, $index);
+                $this->seedTransferWorkflow($masjid, $index);
+                $this->seedActivityAndNotificationWorkflow($masjid, $index);
+            } catch (ModelNotFoundException) {
+                // Skip tenants that do not use the legacy workflow fixture names.
+                continue;
+            }
         }
     }
 
