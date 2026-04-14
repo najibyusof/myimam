@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\CmsLandingController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationCenterController;
+use App\Http\Controllers\SidebarBadgeController;
 use App\Http\Controllers\PublicLandingController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +49,9 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
     Route::patch('/notifications/read-all', [NotificationCenterController::class, 'markAllAsRead'])->name('notifications.read-all');
     Route::patch('/notifications/{notification}/read', [NotificationCenterController::class, 'markAsRead'])->name('notifications.read');
     Route::patch('/notifications/{notification}/unread', [NotificationCenterController::class, 'markAsUnread'])->name('notifications.unread');
+
+    // Sidebar live badge counts (polled every 30s by Alpine)
+    Route::get('/sidebar/badge-counts', [SidebarBadgeController::class, 'counts'])->name('sidebar.badge-counts');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

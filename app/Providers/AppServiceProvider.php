@@ -26,6 +26,7 @@ use App\Policies\LogAktivitiPolicy;
 use App\Policies\SumberHasilPolicy;
 use App\Policies\TabungKhasPolicy;
 use App\Policies\UserPolicy;
+use App\Services\SidebarService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -36,7 +37,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Register SidebarService as singleton
+        $this->app->singleton(SidebarService::class, function () {
+            return new SidebarService();
+        });
     }
 
     /**
