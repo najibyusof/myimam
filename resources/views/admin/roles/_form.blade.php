@@ -1,16 +1,72 @@
 @php
     $roleModel = $role ?? null;
     $selectedPermissions = old('permissions', $selectedPermissions ?? []);
+    $currentUser = auth()->user();
+    $isSuperAdmin = $isSuperAdmin ?? \App\Models\Role::actorIsSuperAdmin($currentUser);
+    $currentLevel = old('level', $roleModel?->level ?? 3);
 @endphp
 
 <div class="space-y-6">
+
+    {{-- Role name --}}
     <div>
         <x-input-label for="name" :value="__('Role Name')" />
-        <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $roleModel?->name ?? '')"
-            required autofocus />
+        <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $roleModel?->name ?? '')" required
+            autofocus maxlength="100" />
         <x-input-error class="mt-2" :messages="$errors->get('name')" />
     </div>
 
+    {{-- Level selector (SuperAdmin only; on create form only) --}}
+    @if ($isSuperAdmin && !$roleModel)
+        <div>
+            <x-input-label for="level" :value="__('Hierarchy Level')" />
+            <select id="level" name="level"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                <option value="2" @selected((int) $currentLevel === 2)>Level 2 — Admin (tenant administrator)</option>
+                <option value="3" @selected((int) $currentLevel !== 2)>Level 3 — User (regular user role)</option>
+            </select>
+            <p class="mt-1 text-xs text-gray-500">Level 1 is reserved for system roles.</p>
+            <x-input-error class="mt-2" :messages="$errors->get('level')" />
+        </div>
+    @endif
+
+    {{-- Read-only level display when editing an existing role --}}
+    @if ($roleModel)
+        <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <div class="flex flex-wrap items-center gap-4 text-sm">
+                <div>
+                    <span class="font-medium text-slate-500">Level:</span>
+                    <span
+                        class="ml-2 rounded-full px-2.5 py-0.5 text-xs font-semibold {{ \App\Models\Role::levelBadgeClass((int) $roleModel->level) }}">
+                        {{ \App\Models\Role::levelLabel((int) $roleModel->level) }}
+                    </span>
+                </div>
+                <div>
+                    <span class="font-medium text-slate-500">Scope:</span>
+                    <span class="ml-2 text-slate-700">
+                        {{ $roleModel->isGlobal() ? 'Global (all tenants)' : $roleModel->masjid?->nama ?? 'Tenant #' . $roleModel->masjid_id }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Tenant scope (SuperAdmin creating a tenant-scoped role) --}}
+    @if ($isSuperAdmin && !$roleModel)
+        <div>
+            <x-input-label for="masjid_id" :value="__('Masjid Scope (optional)')" />
+            <select id="masjid_id" name="masjid_id"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                <option value="">— Global (no masjid scope) —</option>
+                @foreach (\App\Models\Masjid::orderBy('nama')->get(['id', 'nama']) as $masjid)
+                    <option value="{{ $masjid->id }}" @selected(old('masjid_id') == $masjid->id)>{{ $masjid->nama }}</option>
+                @endforeach
+            </select>
+            <p class="mt-1 text-xs text-gray-500">Leave blank for a global role usable by all masjids.</p>
+        </div>
+    @endif
+
+    {{-- Permissions matrix --}}
     <div>
         <div class="flex items-center justify-between gap-4">
             <x-input-label :value="__('Permissions Matrix')" />
@@ -22,16 +78,19 @@
             @foreach ($permissionGroups as $groupName => $permissions)
                 <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                     <div class="mb-3 flex items-center justify-between">
-                        <h4 class="text-sm font-semibold uppercase tracking-wide text-slate-700">{{ $groupName }}</h4>
+                        <h4 class="text-sm font-semibold uppercase tracking-wide text-slate-700">{{ $groupName }}
+                        </h4>
                         <button type="button" data-group="{{ $loop->index }}"
-                            class="group-toggle text-xs font-medium text-indigo-600 hover:text-indigo-500">Toggle group</button>
+                            class="group-toggle text-xs font-medium text-indigo-600 hover:text-indigo-500">Toggle
+                            group</button>
                     </div>
 
                     <div class="space-y-2">
                         @foreach ($permissions as $permission)
                             <label class="flex items-center gap-2 text-sm text-slate-700">
                                 <input type="checkbox" name="permissions[]" value="{{ $permission['name'] }}"
-                                    data-group-item="{{ $loop->parent->index }}" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                    data-group-item="{{ $loop->parent->index }}"
+                                    class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                                     @checked(in_array($permission['name'], $selectedPermissions, true))>
                                 <span>{{ $permission['name'] }}</span>
                             </label>
@@ -54,21 +113,20 @@
 
             if (selectAllBtn) {
                 selectAllBtn.addEventListener('click', function() {
-                    const hasUnchecked = Array.from(allCheckboxes).some((checkbox) => !checkbox.checked);
-                    allCheckboxes.forEach((checkbox) => {
-                        checkbox.checked = hasUnchecked;
+                    const hasUnchecked = Array.from(allCheckboxes).some(c => !c.checked);
+                    allCheckboxes.forEach(c => {
+                        c.checked = hasUnchecked;
                     });
                 });
             }
 
-            document.querySelectorAll('.group-toggle').forEach((button) => {
+            document.querySelectorAll('.group-toggle').forEach(button => {
                 button.addEventListener('click', function() {
                     const group = this.getAttribute('data-group');
-                    const groupCheckboxes = document.querySelectorAll(`[data-group-item="${group}"]`);
-                    const hasUnchecked = Array.from(groupCheckboxes).some((checkbox) => !checkbox.checked);
-
-                    groupCheckboxes.forEach((checkbox) => {
-                        checkbox.checked = hasUnchecked;
+                    const groupBoxes = document.querySelectorAll(`[data-group-item="${group}"]`);
+                    const hasUnchecked = Array.from(groupBoxes).some(c => !c.checked);
+                    groupBoxes.forEach(c => {
+                        c.checked = hasUnchecked;
                     });
                 });
             });

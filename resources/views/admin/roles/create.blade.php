@@ -11,14 +11,15 @@
             <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
                 <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
                     <h3 class="text-lg font-semibold text-slate-900">Role Configuration</h3>
-                    <p class="mt-1 text-sm text-slate-600">Permissions are grouped by module prefix for quick assignment.</p>
+                    <p class="mt-1 text-sm text-slate-600">Permissions are grouped by module prefix for quick assignment.
+                    </p>
                 </div>
 
                 <form method="POST" action="{{ route('admin.roles.store') }}" class="space-y-6">
                     @csrf
 
                     <div class="px-6 py-6">
-                        @include('admin.roles._form')
+                        @include('admin.roles._form', ['isSuperAdmin' => $isSuperAdmin])
                     </div>
 
                     <div class="flex items-center justify-end gap-3 border-t border-slate-200 px-6 py-4">

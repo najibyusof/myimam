@@ -6,13 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UserStoreRequest;
 use App\Http\Requests\Admin\UserUpdateRequest;
 use App\Models\Masjid;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\UserManagementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\View\View;
-use Spatie\Permission\Models\Role;
 
 class UserManagementController extends Controller
 {
@@ -54,7 +54,11 @@ class UserManagementController extends Controller
         }
 
         $users = $query->paginate(15)->withQueryString();
-        $roles = Role::query()->orderBy('name')->pluck('name');
+        $roles = Role::query()
+            ->where('guard_name', 'web')
+            ->visibleTo($actor)
+            ->orderBy('name')
+            ->pluck('name');
         $baseStatsQuery = User::query()->when($masjidScope, fn ($builder) => $builder->byMasjid($masjidScope));
 
         $stats = [
@@ -70,7 +74,12 @@ class UserManagementController extends Controller
     {
         $this->authorize('create', User::class);
 
-        $roles = Role::query()->orderBy('name')->pluck('name');
+        $roles = Role::query()
+            ->where('guard_name', 'web')
+            ->visibleTo($request->user())
+            ->where('level', '>=', 3)
+            ->orderBy('name')
+            ->pluck('name');
         $masjidOptions = $this->masjidOptions($request);
 
         return view('admin.users.create', compact('roles', 'masjidOptions'));
@@ -91,7 +100,12 @@ class UserManagementController extends Controller
     {
         $this->authorize('update', $user);
 
-        $roles = Role::query()->orderBy('name')->pluck('name');
+        $roles = Role::query()
+            ->where('guard_name', 'web')
+            ->visibleTo($request->user())
+            ->where('level', '>=', 3)
+            ->orderBy('name')
+            ->pluck('name');
         $masjidOptions = $this->masjidOptions($request);
 
         return view('admin.users.edit', compact('user', 'roles', 'masjidOptions'));

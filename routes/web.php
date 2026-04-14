@@ -373,6 +373,10 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
             ->middleware('permission:roles.assign')
             ->name('admin.roles.update');
     });
+
+        Route::delete('/admin/roles/{role}', [RolePermissionController::class, 'destroy'])
+            ->middleware(['permission:roles.assign', 'role_or_permission:Admin|roles.assign'])
+            ->name('admin.roles.destroy');
 });
 
 require __DIR__.'/auth.php';

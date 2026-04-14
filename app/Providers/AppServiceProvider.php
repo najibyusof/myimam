@@ -14,6 +14,7 @@ use App\Models\ProgramMasjid;
 use App\Models\RunningNo;
 use App\Models\LogAktiviti;
 use App\Models\TabungKhas;
+use App\Models\Role;
 use App\Policies\AkaunPolicy;
 use App\Policies\BelanjaPolicy;
 use App\Policies\HasilPolicy;
@@ -26,6 +27,7 @@ use App\Policies\LogAktivitiPolicy;
 use App\Policies\SumberHasilPolicy;
 use App\Policies\TabungKhasPolicy;
 use App\Policies\UserPolicy;
+use App\Policies\RolePolicy;
 use App\Services\SidebarService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -64,5 +66,19 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(LogAktiviti::class, LogAktivitiPolicy::class);
         Gate::policy(Masjid::class, MasjidPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Role::class, RolePolicy::class);
+
+        // Explicit role-management gates for controller/blade usage.
+        Gate::define('update-role', function (User $actor, Role $role) {
+            return app(RolePolicy::class)->update($actor, $role);
+        });
+
+        Gate::define('delete-role', function (User $actor, Role $role) {
+            return app(RolePolicy::class)->delete($actor, $role);
+        });
+
+        Gate::define('assign-role', function (User $actor, Role $role, User $targetUser) {
+            return app(RolePolicy::class)->assign($actor, $role, $targetUser);
+        });
     }
 }

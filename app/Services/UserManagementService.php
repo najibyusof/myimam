@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 
 class UserManagementService
@@ -11,8 +13,14 @@ class UserManagementService
     public function create(User $actor, array $data): User
     {
         return DB::transaction(function () use ($actor, $data): User {
+            $role = $this->resolveAssignableRole($actor, (string) $data['role']);
+
+            $targetMasjidId = $actor->peranan === 'superadmin'
+                ? ($data['id_masjid'] ?? null)
+                : $actor->id_masjid;
+
             $user = User::query()->create([
-                'id_masjid' => $actor->peranan === 'superadmin' ? ($data['id_masjid'] ?? null) : $actor->id_masjid,
+                'id_masjid' => $targetMasjidId,
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
@@ -20,7 +28,8 @@ class UserManagementService
                 'aktif' => (bool) ($data['aktif'] ?? true),
             ]);
 
-            $user->syncRoles([$data['role']]);
+            Gate::forUser($actor)->authorize('assign-role', [$role, $user]);
+            $user->syncRoles([$role->name]);
 
             return $user;
         });
@@ -29,8 +38,18 @@ class UserManagementService
     public function update(User $actor, User $user, array $data): User
     {
         return DB::transaction(function () use ($actor, $user, $data): User {
+            $role = $this->resolveAssignableRole($actor, (string) $data['role']);
+
+            $targetMasjidId = $actor->peranan === 'superadmin'
+                ? ($data['id_masjid'] ?? null)
+                : $actor->id_masjid;
+
+            // Apply target tenant first, then validate role assignment against final tenant
+            $user->forceFill(['id_masjid' => $targetMasjidId]);
+            Gate::forUser($actor)->authorize('assign-role', [$role, $user]);
+
             $payload = [
-                'id_masjid' => $actor->peranan === 'superadmin' ? ($data['id_masjid'] ?? null) : $actor->id_masjid,
+                'id_masjid' => $targetMasjidId,
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'peranan' => $this->mapPerananFromRole($data['role']),
@@ -42,7 +61,7 @@ class UserManagementService
             }
 
             $user->update($payload);
-            $user->syncRoles([$data['role']]);
+            $user->syncRoles([$role->name]);
 
             return $user->refresh();
         });
@@ -65,5 +84,14 @@ class UserManagementService
             'AJK' => 'staff',
             default => 'staff',
         };
+    }
+
+    private function resolveAssignableRole(User $actor, string $roleName): Role
+    {
+        return Role::query()
+            ->where('guard_name', 'web')
+            ->where('name', $roleName)
+            ->visibleTo($actor)
+            ->firstOrFail();
     }
 }

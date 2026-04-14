@@ -119,6 +119,12 @@ return [
                 'permission' => 'settings.manage',
             ],
             [
+                'title' => 'CMS Management',
+                'route' => 'admin.cms.landing.edit',
+                'icon' => 'file-text',
+                'permission' => 'cms.manage',
+            ],
+            [
                 'title' => 'Subscription Management',
                 'route' => 'admin.subscriptions.index',
                 'icon' => 'credit-card',

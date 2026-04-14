@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 class RolesAndPermissionsSeeder extends Seeder
@@ -209,7 +209,19 @@ class RolesAndPermissionsSeeder extends Seeder
         ];
 
         foreach ($roles as $roleName => $rolePermissions) {
-            $role = Role::findOrCreate($roleName, 'web');
+            // Level 2 = Admin (tenant administrator), level 3 = all other user roles
+            $level = $roleName === 'Admin' ? 2 : 3;
+
+            $role = Role::firstOrCreate(
+                ['name' => $roleName, 'guard_name' => 'web'],
+                ['level' => $level, 'masjid_id' => null]
+            );
+
+            // Ensure level is set correctly on existing records
+            if ((int) $role->level !== $level) {
+                $role->update(['level' => $level]);
+            }
+
             $role->syncPermissions($rolePermissions);
         }
     }
