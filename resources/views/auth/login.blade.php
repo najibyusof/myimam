@@ -82,6 +82,10 @@
             </div>
 
             <x-button type="primary" size="md" class="w-full" button-type="submit" x-bind:disabled="submitting" x-text="submitting ? 'Signing in...' : 'Log in'"></x-button>
+
+            <a href="{{ url('/') }}" class="block text-center text-sm font-medium text-gray-500 hover:text-gray-700">
+                Back to landing page
+            </a>
         </form>
     </x-auth-card>
 </body>
