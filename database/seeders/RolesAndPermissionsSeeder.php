@@ -69,6 +69,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'finance.approve',
             'reports.view',
             'reports.export',
+            'view laporan buku tunai',
+            'view laporan jumaat',
+            'view laporan derma',
             'subscriptions.manage',
             'cms.manage',
             'settings.manage',
@@ -81,7 +84,10 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $roles = [
             // level 1 — system (global, protected)
-            'Superadmin' => $permissions,
+            'Superadmin' => array_values(array_unique([
+                ...$permissions,
+                'view laporan buku tunai',
+            ])),
 
             // level 2 — tenant admin (global, assigned per-masjid context)
             // Admin manages their own masjid's users, roles, and finance.
@@ -140,6 +146,9 @@ class RolesAndPermissionsSeeder extends Seeder
                 'finance.approve',
                 'reports.view',
                 'reports.export',
+                'view laporan buku tunai',
+                'view laporan jumaat',
+                'view laporan derma',
                 'audit.view',
             ],
 
@@ -236,6 +245,9 @@ class RolesAndPermissionsSeeder extends Seeder
                 'finance.approve',
                 'reports.view',
                 'reports.export',
+                'view laporan buku tunai',
+                'view laporan jumaat',
+                'view laporan derma',
                 'masjid.view',
             ],
             'AJK' => [
@@ -259,6 +271,9 @@ class RolesAndPermissionsSeeder extends Seeder
                 'audit.view',
                 'reports.view',
                 'reports.export',
+                'view laporan buku tunai',
+                'view laporan jumaat',
+                'view laporan derma',
                 'users.view',
                 'masjid.view',
                 'finance.view',

@@ -17,6 +17,9 @@ use App\Http\Controllers\Admin\SubscriptionManagementController;
 use App\Http\Controllers\Admin\CmsLandingController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LaporanBukuTunaiController;
+use App\Http\Controllers\LaporanJumaatController;
+use App\Http\Controllers\LaporanDermaController;
 use App\Http\Controllers\NotificationCenterController;
 use App\Http\Controllers\SidebarBadgeController;
 use App\Http\Controllers\PublicLandingController;
@@ -248,6 +251,46 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
             ->middleware('permission:reports.view')
             ->name('admin.reporting.index');
     });
+
+    Route::get('/laporan/buku-tunai', [LaporanBukuTunaiController::class, 'index'])
+        ->name('laporan.buku-tunai')
+        ->middleware('role_or_permission:Superadmin|view laporan buku tunai');
+
+    Route::get('/laporan/buku-tunai/print', [LaporanBukuTunaiController::class, 'printView'])
+        ->name('laporan.buku-tunai.print')
+        ->middleware('role_or_permission:Superadmin|view laporan buku tunai');
+
+    Route::get('/laporan/buku-tunai/export/pdf', [LaporanBukuTunaiController::class, 'exportPdf'])
+        ->name('laporan.buku-tunai.export.pdf')
+        ->middleware('role_or_permission:Superadmin|view laporan buku tunai');
+
+    Route::get('/laporan/buku-tunai/export/excel', [LaporanBukuTunaiController::class, 'exportExcel'])
+        ->name('laporan.buku-tunai.export.excel')
+        ->middleware('role_or_permission:Superadmin|view laporan buku tunai');
+
+    Route::get('/laporan/jumaat', [LaporanJumaatController::class, 'index'])
+        ->name('laporan.jumaat')
+        ->middleware('permission:view laporan jumaat');
+
+    Route::get('/laporan/jumaat/export/pdf', [LaporanJumaatController::class, 'exportPdf'])
+        ->name('laporan.jumaat.export.pdf')
+        ->middleware('permission:view laporan jumaat');
+
+    Route::get('/laporan/jumaat/export/excel', [LaporanJumaatController::class, 'exportExcel'])
+        ->name('laporan.jumaat.export.excel')
+        ->middleware('permission:view laporan jumaat');
+
+    Route::get('/laporan/derma', [LaporanDermaController::class, 'index'])
+        ->name('laporan.derma')
+        ->middleware('permission:view laporan derma');
+
+    Route::get('/laporan/derma/export/pdf', [LaporanDermaController::class, 'exportPdf'])
+        ->name('laporan.derma.export.pdf')
+        ->middleware('permission:view laporan derma');
+
+    Route::get('/laporan/derma/export/excel', [LaporanDermaController::class, 'exportExcel'])
+        ->name('laporan.derma.export.excel')
+        ->middleware('permission:view laporan derma');
 
     Route::middleware('role_or_permission:Admin|sumber_hasil.view|sumber_hasil.create|sumber_hasil.update|sumber_hasil.delete')->group(function () {
         Route::get('/admin/sumber-hasil', [SumberHasilManagementController::class, 'index'])
