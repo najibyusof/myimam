@@ -7,12 +7,16 @@ use App\Models\NotificationPreference;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         $this->ensureRolesExist();
         $faker = fake('ms_MY');
         $faker->seed(20260414);
@@ -28,7 +32,15 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
-        $superAdmin->syncRoles(['Admin']);
+
+        // Sync Superadmin role (canonical name is 'Superadmin' — level 1)
+        $superAdmin->syncRoles(['Superadmin']);
+
+        // Grant all permissions directly so superadmin is never blocked by
+        // permission checks even before RolesAndPermissionsSeeder runs.
+        $allPermissions = Permission::all();
+        $superAdmin->syncPermissions($allPermissions);
+
         $this->upsertNotificationPreference($superAdmin);
 
         $tenantBlueprint = [
@@ -104,8 +116,25 @@ class UserSeeder extends Seeder
 
     private function ensureRolesExist(): void
     {
-        foreach (['Admin', 'Bendahari', 'AJK', 'Auditor'] as $roleName) {
-            Role::findOrCreate($roleName, 'web');
+        // Ensure Superadmin role exists at level 1 (system-reserved, immutable).
+        // Uses App\Models\Role so level + masjid_id fields are populated correctly.
+        Role::firstOrCreate(
+            ['name' => 'Superadmin', 'guard_name' => 'web'],
+            ['level' => 1, 'masjid_id' => null]
+        );
+
+        // Ensure Admin role exists at level 2 (tenant administrator).
+        Role::firstOrCreate(
+            ['name' => 'Admin', 'guard_name' => 'web'],
+            ['level' => 2, 'masjid_id' => null]
+        );
+
+        // Ensure standard level-3 user roles exist.
+        foreach (['Bendahari', 'AJK', 'Auditor'] as $roleName) {
+            Role::firstOrCreate(
+                ['name' => $roleName, 'guard_name' => 'web'],
+                ['level' => 3, 'masjid_id' => null]
+            );
         }
     }
 

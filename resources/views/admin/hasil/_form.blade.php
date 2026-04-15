@@ -17,10 +17,10 @@
     <div class="grid gap-6 md:grid-cols-2">
         @if (auth()->user()->hasRole('Admin'))
             <div>
-                <x-input-label for="id_masjid" value="Masjid" />
+                <x-input-label for="id_masjid" :value="__('hasil.form.masjid')" />
                 <select id="id_masjid" name="id_masjid"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    <option value="">Pilih masjid</option>
+                    <option value="">{{ __('hasil.form.select_masjid') }}</option>
                     @foreach ($masjidOptions as $option)
                         <option value="{{ $option->id }}" @selected(old('id_masjid', $hasilRecord?->id_masjid) == $option->id)>{{ $option->nama }}</option>
                     @endforeach
@@ -32,25 +32,25 @@
         @endif
 
         <div>
-            <x-input-label for="tarikh" value="Tarikh" />
+            <x-input-label for="tarikh" :value="__('hasil.form.date')" />
             <x-text-input id="tarikh" name="tarikh" type="date" class="mt-1 block w-full" :value="old('tarikh', optional($hasilRecord?->tarikh)->format('Y-m-d') ?? now()->format('Y-m-d'))"
                 required />
             <x-input-error class="mt-2" :messages="$errors->get('tarikh')" />
         </div>
 
         <div>
-            <x-input-label for="amaun" value="Amaun" />
+            <x-input-label for="amaun" :value="__('hasil.form.amount')" />
             <x-text-input id="amaun" name="amaun" type="number" min="0.01" step="0.01"
                 class="mt-1 block w-full" :value="old('amaun', $hasilRecord?->jumlah)" required placeholder="0.00" />
             <x-input-error class="mt-2" :messages="$errors->get('amaun')" />
         </div>
 
         <div>
-            <x-input-label for="id_akaun" value="Akaun" />
+            <x-input-label for="id_akaun" :value="__('hasil.form.account')" />
             <select id="id_akaun" name="id_akaun"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 required>
-                <option value="">Pilih akaun</option>
+                <option value="">{{ __('hasil.form.select_account') }}</option>
                 @foreach ($akaunOptions as $option)
                     <option value="{{ $option->id }}" @selected(old('id_akaun', $hasilRecord?->id_akaun) == $option->id)>
                         {{ $option->nama_akaun }}
@@ -61,11 +61,11 @@
         </div>
 
         <div>
-            <x-input-label for="id_sumber_hasil" value="Sumber Hasil" />
+            <x-input-label for="id_sumber_hasil" :value="__('hasil.form.source')" />
             <select id="id_sumber_hasil" name="id_sumber_hasil"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 required>
-                <option value="">Pilih sumber hasil</option>
+                <option value="">{{ __('hasil.form.select_source') }}</option>
                 @foreach ($sumberHasilOptions as $option)
                     <option value="{{ $option->id }}" @selected(old('id_sumber_hasil', $hasilRecord?->id_sumber_hasil) == $option->id)>
                         {{ $option->nama_sumber }}
@@ -76,10 +76,10 @@
         </div>
 
         <div>
-            <x-input-label for="id_tabung_khas" value="Tabung Khas (Opsyenal)" />
+            <x-input-label for="id_tabung_khas" :value="__('hasil.form.fund_optional')" />
             <select id="id_tabung_khas" name="id_tabung_khas"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                <option value="">Tiada tabung khas</option>
+                <option value="">{{ __('hasil.form.no_fund') }}</option>
                 @foreach ($tabungKhasOptions as $option)
                     <option value="{{ $option->id }}" @selected(old('id_tabung_khas', $hasilRecord?->id_tabung_khas) == $option->id)>
                         {{ $option->nama_tabung }}
@@ -94,21 +94,21 @@
         <input type="checkbox" name="is_jumaat" value="1"
             class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
             @checked(old('is_jumaat', $hasilRecord?->jenis_jumaat !== null))>
-        <span class="text-sm text-slate-700">Tandakan sebagai kutipan Jumaat</span>
+        <span class="text-sm text-slate-700">{{ __('hasil.form.jumaat_toggle') }}</span>
     </label>
 
     <div>
-        <x-input-label for="catatan" value="Catatan (Opsyenal)" />
+        <x-input-label for="catatan" :value="__('hasil.form.notes_optional')" />
         <textarea id="catatan" name="catatan" rows="3"
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('catatan', $hasilRecord?->catatan) }}</textarea>
         <x-input-error class="mt-2" :messages="$errors->get('catatan')" />
     </div>
 
     <div class="flex items-center gap-3">
-        <x-primary-button>Simpan</x-primary-button>
+        <x-primary-button>{{ __('hasil.form.save') }}</x-primary-button>
         <a href="{{ route('admin.hasil.index') }}"
             class="inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-            Kembali
+            {{ __('hasil.form.back') }}
         </a>
     </div>
 </form>

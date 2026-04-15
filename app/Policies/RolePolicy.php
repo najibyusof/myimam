@@ -133,8 +133,10 @@ class RolePolicy
      * SuperAdmin: any role to any user.
      * Masjid Admin:
      *   – Target user must be in the same masjid.
-     *   – Cannot assign global (level ≤ 2) or cross-tenant roles.
-     *   – Cannot assign SuperAdmin role.
+     *   – Can assign global level-3 roles (e.g. Bendahari, AJK, Auditor) OR
+     *     tenant-scoped level-3 roles belonging to their own masjid.
+     *   – Cannot assign level-1 / level-2 roles (Admin, Superadmin).
+     *   – Cannot assign roles belonging to a different masjid.
      */
     public function assign(User $user, Role $role, ?User $targetUser = null): bool
     {
@@ -148,17 +150,19 @@ class RolePolicy
                 return false;
             }
 
-            // Cannot assign the Admin role or any elevated role
-            if ($role->name === 'Admin' || (int) $role->level < 3) {
+            // Cannot assign level-1 (system) or level-2 (admin) roles
+            if ((int) $role->level < 3) {
                 return false;
             }
 
-            // Strict tenant isolation: role must belong to same masjid and cannot be global
-            if ($role->isGlobal() || (int) $role->masjid_id !== (int) $user->id_masjid) {
-                return false;
+            // Can assign this role only when it is:
+            //   (a) a global role (masjid_id = null) — standard system-wide roles, OR
+            //   (b) a tenant-scoped role belonging to this masjid
+            if ($role->isGlobal()) {
+                return true;
             }
 
-            return true;
+            return (int) $role->masjid_id === (int) $user->id_masjid;
         }
 
         return false;

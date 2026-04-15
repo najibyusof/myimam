@@ -1,9 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Tambah Program Masjid</h2>
-            <p class="mt-1 text-sm text-gray-500">Daftar program seperti kuliah, program Ramadan, atau aktiviti komuniti
-                untuk dipautkan pada transaksi.</p>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('program_masjid.add_title') }}</h2>
+            <p class="mt-1 text-sm text-gray-500">{{ __('program_masjid.add_subtitle') }}</p>
         </div>
     </x-slot>
 

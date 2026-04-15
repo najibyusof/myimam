@@ -91,7 +91,7 @@ class UserManagementService
         return Role::query()
             ->where('guard_name', 'web')
             ->where('name', $roleName)
-            ->visibleTo($actor)
+            ->assignableTo($actor)
             ->firstOrFail();
     }
 }

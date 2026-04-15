@@ -30,7 +30,7 @@ class RolePermissionController extends Controller
             ->visibleTo($actor)
             ->withCount('permissions')
             ->with('masjid:id,nama')
-            ->when($search !== '', fn ($q) => $q->where('name', 'like', "%{$search}%"))
+            ->when($search !== '', fn($q) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('level')
             ->orderBy('name')
             ->paginate(15)
@@ -81,14 +81,23 @@ class RolePermissionController extends Controller
                 'string',
                 'max:100',
                 Rule::unique('roles', 'name')
-                    ->where(fn ($q) => $q->where('guard_name', 'web')),
+                    ->where(fn($q) => $q->where('guard_name', 'web')),
             ],
             'permissions'   => ['nullable', 'array'],
             'permissions.*' => [
                 'string',
-                Rule::exists('permissions', 'name')->where(fn ($q) => $q->where('guard_name', 'web')),
+                Rule::exists('permissions', 'name')->where(fn($q) => $q->where('guard_name', 'web')),
             ],
         ]);
+
+        // Privilege-escalation guard: Masjid Admin cannot claim reserved role names
+        // (prevents tenant admin from creating a fake "Admin" or "Superadmin" role)
+        if (!$isSuperAdmin) {
+            $reservedNames = ['Superadmin', 'SuperAdmin', 'superadmin', 'Admin'];
+            if (in_array($validated['name'], $reservedNames, true)) {
+                abort(403, 'This role name is reserved and cannot be used by tenant admins.');
+            }
+        }
 
         // Privilege-escalation guard: non-SuperAdmin cannot assign admin+ permissions
         $allowedPermissions = $isSuperAdmin
@@ -132,7 +141,10 @@ class RolePermissionController extends Controller
     {
         abort_unless($role->guard_name === 'web', 404);
         $this->authorize('update', $role);
-
+        // Hard-guard: system-level roles (level 1) are immutable regardless of actor.
+        if ($role->isSystemLevel()) {
+            abort(403, 'System-level roles cannot be modified.');
+        }
         $actor       = auth()->user();
         $isSuperAdmin = Role::actorIsSuperAdmin($actor);
 
@@ -143,12 +155,12 @@ class RolePermissionController extends Controller
                 'max:100',
                 Rule::unique('roles', 'name')
                     ->ignore($role->id)
-                    ->where(fn ($q) => $q->where('guard_name', 'web')),
+                    ->where(fn($q) => $q->where('guard_name', 'web')),
             ],
             'permissions'   => ['nullable', 'array'],
             'permissions.*' => [
                 'string',
-                Rule::exists('permissions', 'name')->where(fn ($q) => $q->where('guard_name', 'web')),
+                Rule::exists('permissions', 'name')->where(fn($q) => $q->where('guard_name', 'web')),
             ],
         ]);
 
@@ -171,7 +183,10 @@ class RolePermissionController extends Controller
     {
         abort_unless($role->guard_name === 'web', 404);
         $this->authorize('delete', $role);
-
+        // Hard-guard: system-level roles are permanently protected.
+        if ($role->isSystemLevel()) {
+            abort(403, 'System-level roles cannot be deleted.');
+        }
         // Hard safety: never delete a role that still has users assigned
         $userCount = $role->users()->count();
         if ($userCount > 0) {
@@ -200,13 +215,16 @@ class RolePermissionController extends Controller
 
         // Permissions Masjid-Admin is NOT allowed to grant
         $restricted = [
-            'masjid.create', 'masjid.delete',
-            'subscriptions.manage', 'cms.manage', 'settings.manage',
+            'masjid.create',
+            'masjid.delete',
+            'subscriptions.manage',
+            'cms.manage',
+            'settings.manage',
         ];
 
         return Permission::query()
             ->where('guard_name', 'web')
-            ->when(!$isSuperAdmin, fn ($q) => $q->whereNotIn('name', $restricted))
+            ->when(!$isSuperAdmin, fn($q) => $q->whereNotIn('name', $restricted))
             ->orderBy('name')
             ->get(['id', 'name'])
             ->groupBy(function (Permission $p) {
@@ -214,7 +232,7 @@ class RolePermissionController extends Controller
                     ? Str::headline(Str::before($p->name, '.'))
                     : 'General';
             })
-            ->map(fn ($perms) => $perms->values())
+            ->map(fn($perms) => $perms->values())
             ->toArray();
     }
 
@@ -225,13 +243,16 @@ class RolePermissionController extends Controller
     private function filterAssignablePermissions(array $permissions): array
     {
         $restricted = [
-            'masjid.create', 'masjid.delete',
-            'subscriptions.manage', 'cms.manage', 'settings.manage',
+            'masjid.create',
+            'masjid.delete',
+            'subscriptions.manage',
+            'cms.manage',
+            'settings.manage',
         ];
 
         return array_values(array_filter(
             $permissions,
-            fn (string $p) => !in_array($p, $restricted, true)
+            fn(string $p) => !in_array($p, $restricted, true)
         ));
     }
 }

@@ -65,10 +65,10 @@ class Role extends SpatieRole
     }
 
     /**
-     * Roles the given actor is authorised to VIEW/MANAGE.
+     * Roles the given actor is authorised to VIEW/MANAGE (role management context).
      *
      * – SuperAdmin → all roles
-     * – Masjid Admin → only their own masjid's roles (masjid_id = actor.id_masjid)
+     * – Masjid Admin → only their own masjid's tenant-scoped roles
      * – Others → nothing
      */
     public function scopeVisibleTo(Builder $query, User $actor): Builder
@@ -79,6 +79,35 @@ class Role extends SpatieRole
 
         if ($actor->hasRole('Admin') && !empty($actor->id_masjid)) {
             return $query->where('masjid_id', $actor->id_masjid);
+        }
+
+        return $query->whereRaw('1 = 0');
+    }
+
+    /**
+     * Roles the given actor is allowed to ASSIGN to users.
+     *
+     * This is broader than scopeVisibleTo — it also includes global level-3 roles
+     * (e.g. Bendahari, AJK, Auditor) so a Masjid Admin can assign standard roles
+     * to their users even though they cannot *manage* those roles.
+     *
+     * – SuperAdmin  → all roles at level 2+
+     * – Masjid Admin → global level-3 roles + their own masjid level-3 roles
+     * – Others       → nothing
+     */
+    public function scopeAssignableTo(Builder $query, User $actor): Builder
+    {
+        if (self::actorIsSuperAdmin($actor)) {
+            return $query->where('level', '>=', 2);
+        }
+
+        if ($actor->hasRole('Admin') && !empty($actor->id_masjid)) {
+            return $query->where('level', '>=', 3)
+                ->where(function (Builder $q) use ($actor): void {
+                    // Global level-3 roles OR tenant-scoped roles for this masjid
+                    $q->whereNull('masjid_id')
+                        ->orWhere('masjid_id', $actor->id_masjid);
+                });
         }
 
         return $query->whereRaw('1 = 0');
@@ -127,11 +156,16 @@ class Role extends SpatieRole
 
     // ─── Static helpers ───────────────────────────────────────────────────────
 
+    /**
+     * True for any user whose peranan flag OR role name marks them as superadmin.
+     * Covers all casing variants that may exist in the database.
+     */
     public static function actorIsSuperAdmin(User $actor): bool
     {
         return $actor->peranan === 'superadmin'
-            || $actor->hasRole('superadmin')
-            || $actor->hasRole('SuperAdmin');
+            || $actor->hasRole('Superadmin')
+            || $actor->hasRole('SuperAdmin')
+            || $actor->hasRole('superadmin');
     }
 
     /** Human-readable level labels. */

@@ -345,7 +345,7 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
             ->name('admin.program-masjid.destroy');
     });
 
-    Route::middleware('role:Admin')->group(function () {
+    Route::middleware('role:Superadmin|Admin')->group(function () {
         Route::get('/admin/users', [UserManagementController::class, 'index'])->name('admin.users.index');
         Route::get('/admin/users/create', [UserManagementController::class, 'create'])->name('admin.users.create');
         Route::post('/admin/users', [UserManagementController::class, 'store'])->name('admin.users.store');
@@ -374,9 +374,9 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
             ->name('admin.roles.update');
     });
 
-        Route::delete('/admin/roles/{role}', [RolePermissionController::class, 'destroy'])
-            ->middleware(['permission:roles.assign', 'role_or_permission:Admin|roles.assign'])
-            ->name('admin.roles.destroy');
+    Route::delete('/admin/roles/{role}', [RolePermissionController::class, 'destroy'])
+        ->middleware(['permission:roles.assign', 'role_or_permission:Admin|roles.assign'])
+        ->name('admin.roles.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

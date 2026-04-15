@@ -46,6 +46,18 @@
                         class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 font-medium text-emerald-700">Level
                         3 — User</span>
                 </div>
+            @else
+                {{-- Masjid Admin scoping notice --}}
+                <div
+                    class="flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                    </svg>
+                    <span>You can only manage <strong>level-3 roles scoped to your masjid</strong>. System and global
+                        roles are read-only.</span>
+                </div>
             @endif
 
             {{-- Search --}}

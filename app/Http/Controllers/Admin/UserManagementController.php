@@ -16,9 +16,7 @@ use Illuminate\View\View;
 
 class UserManagementController extends Controller
 {
-    public function __construct(private readonly UserManagementService $service)
-    {
-    }
+    public function __construct(private readonly UserManagementService $service) {}
 
     public function index(Request $request): View
     {
@@ -28,7 +26,7 @@ class UserManagementController extends Controller
         $masjidScope = $actor->peranan === 'superadmin' ? null : $actor->id_masjid;
 
         $query = User::query()
-            ->when($masjidScope, fn ($builder) => $builder->byMasjid($masjidScope))
+            ->when($masjidScope, fn($builder) => $builder->byMasjid($masjidScope))
             ->with(['roles:id,name', 'masjid:id,nama'])
             ->latest('id');
 
@@ -56,10 +54,10 @@ class UserManagementController extends Controller
         $users = $query->paginate(15)->withQueryString();
         $roles = Role::query()
             ->where('guard_name', 'web')
-            ->visibleTo($actor)
+            ->assignableTo($actor)
             ->orderBy('name')
             ->pluck('name');
-        $baseStatsQuery = User::query()->when($masjidScope, fn ($builder) => $builder->byMasjid($masjidScope));
+        $baseStatsQuery = User::query()->when($masjidScope, fn($builder) => $builder->byMasjid($masjidScope));
 
         $stats = [
             'total' => (clone $baseStatsQuery)->count(),
@@ -76,8 +74,7 @@ class UserManagementController extends Controller
 
         $roles = Role::query()
             ->where('guard_name', 'web')
-            ->visibleTo($request->user())
-            ->where('level', '>=', 3)
+            ->assignableTo($request->user())
             ->orderBy('name')
             ->pluck('name');
         $masjidOptions = $this->masjidOptions($request);
@@ -102,8 +99,7 @@ class UserManagementController extends Controller
 
         $roles = Role::query()
             ->where('guard_name', 'web')
-            ->visibleTo($request->user())
-            ->where('level', '>=', 3)
+            ->assignableTo($request->user())
             ->orderBy('name')
             ->pluck('name');
         $masjidOptions = $this->masjidOptions($request);

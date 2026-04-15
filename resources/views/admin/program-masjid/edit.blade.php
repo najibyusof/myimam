@@ -2,13 +2,12 @@
     <x-slot name="header">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">Kemaskini Program Masjid</h2>
-                <p class="mt-1 text-sm text-gray-500">Semak penggunaan program dalam transaksi hasil dan belanja sebelum
-                    mengubah status atau memadam rekod.</p>
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('program_masjid.edit_title') }}</h2>
+                <p class="mt-1 text-sm text-gray-500">{{ __('program_masjid.edit_subtitle') }}</p>
             </div>
             <span
                 class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $programMasjid->aktif ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700' }}">
-                {{ $programMasjid->aktif ? 'Aktif' : 'Tidak Aktif' }}
+                {{ $programMasjid->aktif ? __('program_masjid.form.active') : __('program_masjid.form.inactive') }}
             </span>
         </div>
     </x-slot>

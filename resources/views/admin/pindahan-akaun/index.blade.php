@@ -2,15 +2,15 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Pindahan Akaun') }}
+                {{ __('pindahan_akaun.title') }}
             </h2>
             @can('pindahan_akaun.create')
                 <a href="{{ route('admin.pindahan-akaun.create') }}"
-                   class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                    {{ __('Tambah Pindahan') }}
+                    {{ __('pindahan_akaun.add') }}
                 </a>
             @endcan
         </div>
@@ -28,23 +28,27 @@
             {{-- Stats --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Jumlah Rekod</p>
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        {{ __('pindahan_akaun.stats.total_records') }}</p>
                     <p class="mt-1 text-2xl font-bold text-gray-800">{{ number_format($stats['total']) }}</p>
                 </div>
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Jumlah Amaun Dipindah</p>
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        {{ __('pindahan_akaun.stats.total_transferred_amount') }}</p>
                     <p class="mt-1 text-2xl font-bold text-indigo-600">RM {{ number_format($stats['jumlah'], 2) }}</p>
                 </div>
             </div>
 
             {{-- Filters --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                <form method="GET" action="{{ route('admin.pindahan-akaun.index') }}" class="flex flex-wrap gap-3 items-end">
+                <form method="GET" action="{{ route('admin.pindahan-akaun.index') }}"
+                    class="flex flex-wrap gap-3 items-end">
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Akaun</label>
+                        <label
+                            class="block text-xs font-medium text-gray-700 mb-1">{{ __('pindahan_akaun.filters.account') }}</label>
                         <select name="akaun_id"
-                                class="rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <option value="0">Semua Akaun</option>
+                            class="rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="0">{{ __('pindahan_akaun.filters.all_accounts') }}</option>
                             @foreach ($akaunOptions as $akaun)
                                 <option value="{{ $akaun->id }}" @selected($akaunId === $akaun->id)>
                                     {{ $akaun->nama_akaun }}
@@ -53,23 +57,25 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Tarikh Dari</label>
+                        <label
+                            class="block text-xs font-medium text-gray-700 mb-1">{{ __('pindahan_akaun.filters.date_from') }}</label>
                         <input type="date" name="date_from" value="{{ $dateFrom }}"
-                               class="rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            class="rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Tarikh Hingga</label>
+                        <label
+                            class="block text-xs font-medium text-gray-700 mb-1">{{ __('pindahan_akaun.filters.date_to') }}</label>
                         <input type="date" name="date_to" value="{{ $dateTo }}"
-                               class="rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            class="rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
                     <button type="submit"
-                            class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
-                        Tapis
+                        class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+                        {{ __('pindahan_akaun.filters.filter') }}
                     </button>
                     @if ($akaunId || $dateFrom || $dateTo)
                         <a href="{{ route('admin.pindahan-akaun.index') }}"
-                           class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
-                            Padam Tapis
+                            class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
+                            {{ __('pindahan_akaun.filters.clear_filter') }}
                         </a>
                     @endif
                 </form>
@@ -79,19 +85,26 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 @if ($records->isEmpty())
                     <div class="px-6 py-16 text-center text-sm text-gray-500">
-                        Tiada rekod pindahan akaun dijumpai.
+                        {{ __('pindahan_akaun.table.empty') }}
                     </div>
                 @else
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 text-sm">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Tarikh</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Dari Akaun</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Ke Akaun</th>
-                                    <th class="px-4 py-3 text-right font-medium text-gray-500 uppercase tracking-wider">Amaun (RM)</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
-                                    <th class="px-4 py-3 text-center font-medium text-gray-500 uppercase tracking-wider">Tindakan</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('pindahan_akaun.table.date') }}</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('pindahan_akaun.table.from_account') }}</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('pindahan_akaun.table.to_account') }}</th>
+                                    <th class="px-4 py-3 text-right font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('pindahan_akaun.table.amount') }}</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('pindahan_akaun.table.notes') }}</th>
+                                    <th
+                                        class="px-4 py-3 text-center font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('pindahan_akaun.table.actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
@@ -101,10 +114,12 @@
                                             {{ $record->tarikh->format('d/m/Y') }}
                                         </td>
                                         <td class="px-4 py-3">
-                                            <span class="font-medium text-red-700">{{ $record->dariAkaun?->nama_akaun ?? '-' }}</span>
+                                            <span
+                                                class="font-medium text-red-700">{{ $record->dariAkaun?->nama_akaun ?? '-' }}</span>
                                         </td>
                                         <td class="px-4 py-3">
-                                            <span class="font-medium text-green-700">{{ $record->keAkaun?->nama_akaun ?? '-' }}</span>
+                                            <span
+                                                class="font-medium text-green-700">{{ $record->keAkaun?->nama_akaun ?? '-' }}</span>
                                         </td>
                                         <td class="px-4 py-3 text-right font-semibold text-gray-800">
                                             {{ number_format($record->amaun, 2) }}
@@ -116,19 +131,19 @@
                                             <div class="flex justify-center gap-2">
                                                 @can('update', $record)
                                                     <a href="{{ route('admin.pindahan-akaun.edit', $record) }}"
-                                                       class="inline-flex items-center gap-1 rounded-md border border-indigo-300 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100">
-                                                        Edit
+                                                        class="inline-flex items-center gap-1 rounded-md border border-indigo-300 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100">
+                                                        {{ __('pindahan_akaun.table.edit') }}
                                                     </a>
                                                 @endcan
                                                 @can('delete', $record)
                                                     <form method="POST"
-                                                          action="{{ route('admin.pindahan-akaun.destroy', $record) }}"
-                                                          onsubmit="return confirm('Padam pindahan ini?')">
+                                                        action="{{ route('admin.pindahan-akaun.destroy', $record) }}"
+                                                        onsubmit="return confirm('{{ __('pindahan_akaun.confirm_delete') }}')">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"
-                                                                class="inline-flex items-center gap-1 rounded-md border border-rose-300 bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700 hover:bg-rose-100">
-                                                            Padam
+                                                            class="inline-flex items-center gap-1 rounded-md border border-rose-300 bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700 hover:bg-rose-100">
+                                                            {{ __('pindahan_akaun.table.delete') }}
                                                         </button>
                                                     </form>
                                                 @endcan

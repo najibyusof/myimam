@@ -50,7 +50,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::before(function (User $user) {
+        Gate::before(function (User $user, string $ability, array $arguments) {
+            // Never short-circuit Role-related gate checks.
+            // RolePolicy enforces its own hierarchy (e.g. system-level protection),
+            // so the global bypass must NOT apply here.
+            $subject = $arguments[0] ?? null;
+            if (
+                $subject instanceof \App\Models\Role
+                || $subject === \App\Models\Role::class
+                || $subject === 'App\Models\Role'
+            ) {
+                return null;
+            }
+
             return $user->peranan === 'superadmin' ? true : null;
         });
 

@@ -1,8 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Tambah Tabung Khas</h2>
-            <p class="mt-1 text-sm text-gray-500">Daftar tabung seperti Tabung Pembangunan atau Tabung Kebajikan untuk digunakan pada transaksi khas.</p>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('tabung_khas.add_title') }}</h2>
+            <p class="mt-1 text-sm text-gray-500">{{ __('tabung_khas.add_subtitle') }}</p>
         </div>
     </x-slot>
 

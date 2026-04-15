@@ -2,11 +2,11 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Tambah Pindahan Akaun') }}
+                {{ __('pindahan_akaun.add_title') }}
             </h2>
             <a href="{{ route('admin.pindahan-akaun.index') }}"
-               class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
-                &larr; Kembali
+                class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
+                &larr; {{ __('pindahan_akaun.form.back') }}
             </a>
         </div>
     </x-slot>
@@ -27,15 +27,18 @@
 
                 <form method="POST" action="{{ route('admin.pindahan-akaun.store') }}" class="space-y-6">
                     @csrf
-                    @include('admin.pindahan-akaun._form', ['record' => null, 'akaunOptions' => $akaunOptions])
+                    @include('admin.pindahan-akaun._form', [
+                        'record' => null,
+                        'akaunOptions' => $akaunOptions,
+                    ])
                     <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
                         <a href="{{ route('admin.pindahan-akaun.index') }}"
-                           class="rounded-lg border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
-                            Batal
+                            class="rounded-lg border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
+                            {{ __('pindahan_akaun.form.cancel') }}
                         </a>
                         <button type="submit"
-                                class="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            Simpan Pindahan
+                            class="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            {{ __('pindahan_akaun.form.save_transfer') }}
                         </button>
                     </div>
                 </form>

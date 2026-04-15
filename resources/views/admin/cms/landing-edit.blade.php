@@ -12,10 +12,22 @@
             @endif
 
             <div class="bg-white shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-semibold mb-2">Landing Page Builder</h3>
-                    <p class="text-sm text-gray-600">Ubah kandungan hero, features, dan footer untuk global template atau
-                        tenant tertentu.</p>
+                <div class="p-6 text-gray-900 flex items-start justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">Landing Page Builder</h3>
+                        <p class="text-sm text-gray-600">Ubah kandungan hero, features, dan footer untuk global template
+                            atau
+                            tenant tertentu.</p>
+                    </div>
+                    <a href="{{ route('landing') }}" target="_blank"
+                        class="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                        </svg>
+                        Pratonton Landing Page
+                    </a>
                 </div>
             </div>
 

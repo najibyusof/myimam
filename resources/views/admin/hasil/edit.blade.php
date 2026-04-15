@@ -1,9 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Kemaskini Transaksi Hasil</h2>
-            <p class="mt-1 text-sm text-gray-500">Laraskan butiran kutipan mengikut akaun, sumber hasil, amaun, dan
-                penandaan kutipan Jumaat.</p>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('hasil.edit_title') }}</h2>
+            <p class="mt-1 text-sm text-gray-500">{{ __('hasil.edit_subtitle') }}</p>
         </div>
     </x-slot>
 

@@ -1,8 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Tambah Rekod Belanja</h2>
-            <p class="mt-1 text-sm text-gray-500">Rekod perbelanjaan mengikut tarikh, amaun, akaun, kategori, dan pautan baucar jika tersedia.</p>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('belanja.add_title') }}</h2>
+            <p class="mt-1 text-sm text-gray-500">{{ __('belanja.add_subtitle') }}</p>
         </div>
     </x-slot>
 

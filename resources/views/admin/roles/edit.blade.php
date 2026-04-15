@@ -45,7 +45,12 @@
 
             @if ($role->isSystemLevel())
                 <div class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-                    <strong>Protected role:</strong> This is a system-level role. Some restrictions may apply.
+                    <strong>Protected role:</strong> This is a system-level (Level 1) role and cannot be modified or
+                    deleted by anyone.
+                </div>
+            @elseif ($role->isAdminLevel() && !$isSuperAdmin)
+                <div class="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                    <strong>Restricted role:</strong> This is an admin-level role. Only SuperAdmin can modify it.
                 </div>
             @endif
 

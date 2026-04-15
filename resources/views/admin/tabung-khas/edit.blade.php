@@ -2,11 +2,12 @@
     <x-slot name="header">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">Kemaskini Tabung Khas</h2>
-                <p class="mt-1 text-sm text-gray-500">Pantau penggunaan tabung dalam transaksi hasil dan belanja sebelum membuat perubahan atau pemadaman.</p>
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('tabung_khas.edit_title') }}</h2>
+                <p class="mt-1 text-sm text-gray-500">{{ __('tabung_khas.edit_subtitle') }}</p>
             </div>
-            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $tabungKhas->aktif ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700' }}">
-                {{ $tabungKhas->aktif ? 'Aktif' : 'Tidak Aktif' }}
+            <span
+                class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $tabungKhas->aktif ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700' }}">
+                {{ $tabungKhas->aktif ? __('tabung_khas.form.active') : __('tabung_khas.form.inactive') }}
             </span>
         </div>
     </x-slot>

@@ -20,6 +20,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'users.update',
             'users.delete',
             'roles.assign',
+            'roles.view',
+            'roles.create',
+            'roles.update',
+            'roles.delete',
             'akaun.view',
             'akaun.create',
             'akaun.update',
@@ -76,12 +80,76 @@ class RolesAndPermissionsSeeder extends Seeder
         }
 
         $roles = [
-            'Admin' => $permissions,
+            // level 1 — system (global, protected)
+            'Superadmin' => $permissions,
+
+            // level 2 — tenant admin (global, assigned per-masjid context)
+            // Admin manages their own masjid's users, roles, and finance.
+            // Does NOT receive system-level permissions (subscriptions, CMS, global masjid CRUD).
+            'Admin' => [
+                'dashboard.view',
+                'users.view',
+                'users.create',
+                'users.update',
+                'users.delete',
+                'roles.assign',
+                'roles.view',
+                'roles.create',
+                'roles.update',
+                'roles.delete',
+                'akaun.view',
+                'akaun.create',
+                'akaun.update',
+                'akaun.delete',
+                'hasil.view',
+                'hasil.create',
+                'hasil.update',
+                'hasil.delete',
+                'belanja.view',
+                'belanja.create',
+                'belanja.update',
+                'belanja.delete',
+                'sumber_hasil.view',
+                'sumber_hasil.create',
+                'sumber_hasil.update',
+                'sumber_hasil.delete',
+                'kategori_belanja.view',
+                'kategori_belanja.create',
+                'kategori_belanja.update',
+                'kategori_belanja.delete',
+                'tabung_khas.view',
+                'tabung_khas.create',
+                'tabung_khas.update',
+                'tabung_khas.delete',
+                'program_masjid.view',
+                'program_masjid.create',
+                'program_masjid.update',
+                'program_masjid.delete',
+                'pindahan_akaun.view',
+                'pindahan_akaun.create',
+                'pindahan_akaun.update',
+                'pindahan_akaun.delete',
+                'running_no.view',
+                'running_no.generate',
+                'running_no.update',
+                'masjid.view',
+                'masjid.update',
+                'finance.view',
+                'finance.create',
+                'finance.update',
+                'finance.approve',
+                'reports.view',
+                'reports.export',
+                'audit.view',
+            ],
+
+            // level 3 — user roles below (restricted permission subsets)
             'Manager' => [
                 'dashboard.view',
                 'users.view',
                 'users.update',
                 'roles.assign',
+                'roles.view',
                 'masjid.view',
                 'masjid.update',
                 'hasil.view',
@@ -209,8 +277,14 @@ class RolesAndPermissionsSeeder extends Seeder
         ];
 
         foreach ($roles as $roleName => $rolePermissions) {
-            // Level 2 = Admin (tenant administrator), level 3 = all other user roles
-            $level = $roleName === 'Admin' ? 2 : 3;
+            // Level 1 = Superadmin (system-reserved, immutable)
+            // Level 2 = Admin (tenant administrator)
+            // Level 3 = all other user roles
+            $level = match ($roleName) {
+                'Superadmin' => 1,
+                'Admin'      => 2,
+                default      => 3,
+            };
 
             $role = Role::firstOrCreate(
                 ['name' => $roleName, 'guard_name' => 'web'],

@@ -15,7 +15,7 @@ class UserScenarioSeeder extends Seeder
         $masjids = Masjid::query()->orderBy('id')->get()->keyBy('nama');
 
         $users = [
-            ['name' => 'System Admin', 'email' => 'admin@example.com', 'role' => 'Admin', 'peranan' => 'superadmin', 'aktif' => true, 'masjid' => null, 'verified' => true],
+            ['name' => 'System Admin', 'email' => 'admin@example.com', 'role' => 'Superadmin', 'peranan' => 'superadmin', 'aktif' => true, 'masjid' => null, 'verified' => true],
             ['name' => 'Operations Admin', 'email' => 'ops.admin@example.com', 'role' => 'Admin', 'peranan' => 'admin', 'aktif' => true, 'masjid' => null, 'verified' => true],
 
             ['name' => 'Operations Manager', 'email' => 'manager@example.com', 'role' => 'Manager', 'peranan' => 'admin', 'aktif' => true, 'masjid' => 'Masjid Al-Hidayah Putrajaya', 'verified' => true],
@@ -71,7 +71,7 @@ class UserScenarioSeeder extends Seeder
                     'push_notifications' => $user->aktif,
                     'telegram_notifications' => str_contains($user->email, 'finance.gov.my'),
                     'telegram_chat_id' => str_contains($user->email, 'finance.gov.my') ? (string) (100000 + $user->id) : null,
-                    'fcm_token' => $user->aktif ? 'fcm-token-'.$user->id : null,
+                    'fcm_token' => $user->aktif ? 'fcm-token-' . $user->id : null,
                     'notification_types' => in_array($userData['role'], ['Admin', 'Manager', 'FinanceOfficer', 'Auditor'], true)
                         ? ['finance', 'masjid', 'user', 'system']
                         : ['finance', 'system'],

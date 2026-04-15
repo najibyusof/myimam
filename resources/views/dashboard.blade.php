@@ -2,13 +2,16 @@
     <x-slot name="header">
         <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.28em] text-gray-400">System Overview</p>
-                <h2 class="mt-1 text-2xl font-semibold tracking-tight text-gray-900">Dashboard</h2>
-                <p class="mt-1 text-sm text-gray-500">Operational snapshot for {{ $contextLabel }}.</p>
-                <p class="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-indigo-700">Role focus: {{ $dashboardRole }}</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.28em] text-gray-400">
+                    {{ __('dashboard.system_overview') }}</p>
+                <h2 class="mt-1 text-2xl font-semibold tracking-tight text-gray-900">{{ __('dashboard.title') }}</h2>
+                <p class="mt-1 text-sm text-gray-500">
+                    {{ __('dashboard.operational_snapshot', ['context' => $contextLabel]) }}</p>
+                <p class="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-indigo-700">
+                    {{ __('dashboard.role_focus', ['role' => $dashboardRole]) }}</p>
             </div>
             <div class="text-sm text-gray-500">
-                Last sync: {{ now()->format('d M Y, h:i A') }}
+                {{ __('dashboard.last_sync', ['time' => now()->format('d M Y, h:i A')]) }}
             </div>
         </div>
     </x-slot>
@@ -33,10 +36,11 @@
                 <div class="rounded-xl border border-gray-200 bg-white p-6 shadow">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm font-medium text-gray-500">Activity Trend</p>
-                            <h3 class="mt-1 text-xl font-semibold text-gray-900">Last 7 days</h3>
+                            <p class="text-sm font-medium text-gray-500">{{ __('dashboard.activity_trend') }}</p>
+                            <h3 class="mt-1 text-xl font-semibold text-gray-900">{{ __('dashboard.last_7_days') }}</h3>
                         </div>
-                        <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">Chart.js</span>
+                        <span
+                            class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">{{ __('dashboard.chart_js') }}</span>
                     </div>
                     <div class="mt-5 h-72">
                         <canvas id="activityTrendChart"></canvas>
@@ -46,8 +50,9 @@
                 <div class="rounded-xl border border-gray-200 bg-white p-6 shadow">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm font-medium text-gray-500">Notification Preview</p>
-                            <h3 class="mt-1 text-xl font-semibold text-gray-900">Latest notifications</h3>
+                            <p class="text-sm font-medium text-gray-500">{{ __('dashboard.notification_preview') }}</p>
+                            <h3 class="mt-1 text-xl font-semibold text-gray-900">
+                                {{ __('dashboard.latest_notifications') }}</h3>
                         </div>
                     </div>
 
@@ -62,7 +67,8 @@
                                 <p class="mt-2 text-sm text-gray-600">{{ $notification['message'] }}</p>
                             </article>
                         @empty
-                            <p class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">No notifications available.</p>
+                            <p class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
+                                {{ __('dashboard.no_notifications_available') }}</p>
                         @endforelse
                     </div>
                 </div>
@@ -71,8 +77,9 @@
             <section class="rounded-xl border border-gray-200 bg-white p-6 shadow">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-500">Recent Activity Log</p>
-                        <h3 class="mt-1 text-xl font-semibold text-gray-900">Latest system events</h3>
+                        <p class="text-sm font-medium text-gray-500">{{ __('dashboard.recent_activity_log') }}</p>
+                        <h3 class="mt-1 text-xl font-semibold text-gray-900">{{ __('dashboard.latest_system_events') }}
+                        </h3>
                     </div>
                 </div>
 
@@ -93,7 +100,8 @@
                             </div>
                         </article>
                     @empty
-                        <p class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">No activity logs available.</p>
+                        <p class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
+                            {{ __('dashboard.no_activity_logs_available') }}</p>
                     @endforelse
                 </div>
             </section>
@@ -116,7 +124,7 @@
                 data: {
                     labels: chartData.labels,
                     datasets: [{
-                        label: 'Activities',
+                        label: @js(__('dashboard.activities')),
                         data: chartData.counts,
                         borderColor: '#0284c7',
                         backgroundColor: 'rgba(2, 132, 199, 0.14)',
