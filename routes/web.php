@@ -21,6 +21,7 @@ use App\Http\Controllers\LaporanBukuTunaiController;
 use App\Http\Controllers\LaporanJumaatController;
 use App\Http\Controllers\LaporanDermaController;
 use App\Http\Controllers\LaporanBelanjaController;
+use App\Http\Controllers\LaporanPenyataController;
 use App\Http\Controllers\NotificationCenterController;
 use App\Http\Controllers\SidebarBadgeController;
 use App\Http\Controllers\PublicLandingController;
@@ -304,6 +305,22 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
     Route::get('/laporan/belanja/export/excel', [LaporanBelanjaController::class, 'exportExcel'])
         ->name('laporan.belanja.export.excel')
         ->middleware('permission:view laporan belanja');
+
+    Route::get('/laporan/penyata', [LaporanPenyataController::class, 'index'])
+        ->name('laporan.penyata')
+        ->middleware('permission:view laporan penyata');
+
+    Route::get('/laporan/penyata/export/pdf', [LaporanPenyataController::class, 'exportPdf'])
+        ->name('laporan.penyata.export.pdf')
+        ->middleware('permission:view laporan penyata');
+
+    Route::get('/laporan/penyata/detail/hasil/{sumber}', [LaporanPenyataController::class, 'detailHasil'])
+        ->name('laporan.penyata.detail.hasil')
+        ->middleware('permission:view laporan penyata');
+
+    Route::get('/laporan/penyata/detail/belanja/{kategori}', [LaporanPenyataController::class, 'detailBelanja'])
+        ->name('laporan.penyata.detail.belanja')
+        ->middleware('permission:view laporan penyata');
 
     Route::middleware('role_or_permission:Admin|sumber_hasil.view|sumber_hasil.create|sumber_hasil.update|sumber_hasil.delete')->group(function () {
         Route::get('/admin/sumber-hasil', [SumberHasilManagementController::class, 'index'])

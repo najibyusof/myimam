@@ -73,6 +73,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view laporan jumaat',
             'view laporan derma',
             'view laporan belanja',
+            'view laporan penyata',
             'subscriptions.manage',
             'cms.manage',
             'settings.manage',
@@ -151,6 +152,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'view laporan jumaat',
                 'view laporan derma',
                 'view laporan belanja',
+                'view laporan penyata',
                 'audit.view',
             ],
 
@@ -251,6 +253,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'view laporan jumaat',
                 'view laporan derma',
                 'view laporan belanja',
+                'view laporan penyata',
                 'masjid.view',
             ],
             'AJK' => [
@@ -278,6 +281,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'view laporan jumaat',
                 'view laporan derma',
                 'view laporan belanja',
+                'view laporan penyata',
                 'users.view',
                 'masjid.view',
                 'finance.view',

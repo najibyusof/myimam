@@ -67,6 +67,13 @@ return [
     ],
     [
         'group_key' => 'menu.group_laporan',
+        'title_key' => 'menu.laporan_penyata',
+        'route' => ['laporan.penyata'],
+        'icon' => 'chart',
+        'permission' => ['view laporan penyata'],
+    ],
+    [
+        'group_key' => 'menu.group_laporan',
         'title_key' => 'menu.laporan_sedia_ada',
         'route' => ['report.index', 'admin.reporting.index'],
         'icon' => 'chart',
