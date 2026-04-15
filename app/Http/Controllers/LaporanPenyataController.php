@@ -79,25 +79,25 @@ class LaporanPenyataController extends Controller
         // Current period queries
         $hasilQuery = Hasil::query()
             ->withoutTenantScope()
-            ->where('masjid_id', $idMasjid)
+            ->where('id_masjid', $idMasjid)
             ->whereBetween('tarikh', [$mula, $akhir]);
 
         $belanjaQuery = Belanja::query()
             ->notDeleted()
             ->withoutTenantScope()
-            ->where('masjid_id', $idMasjid)
+            ->where('id_masjid', $idMasjid)
             ->whereBetween('tarikh', [$mula, $akhir]);
 
         // Previous period queries (for comparison)
         $prevHasilQ = Hasil::query()
             ->withoutTenantScope()
-            ->where('masjid_id', $idMasjid)
+            ->where('id_masjid', $idMasjid)
             ->whereBetween('tarikh', [$prevMula, $prevAkhir]);
 
         $prevBelanjaQ = Belanja::query()
             ->notDeleted()
             ->withoutTenantScope()
-            ->where('masjid_id', $idMasjid)
+            ->where('id_masjid', $idMasjid)
             ->whereBetween('tarikh', [$prevMula, $prevAkhir]);
 
         $prevPendapatan = $prevHasilQ
@@ -218,7 +218,7 @@ class LaporanPenyataController extends Controller
         $query = Hasil::query()
             ->with(['sumberHasil:id,nama_sumber'])
             ->withoutTenantScope()
-            ->where('masjid_id', $idMasjid)
+            ->where('id_masjid', $idMasjid)
             ->where('id_sumber_hasil', $sumber)
             ->whereBetween('tarikh', [$mula, $akhir]);
 
@@ -263,7 +263,7 @@ class LaporanPenyataController extends Controller
         $query = Belanja::query()
             ->notDeleted()
             ->withoutTenantScope()
-            ->where('masjid_id', $idMasjid)
+            ->where('id_masjid', $idMasjid)
             ->where('id_kategori_belanja', $kategori)
             ->whereBetween('tarikh', [$mula, $akhir]);
 

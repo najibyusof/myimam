@@ -266,7 +266,7 @@ class LaporanBelanjaController extends Controller
         string $status
     ): void {
         $query->notDeleted()->whereBetween('tarikh', [$tarikhDari, $tarikhHingga]);
-        $query->withoutTenantScope()->where('masjid_id', $idMasjid);
+        $query->withoutTenantScope()->where('id_masjid', $idMasjid);
 
         if ($kategoriId) {
             $query->where('id_kategori_belanja', $kategoriId);
@@ -293,7 +293,7 @@ class LaporanBelanjaController extends Controller
         $query = KategoriBelanja::query()
             ->withoutTenantScope()
             ->aktif()
-            ->where('masjid_id', $idMasjid);
+            ->where('id_masjid', $idMasjid);
 
         return $query->orderBy('nama_kategori')->get(['id', 'nama_kategori'])->map(function ($row) {
             return ['id' => $row->id, 'name' => $row->nama_kategori];
@@ -310,7 +310,7 @@ class LaporanBelanjaController extends Controller
         $query = Akaun::query()
             ->withoutTenantScope()
             ->aktif()
-            ->where('masjid_id', $idMasjid);
+            ->where('id_masjid', $idMasjid);
 
         return $query->orderBy('nama_akaun')->get(['id', 'nama_akaun'])->map(function ($row) {
             return ['id' => $row->id, 'name' => $row->nama_akaun];
