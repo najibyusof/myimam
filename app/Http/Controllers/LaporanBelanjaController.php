@@ -6,6 +6,7 @@ use App\Exports\LaporanBelanjaExport;
 use App\Models\Akaun;
 use App\Models\Belanja;
 use App\Models\KategoriBelanja;
+use App\Models\Masjid;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -25,6 +26,8 @@ class LaporanBelanjaController extends Controller
 
     public function exportPdf(Request $request)
     {
+        abort_if($this->isSuperadmin($request) && !(int) $request->query('masjid_id', 0), 403);
+
         $data = $this->buildLaporanData($request);
         $filename = 'laporan-belanja-' . now()->format('Ymd_His') . '.pdf';
 
@@ -33,6 +36,8 @@ class LaporanBelanjaController extends Controller
 
     public function exportExcel(Request $request)
     {
+        abort_if($this->isSuperadmin($request) && !(int) $request->query('masjid_id', 0), 403);
+
         $data = $this->buildLaporanData($request);
         $filename = 'laporan-belanja-' . now()->format('Ymd_His') . '.xlsx';
 
@@ -45,8 +50,9 @@ class LaporanBelanjaController extends Controller
     private function buildLaporanData(Request $request): array
     {
         $actor = $request->user();
-        $idMasjid = (int) ($actor?->id_masjid ?? 0);
         $isSuperadmin = $this->isSuperadmin($request);
+        $masjidContext = $this->resolveMasjidContext($request, $isSuperadmin);
+        $idMasjid = $masjidContext['id'];
 
         abort_if($idMasjid <= 0 && !$isSuperadmin, 403);
 
@@ -73,7 +79,9 @@ class LaporanBelanjaController extends Controller
             $status = 'all';
         }
 
-        $ringkasan = $this->buildRingkasanKategori(
+        $requiresMasjidSelection = $isSuperadmin && !$masjidContext['selected_id'];
+
+        $ringkasan = $requiresMasjidSelection ? collect() : $this->buildRingkasanKategori(
             $tarikhDari,
             $tarikhHingga,
             $idMasjid,
@@ -85,7 +93,7 @@ class LaporanBelanjaController extends Controller
         $jumlahKeseluruhan = (float) $ringkasan->sum('jumlah');
 
         $ringkasanBulan = collect();
-        if ($jenisPaparan === 'ringkasan_bulan') {
+        if ($jenisPaparan === 'ringkasan_bulan' && !$requiresMasjidSelection) {
             $ringkasanBulan = $this->buildRingkasanBulan(
                 $tarikhDari,
                 $tarikhHingga,
@@ -99,7 +107,7 @@ class LaporanBelanjaController extends Controller
         }
 
         $senariTransaksi = collect();
-        if ($jenisPaparan === 'senarai_transaksi') {
+        if ($jenisPaparan === 'senarai_transaksi' && !$requiresMasjidSelection) {
             $senariTransaksi = $this->buildSenariTransaksi(
                 $tarikhDari,
                 $tarikhHingga,
@@ -113,8 +121,8 @@ class LaporanBelanjaController extends Controller
         }
 
         // Get categories for filter dropdown
-        $akaunList = $this->getAkaunList($idMasjid, $isSuperadmin);
-        $kategoriList = $this->getKategoriList($idMasjid, $isSuperadmin);
+        $akaunList = $requiresMasjidSelection ? collect() : $this->getAkaunList($idMasjid, $isSuperadmin);
+        $kategoriList = $requiresMasjidSelection ? collect() : $this->getKategoriList($idMasjid, $isSuperadmin);
 
         return [
             'filters' => [
@@ -124,6 +132,7 @@ class LaporanBelanjaController extends Controller
                 'kategori_id' => $kategoriId,
                 'akaun_id' => $akaunId,
                 'status' => $status,
+                'masjid_id' => $masjidContext['selected_id'],
             ],
             'rows' => $ringkasan,
             'ringkasan_bulan' => $ringkasanBulan,
@@ -132,6 +141,9 @@ class LaporanBelanjaController extends Controller
             'is_superadmin' => $isSuperadmin,
             'kategori_list' => $kategoriList,
             'akaun_list' => $akaunList,
+            'masjid_list' => $masjidContext['options'],
+            'selected_masjid' => $masjidContext['masjid'],
+            'requires_masjid_selection' => $requiresMasjidSelection,
         ];
     }
 
@@ -149,8 +161,7 @@ class LaporanBelanjaController extends Controller
         ?string $akaunId,
         string $status
     ): Collection {
-        $query = Belanja::query()
-            ->when($isSuperadmin, fn($builder) => $builder->withoutTenantScope());
+        $query = Belanja::query();
 
         $this->applyCommonFilters($query, $tarikhDari, $tarikhHingga, $idMasjid, $isSuperadmin, $kategoriId, $akaunId, $status);
 
@@ -184,8 +195,7 @@ class LaporanBelanjaController extends Controller
         ?string $akaunId,
         string $status
     ): Collection {
-        $query = Belanja::query()
-            ->when($isSuperadmin, fn($builder) => $builder->withoutTenantScope());
+        $query = Belanja::query();
 
         $this->applyCommonFilters($query, $tarikhDari, $tarikhHingga, $idMasjid, $isSuperadmin, $kategoriId, $akaunId, $status);
 
@@ -221,8 +231,7 @@ class LaporanBelanjaController extends Controller
         string $status
     ): Collection {
         $query = Belanja::query()
-            ->with(['kategoriBelanja:id,nama_kategori', 'akaun:id,nama_akaun'])
-            ->when($isSuperadmin, fn($builder) => $builder->withoutTenantScope());
+            ->with(['kategoriBelanja:id,nama_kategori', 'akaun:id,nama_akaun']);
 
         $this->applyCommonFilters($query, $tarikhDari, $tarikhHingga, $idMasjid, $isSuperadmin, $kategoriId, $akaunId, $status);
 
@@ -257,10 +266,7 @@ class LaporanBelanjaController extends Controller
         string $status
     ): void {
         $query->notDeleted()->whereBetween('tarikh', [$tarikhDari, $tarikhHingga]);
-
-        if (!$isSuperadmin) {
-            $query->byMasjid($idMasjid);
-        }
+        $query->withoutTenantScope()->where('masjid_id', $idMasjid);
 
         if ($kategoriId) {
             $query->where('id_kategori_belanja', $kategoriId);
@@ -285,12 +291,9 @@ class LaporanBelanjaController extends Controller
     private function getKategoriList(int $idMasjid, bool $isSuperadmin): Collection
     {
         $query = KategoriBelanja::query()
-            ->when($isSuperadmin, fn($builder) => $builder->withoutTenantScope())
-            ->aktif();
-
-        if (!$isSuperadmin) {
-            $query->byMasjid($idMasjid);
-        }
+            ->withoutTenantScope()
+            ->aktif()
+            ->where('masjid_id', $idMasjid);
 
         return $query->orderBy('nama_kategori')->get(['id', 'nama_kategori'])->map(function ($row) {
             return ['id' => $row->id, 'name' => $row->nama_kategori];
@@ -305,16 +308,39 @@ class LaporanBelanjaController extends Controller
     private function getAkaunList(int $idMasjid, bool $isSuperadmin): Collection
     {
         $query = Akaun::query()
-            ->when($isSuperadmin, fn($builder) => $builder->withoutTenantScope())
-            ->aktif();
-
-        if (!$isSuperadmin) {
-            $query->byMasjid($idMasjid);
-        }
+            ->withoutTenantScope()
+            ->aktif()
+            ->where('masjid_id', $idMasjid);
 
         return $query->orderBy('nama_akaun')->get(['id', 'nama_akaun'])->map(function ($row) {
             return ['id' => $row->id, 'name' => $row->nama_akaun];
         });
+    }
+
+    /**
+     * @return array{id:int,selected_id:?int,masjid:?Masjid,options:Collection<int, array{id:int,name:string}>}
+     */
+    private function resolveMasjidContext(Request $request, bool $isSuperadmin): array
+    {
+        $actor = $request->user();
+        $selectedId = $isSuperadmin ? (int) $request->query('masjid_id', 0) : (int) ($actor?->id_masjid ?? 0);
+        $selectedId = $selectedId > 0 ? $selectedId : null;
+
+        $options = Masjid::query()
+            ->orderBy('nama')
+            ->get(['id', 'nama'])
+            ->map(fn(Masjid $row): array => ['id' => (int) $row->id, 'name' => $row->nama]);
+
+        $masjid = $selectedId
+            ? Masjid::query()->whereKey($selectedId)->first(['id', 'nama'])
+            : null;
+
+        return [
+            'id' => $selectedId ?? 0,
+            'selected_id' => $selectedId,
+            'masjid' => $masjid,
+            'options' => $options,
+        ];
     }
 
     private function isSuperadmin(Request $request): bool

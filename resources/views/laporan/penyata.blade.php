@@ -72,7 +72,22 @@
                 {{-- Filter form --}}
                 <div class="no-print mt-6 border-t border-gray-100 pt-5">
                     <form method="GET" action="{{ route('laporan.penyata') }}"
-                        class="grid grid-cols-1 gap-4 md:grid-cols-4 md:items-end">
+                        class="grid grid-cols-1 gap-4 md:grid-cols-5 md:items-end">
+                        @if ($is_superadmin)
+                            <div>
+                                <label class="mb-1 block text-xs font-medium text-gray-600">Masjid</label>
+                                <select name="masjid_id"
+                                    class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="">Pilih Masjid</option>
+                                    @foreach ($masjid_list as $masjid)
+                                        <option value="{{ $masjid['id'] }}" @selected((string) ($filters['masjid_id'] ?? '') === (string) $masjid['id'])>
+                                            {{ $masjid['name'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+
                         <div>
                             <label class="mb-1 block text-xs font-medium text-gray-600">Jenis Penyata</label>
                             <select name="jenis_penyata" onchange="this.form.submit()"
@@ -109,8 +124,8 @@
                                 class="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white transition hover:bg-indigo-700">
                                 Jana Penyata
                             </button>
-                            <a href="{{ route('laporan.penyata.export.pdf', $filters) }}"
-                                class="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-100"
+                            <a href="{{ !empty($filters['masjid_id']) || !$is_superadmin ? route('laporan.penyata.export.pdf', $filters) : '#' }}"
+                                class="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-100 {{ $is_superadmin && empty($filters['masjid_id']) ? 'pointer-events-none opacity-50' : '' }}"
                                 title="Muat turun PDF">
                                 PDF
                             </a>
@@ -121,6 +136,13 @@
                             </button>
                         </div>
                     </form>
+
+                    @if ($is_superadmin && empty($filters['masjid_id']))
+                        <div
+                            class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                            Superadmin perlu memilih masjid terlebih dahulu untuk jana penyata bagi masjid yang dipilih.
+                        </div>
+                    @endif
                 </div>
             </div>
 
@@ -188,8 +210,9 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="px-4 py-8 text-center text-gray-400">Tiada rekod
-                                            pendapatan.</td>
+                                        <td colspan="5" class="px-4 py-8 text-center text-gray-400">
+                                            {{ $is_superadmin && empty($filters['masjid_id']) ? 'Pilih masjid untuk melihat rekod pendapatan.' : 'Tiada rekod pendapatan.' }}
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -276,8 +299,9 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="px-4 py-8 text-center text-gray-400">Tiada rekod
-                                            perbelanjaan.</td>
+                                        <td colspan="5" class="px-4 py-8 text-center text-gray-400">
+                                            {{ $is_superadmin && empty($filters['masjid_id']) ? 'Pilih masjid untuk melihat rekod perbelanjaan.' : 'Tiada rekod perbelanjaan.' }}
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>

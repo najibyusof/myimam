@@ -24,6 +24,8 @@ class LaporanPenyataController extends Controller
 
     public function exportPdf(Request $request): Response
     {
+        abort_if($this->isSuperadmin($request) && !(int) $request->query('masjid_id', 0), 403);
+
         $data = $this->buildReportData($request);
         $filename = 'penyata-kewangan-' . str_replace(['/', ' ', '(', ')'], ['-', '-', '', ''], strtolower($data['tempoh_label'])) . '.pdf';
 
@@ -36,44 +38,67 @@ class LaporanPenyataController extends Controller
     {
         $actor = $request->user();
         $isSuperadmin = $this->isSuperadmin($request);
-        $idMasjid = (int) ($actor?->id_masjid ?? 0);
+        $masjidContext = $this->resolveMasjidContext($request, $isSuperadmin);
+        $idMasjid = $masjidContext['id'];
 
         abort_if($idMasjid <= 0 && !$isSuperadmin, 403);
 
         [$jenisPenyata, $tahun, $bulan, $mula, $akhir] = $this->resolveFilters($request);
         [$prevMula, $prevAkhir] = $this->resolvePrevPeriod($jenisPenyata, $tahun, $bulan);
 
+        $requiresMasjidSelection = $isSuperadmin && !$masjidContext['selected_id'];
+
+        if ($requiresMasjidSelection) {
+            return [
+                'filters' => [
+                    'jenis_penyata' => $jenisPenyata,
+                    'tahun' => $tahun,
+                    'bulan' => $bulan,
+                    'masjid_id' => null,
+                ],
+                'tempoh_label' => $this->buildTempohLabel($jenisPenyata, $tahun, $bulan, $mula, $akhir),
+                'prev_tempoh_label' => $this->buildPrevTempohLabel($jenisPenyata, $tahun, $bulan),
+                'pendapatan_rows' => collect(),
+                'perbelanjaan_rows' => collect(),
+                'jumlah_pendapatan' => 0.0,
+                'jumlah_perbelanjaan' => 0.0,
+                'lebihan_kurangan' => 0.0,
+                'prev_jumlah_pendapatan' => 0.0,
+                'prev_jumlah_perbelanjaan' => 0.0,
+                'prev_lebihan_kurangan' => 0.0,
+                'masjid_nama' => 'Pilih Masjid',
+                'masjid_alamat' => 'Superadmin perlu memilih masjid untuk jana penyata.',
+                'tahun_opsyen' => $this->buildTahunOpsyen(),
+                'bulan_opsyen' => $this->buildBulanOpsyen(),
+                'is_superadmin' => $isSuperadmin,
+                'masjid_list' => $masjidContext['options'],
+                'selected_masjid' => null,
+            ];
+        }
+
         // Current period queries
         $hasilQuery = Hasil::query()
-            ->when($isSuperadmin, fn(Builder $b) => $b->withoutTenantScope())
+            ->withoutTenantScope()
+            ->where('masjid_id', $idMasjid)
             ->whereBetween('tarikh', [$mula, $akhir]);
-        if (!$isSuperadmin) {
-            $hasilQuery->byMasjid($idMasjid);
-        }
 
         $belanjaQuery = Belanja::query()
             ->notDeleted()
-            ->when($isSuperadmin, fn(Builder $b) => $b->withoutTenantScope())
+            ->withoutTenantScope()
+            ->where('masjid_id', $idMasjid)
             ->whereBetween('tarikh', [$mula, $akhir]);
-        if (!$isSuperadmin) {
-            $belanjaQuery->byMasjid($idMasjid);
-        }
 
         // Previous period queries (for comparison)
         $prevHasilQ = Hasil::query()
-            ->when($isSuperadmin, fn(Builder $b) => $b->withoutTenantScope())
+            ->withoutTenantScope()
+            ->where('masjid_id', $idMasjid)
             ->whereBetween('tarikh', [$prevMula, $prevAkhir]);
-        if (!$isSuperadmin) {
-            $prevHasilQ->byMasjid($idMasjid);
-        }
 
         $prevBelanjaQ = Belanja::query()
             ->notDeleted()
-            ->when($isSuperadmin, fn(Builder $b) => $b->withoutTenantScope())
+            ->withoutTenantScope()
+            ->where('masjid_id', $idMasjid)
             ->whereBetween('tarikh', [$prevMula, $prevAkhir]);
-        if (!$isSuperadmin) {
-            $prevBelanjaQ->byMasjid($idMasjid);
-        }
 
         $prevPendapatan = $prevHasilQ
             ->selectRaw('id_sumber_hasil, SUM(jumlah) as jumlah')
@@ -95,7 +120,7 @@ class LaporanPenyataController extends Controller
 
         $jumlahPendapatan = (float) $rawHasil->sum('jumlah');
 
-        $pendapatanRows = $rawHasil->map(function ($row) use ($jenisPenyata, $tahun, $bulan, $jumlahPendapatan, $prevPendapatan): array {
+        $pendapatanRows = $rawHasil->map(function ($row) use ($jenisPenyata, $tahun, $bulan, $jumlahPendapatan, $prevPendapatan, $masjidContext): array {
             $jumlah     = (float) $row->jumlah;
             $prevJumlah = (float) ($prevPendapatan[(int) $row->id_sumber_hasil] ?? 0);
             return [
@@ -111,6 +136,7 @@ class LaporanPenyataController extends Controller
                     'jenis_penyata' => $jenisPenyata,
                     'tahun'         => $tahun,
                     'bulan'         => $bulan,
+                    'masjid_id'     => $masjidContext['selected_id'],
                 ]),
             ];
         });
@@ -124,7 +150,7 @@ class LaporanPenyataController extends Controller
 
         $jumlahPerbelanjaan = (float) $rawBelanja->sum('jumlah');
 
-        $perbelanjaanRows = $rawBelanja->map(function ($row) use ($jenisPenyata, $tahun, $bulan, $jumlahPerbelanjaan, $prevPerbelanjaan): array {
+        $perbelanjaanRows = $rawBelanja->map(function ($row) use ($jenisPenyata, $tahun, $bulan, $jumlahPerbelanjaan, $prevPerbelanjaan, $masjidContext): array {
             $jumlah     = (float) $row->jumlah;
             $prevJumlah = (float) ($prevPerbelanjaan[(int) $row->id_kategori_belanja] ?? 0);
             return [
@@ -140,6 +166,7 @@ class LaporanPenyataController extends Controller
                     'jenis_penyata' => $jenisPenyata,
                     'tahun'         => $tahun,
                     'bulan'         => $bulan,
+                    'masjid_id'     => $masjidContext['selected_id'],
                 ]),
             ];
         });
@@ -149,13 +176,14 @@ class LaporanPenyataController extends Controller
         $prevJumlahPerbelanjaan = (float) $prevPerbelanjaan->sum();
         $prevLebihanKekurangan  = $prevJumlahPendapatan - $prevJumlahPerbelanjaan;
 
-        $masjid = $isSuperadmin ? null : $actor?->masjid;
+        $masjid = $masjidContext['masjid'];
 
         return [
             'filters' => [
                 'jenis_penyata' => $jenisPenyata,
                 'tahun'         => $tahun,
                 'bulan'         => $bulan,
+                'masjid_id'     => $masjidContext['selected_id'],
             ],
             'tempoh_label'              => $this->buildTempohLabel($jenisPenyata, $tahun, $bulan, $mula, $akhir),
             'prev_tempoh_label'         => $this->buildPrevTempohLabel($jenisPenyata, $tahun, $bulan),
@@ -167,32 +195,32 @@ class LaporanPenyataController extends Controller
             'prev_jumlah_pendapatan'    => $prevJumlahPendapatan,
             'prev_jumlah_perbelanjaan'  => $prevJumlahPerbelanjaan,
             'prev_lebihan_kurangan'     => $prevLebihanKekurangan,
-            'masjid_nama'               => $masjid?->nama ?? 'Semua Masjid',
-            'masjid_alamat'             => $masjid?->alamat ?? 'Paparan semua masjid (SuperAdmin)',
+            'masjid_nama'               => $masjid?->nama ?? 'Pilih Masjid',
+            'masjid_alamat'             => $masjid?->alamat ?? 'Superadmin perlu memilih masjid untuk jana penyata.',
             'tahun_opsyen'              => $this->buildTahunOpsyen(),
             'bulan_opsyen'              => $this->buildBulanOpsyen(),
+            'is_superadmin'             => $isSuperadmin,
+            'masjid_list'               => $masjidContext['options'],
+            'selected_masjid'           => $masjid,
         ];
     }
 
     public function detailHasil(Request $request, int $sumber): View
     {
-        $actor = $request->user();
         $isSuperadmin = $this->isSuperadmin($request);
-        $idMasjid = (int) ($actor?->id_masjid ?? 0);
+        $masjidContext = $this->resolveMasjidContext($request, $isSuperadmin);
+        $idMasjid = $masjidContext['id'];
 
-        abort_if($idMasjid <= 0 && !$isSuperadmin, 403);
+        abort_if($idMasjid <= 0, 403);
 
         [$jenisPenyata, $tahun, $bulan, $mula, $akhir] = $this->resolveFilters($request);
 
         $query = Hasil::query()
             ->with(['sumberHasil:id,nama_sumber'])
-            ->when($isSuperadmin, fn(Builder $builder) => $builder->withoutTenantScope())
+            ->withoutTenantScope()
+            ->where('masjid_id', $idMasjid)
             ->where('id_sumber_hasil', $sumber)
             ->whereBetween('tarikh', [$mula, $akhir]);
-
-        if (!$isSuperadmin) {
-            $query->byMasjid($idMasjid);
-        }
 
         $records = $query
             ->orderBy('tarikh', 'desc')
@@ -216,6 +244,7 @@ class LaporanPenyataController extends Controller
                 'jenis_penyata' => $jenisPenyata,
                 'tahun' => $tahun,
                 'bulan' => $bulan,
+                'masjid_id' => $masjidContext['selected_id'],
             ],
             'jumlah' => (float) $records->sum('jumlah'),
         ]);
@@ -223,23 +252,20 @@ class LaporanPenyataController extends Controller
 
     public function detailBelanja(Request $request, int $kategori): View
     {
-        $actor = $request->user();
         $isSuperadmin = $this->isSuperadmin($request);
-        $idMasjid = (int) ($actor?->id_masjid ?? 0);
+        $masjidContext = $this->resolveMasjidContext($request, $isSuperadmin);
+        $idMasjid = $masjidContext['id'];
 
-        abort_if($idMasjid <= 0 && !$isSuperadmin, 403);
+        abort_if($idMasjid <= 0, 403);
 
         [$jenisPenyata, $tahun, $bulan, $mula, $akhir] = $this->resolveFilters($request);
 
         $query = Belanja::query()
             ->notDeleted()
-            ->when($isSuperadmin, fn(Builder $builder) => $builder->withoutTenantScope())
+            ->withoutTenantScope()
+            ->where('masjid_id', $idMasjid)
             ->where('id_kategori_belanja', $kategori)
             ->whereBetween('tarikh', [$mula, $akhir]);
-
-        if (!$isSuperadmin) {
-            $query->byMasjid($idMasjid);
-        }
 
         $records = $query
             ->orderBy('tarikh', 'desc')
@@ -272,9 +298,36 @@ class LaporanPenyataController extends Controller
                 'jenis_penyata' => $jenisPenyata,
                 'tahun' => $tahun,
                 'bulan' => $bulan,
+                'masjid_id' => $masjidContext['selected_id'],
             ],
             'jumlah' => (float) $records->sum('amaun'),
         ]);
+    }
+
+    /**
+     * @return array{id:int,selected_id:?int,masjid:?Masjid,options:Collection<int, array{id:int,name:string}>}
+     */
+    private function resolveMasjidContext(Request $request, bool $isSuperadmin): array
+    {
+        $actor = $request->user();
+        $selectedId = $isSuperadmin ? (int) $request->query('masjid_id', 0) : (int) ($actor?->id_masjid ?? 0);
+        $selectedId = $selectedId > 0 ? $selectedId : null;
+
+        $options = Masjid::query()
+            ->orderBy('nama')
+            ->get(['id', 'nama'])
+            ->map(fn(Masjid $row): array => ['id' => (int) $row->id, 'name' => $row->nama]);
+
+        $masjid = $selectedId
+            ? Masjid::query()->whereKey($selectedId)->first(['id', 'nama', 'alamat'])
+            : null;
+
+        return [
+            'id' => $selectedId ?? 0,
+            'selected_id' => $selectedId,
+            'masjid' => $masjid,
+            'options' => $options,
+        ];
     }
 
     /**

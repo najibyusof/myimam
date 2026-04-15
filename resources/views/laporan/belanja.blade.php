@@ -13,12 +13,28 @@
                     'kategori_id' => $filters['kategori_id'] ?? null,
                     'akaun_id' => $filters['akaun_id'] ?? null,
                     'status' => $filters['status'] ?? 'all',
+                    'masjid_id' => $filters['masjid_id'] ?? null,
                 ];
             @endphp
 
             <div class="rounded-xl bg-white p-5 shadow">
                 <form method="GET" action="{{ route('laporan.belanja') }}" class="space-y-4">
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        @if ($is_superadmin)
+                            <div>
+                                <label class="mb-1 block text-xs font-medium text-gray-600">Masjid</label>
+                                <select name="masjid_id"
+                                    class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="">Pilih Masjid</option>
+                                    @foreach ($masjid_list as $masjid)
+                                        <option value="{{ $masjid['id'] }}" @selected((string) ($filters['masjid_id'] ?? '') === (string) $masjid['id'])>
+                                            {{ $masjid['name'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+
                         <div>
                             <label class="mb-1 block text-xs font-medium text-gray-600">Tarikh Dari</label>
                             <input type="date" name="tarikh_dari" value="{{ $filters['tarikh_dari'] }}"
@@ -91,13 +107,19 @@
                     </div>
                 </form>
 
+                @if ($is_superadmin && empty($filters['masjid_id']))
+                    <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        Sila pilih masjid untuk jana laporan belanja yang tepat bagi masjid tersebut.
+                    </div>
+                @endif
+
                 <div class="mt-4 flex flex-wrap items-center gap-2">
-                    <a href="{{ route('laporan.belanja.export.pdf', $exportParams) }}"
-                        class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100">
+                    <a href="{{ !empty($filters['masjid_id']) || !$is_superadmin ? route('laporan.belanja.export.pdf', $exportParams) : '#' }}"
+                        class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100 {{ $is_superadmin && empty($filters['masjid_id']) ? 'pointer-events-none opacity-50' : '' }}">
                         Eksport PDF
                     </a>
-                    <a href="{{ route('laporan.belanja.export.excel', $exportParams) }}"
-                        class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100">
+                    <a href="{{ !empty($filters['masjid_id']) || !$is_superadmin ? route('laporan.belanja.export.excel', $exportParams) : '#' }}"
+                        class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100 {{ $is_superadmin && empty($filters['masjid_id']) ? 'pointer-events-none opacity-50' : '' }}">
                         Eksport Excel
                     </a>
                 </div>
@@ -129,8 +151,9 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="px-4 py-8 text-center text-gray-400">Tiada rekod
-                                            belanja untuk tempoh ini.</td>
+                                        <td colspan="3" class="px-4 py-8 text-center text-gray-400">
+                                            {{ $requires_masjid_selection ? 'Pilih masjid untuk melihat ringkasan belanja.' : 'Tiada rekod belanja untuk tempoh ini.' }}
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -170,8 +193,9 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="px-4 py-8 text-center text-gray-400">Tiada rekod
-                                            belanja untuk tempoh ini.</td>
+                                        <td colspan="3" class="px-4 py-8 text-center text-gray-400">
+                                            {{ $requires_masjid_selection ? 'Pilih masjid untuk melihat ringkasan belanja.' : 'Tiada rekod belanja untuk tempoh ini.' }}
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
