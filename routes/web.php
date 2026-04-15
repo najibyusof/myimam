@@ -20,6 +20,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LaporanBukuTunaiController;
 use App\Http\Controllers\LaporanJumaatController;
 use App\Http\Controllers\LaporanDermaController;
+use App\Http\Controllers\LaporanBelanjaController;
 use App\Http\Controllers\NotificationCenterController;
 use App\Http\Controllers\SidebarBadgeController;
 use App\Http\Controllers\PublicLandingController;
@@ -291,6 +292,18 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
     Route::get('/laporan/derma/export/excel', [LaporanDermaController::class, 'exportExcel'])
         ->name('laporan.derma.export.excel')
         ->middleware('permission:view laporan derma');
+
+    Route::get('/laporan/belanja', [LaporanBelanjaController::class, 'index'])
+        ->name('laporan.belanja')
+        ->middleware('permission:view laporan belanja');
+
+    Route::get('/laporan/belanja/export/pdf', [LaporanBelanjaController::class, 'exportPdf'])
+        ->name('laporan.belanja.export.pdf')
+        ->middleware('permission:view laporan belanja');
+
+    Route::get('/laporan/belanja/export/excel', [LaporanBelanjaController::class, 'exportExcel'])
+        ->name('laporan.belanja.export.excel')
+        ->middleware('permission:view laporan belanja');
 
     Route::middleware('role_or_permission:Admin|sumber_hasil.view|sumber_hasil.create|sumber_hasil.update|sumber_hasil.delete')->group(function () {
         Route::get('/admin/sumber-hasil', [SumberHasilManagementController::class, 'index'])

@@ -60,6 +60,13 @@ return [
     ],
     [
         'group_key' => 'menu.group_laporan',
+        'title_key' => 'menu.laporan_belanja',
+        'route' => ['laporan.belanja'],
+        'icon' => 'chart',
+        'permission' => ['view laporan belanja'],
+    ],
+    [
+        'group_key' => 'menu.group_laporan',
         'title_key' => 'menu.laporan_sedia_ada',
         'route' => ['report.index', 'admin.reporting.index'],
         'icon' => 'chart',

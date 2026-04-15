@@ -10,6 +10,7 @@ return [
     'laporan_buku_tunai' => 'Laporan Buku Tunai',
     'laporan_kutipan_jumaat' => 'Laporan Kutipan Jumaat',
     'laporan_derma' => 'Laporan Derma / Hasil Lain',
+    'laporan_belanja' => 'Laporan Belanja',
     'laporan_sedia_ada' => 'Laporan Sedia Ada',
     'pengguna' => 'Pengurusan Pengguna',
     'roles' => 'Pengurusan Peranan',
