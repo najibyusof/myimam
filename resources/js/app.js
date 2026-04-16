@@ -2,59 +2,38 @@ import "./bootstrap";
 
 import Alpine from "alpinejs";
 import Swal from "sweetalert2";
+import {
+    showToast,
+    showSuccess,
+    showSuccessAutoClose,
+    showError,
+    showConfirm,
+    showConfirmAsync,
+    showLoading,
+} from "./utils/swal";
 
 window.Alpine = Alpine;
-window.Swal = Swal;
+window.Swal = Swal; // kept for any inline blade scripts that use Swal directly
 
-const toast = Swal.mixin({
-    toast: true,
-    position: "top-end",
-    showConfirmButton: false,
-    timer: 2600,
-    timerProgressBar: true,
-    didOpen: (el) => {
-        el.addEventListener("mouseenter", Swal.stopTimer);
-        el.addEventListener("mouseleave", Swal.resumeTimer);
-    },
-});
+// ---------------------------------------------------------------------------
+// Expose helpers globally
+// ---------------------------------------------------------------------------
+window.showToast = showToast;
+window.showSuccess = showSuccess;
+window.showSuccessAutoClose = showSuccessAutoClose;
+window.showError = showError;
+window.showConfirm = showConfirm;
+window.showConfirmAsync = showConfirmAsync;
+window.showLoading = showLoading;
 
-window.swalToast = (icon, text) => {
-    const titles = {
-        success: "Berjaya",
-        error: "Ralat",
-        warning: "Amaran",
-        info: "Makluman",
-        question: "Soalan",
-    };
-    return toast.fire({ icon, title: titles[icon] ?? "", text });
-};
+// Backward-compat aliases (existing blade templates may still call these)
+window.swalToast = showToast;
+window.swalSuccess = (text) => showSuccess(text);
+window.swalShowLoading = showLoading;
 
-window.swalSuccess = (text, title = "Berjaya") =>
-    Swal.fire({
-        icon: "success",
-        title,
-        text,
-        showConfirmButton: false,
-        timer: 1800,
-        timerProgressBar: true,
-    });
-
-window.swalShowLoading = (
-    title = "Memproses...",
-    text = "Sila tunggu sebentar.",
-) => {
-    Swal.fire({
-        title,
-        text,
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        showConfirmButton: false,
-        didOpen: () => {
-            Swal.showLoading();
-        },
-    });
-};
-
+// ---------------------------------------------------------------------------
+// Remove legacy flash banner DOM nodes so toasts don't duplicate them
+// ---------------------------------------------------------------------------
 const removeLegacyFlashBanner = (message, type) => {
     if (!message) {
         return;
@@ -84,6 +63,9 @@ const removeLegacyFlashBanner = (message, type) => {
     }
 };
 
+// ---------------------------------------------------------------------------
+// Convert session flash messages to toasts on page load
+// ---------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
     const flashSuccess = document.body.dataset.flashSuccess || "";
     const flashStatus = document.body.dataset.flashStatus || "";
@@ -91,32 +73,172 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (flashSuccess) {
         removeLegacyFlashBanner(flashSuccess, "success");
-        window.swalToast("success", flashSuccess);
+        showToast("success", flashSuccess);
     }
 
     if (flashStatus) {
         removeLegacyFlashBanner(flashStatus, "success");
-        window.swalToast("success", flashStatus);
+        showToast("success", flashStatus);
     }
 
     if (flashError) {
         removeLegacyFlashBanner(flashError, "error");
-        window.swalToast("error", flashError);
+        showToast("error", flashError);
     }
 });
 
-const confirmDialogDefaults = {
-    title: "Adakah anda pasti?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Ya, teruskan",
-    cancelButtonText: "Batal",
-    confirmButtonColor: "#2563eb",
-    cancelButtonColor: "#6b7280",
-    reverseButtons: true,
-    focusCancel: true,
+// ---------------------------------------------------------------------------
+// Global async action handler
+// Supports:
+// - data-async-url + data-async-method
+// - data-async-delete-url (backward compatible, method defaults to DELETE)
+// ---------------------------------------------------------------------------
+const resolveCsrfToken = (button) => {
+    const formToken = button
+        .closest("form")
+        ?.querySelector('input[name="_token"]')?.value;
+    if (formToken) {
+        return formToken;
+    }
+
+    return document.querySelector('meta[name="csrf-token"]')?.content ?? "";
 };
 
+document.addEventListener("click", async (event) => {
+    const button = event.target.closest(
+        "[data-async-url], [data-async-delete-url]",
+    );
+    if (!(button instanceof HTMLButtonElement)) {
+        return;
+    }
+
+    event.preventDefault();
+
+    if (button.dataset.deleting === "true") {
+        return;
+    }
+
+    const actionUrl = button.dataset.asyncUrl || button.dataset.asyncDeleteUrl;
+    if (!actionUrl) {
+        return;
+    }
+
+    const actionMethod = (
+        button.dataset.asyncMethod ||
+        (button.dataset.asyncDeleteUrl ? "DELETE" : "POST")
+    ).toUpperCase();
+
+    const confirmResult = await showConfirmAsync(
+        {
+            title: button.dataset.confirmTitle || "Adakah anda pasti?",
+            text:
+                button.dataset.confirmText ||
+                "Tindakan ini tidak boleh dibatalkan.",
+            confirmText: button.dataset.confirmButton || "Ya, padam",
+            processingError:
+                button.dataset.processingError ||
+                "Ralat semasa memproses tindakan.",
+        },
+        async () => {
+            const response = await fetch(actionUrl, {
+                method: actionMethod,
+                headers: {
+                    "X-CSRF-TOKEN": resolveCsrfToken(button),
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Delete request failed");
+            }
+
+            return true;
+        },
+    );
+
+    if (!confirmResult.isConfirmed) {
+        return;
+    }
+
+    button.disabled = true;
+    button.dataset.deleting = "true";
+
+    try {
+        Swal.close();
+
+        const successMessage =
+            button.dataset.successMessage || "Rekod berjaya dipadam.";
+        const successRedirectUrl = button.dataset.successRedirectUrl || "";
+        if (successRedirectUrl) {
+            await showSuccessAutoClose(successMessage, {
+                redirectUrl: successRedirectUrl,
+                timer: Number(button.dataset.successRedirectDelay || 1400),
+            });
+            return;
+        }
+
+        await showToast("success", successMessage);
+
+        const removeSelectors = (button.dataset.removeSelector || "")
+            .split("|")
+            .map((s) => s.trim())
+            .filter(Boolean);
+        for (const selector of removeSelectors) {
+            const node = document.querySelector(selector);
+            if (node) {
+                node.remove();
+            }
+        }
+
+        const showSelectors = (button.dataset.showSelector || "")
+            .split("|")
+            .map((s) => s.trim())
+            .filter(Boolean);
+        for (const selector of showSelectors) {
+            const node = document.querySelector(selector);
+            if (node) {
+                node.style.display = "";
+            }
+        }
+
+        const resetInputSelectors = (button.dataset.resetFileInputs || "")
+            .split("|")
+            .map((s) => s.trim())
+            .filter(Boolean);
+        for (const selector of resetInputSelectors) {
+            const input = document.querySelector(selector);
+            if (input instanceof HTMLInputElement) {
+                input.value = "";
+            }
+        }
+
+        const resetLabelSelector = button.dataset.resetLabelSelector;
+        if (resetLabelSelector) {
+            const labelNode = document.querySelector(resetLabelSelector);
+            if (labelNode) {
+                labelNode.textContent =
+                    button.dataset.resetLabelText ||
+                    labelNode.textContent ||
+                    "";
+            }
+        }
+    } catch (error) {
+        if (Swal.isVisible()) {
+            Swal.close();
+        }
+
+        const errorMessage =
+            button.dataset.errorMessage || "Ralat semasa memadam rekod.";
+        await showError(errorMessage);
+
+        button.disabled = false;
+        button.dataset.deleting = "false";
+    }
+});
+
+// ---------------------------------------------------------------------------
+// Global form confirm interceptor (data-confirm attribute)
+// ---------------------------------------------------------------------------
 document.addEventListener(
     "submit",
     (event) => {
@@ -133,16 +255,13 @@ document.addEventListener(
 
         event.preventDefault();
 
-        Swal.fire({
-            ...confirmDialogDefaults,
-            text: message,
-        }).then((result) => {
+        showConfirm({ text: message }).then((result) => {
             if (!result.isConfirmed) {
                 return;
             }
 
             form.dataset.confirmed = "true";
-            window.swalShowLoading();
+            showLoading();
             form.submit();
         });
     },

@@ -106,22 +106,38 @@
 
                                                     @if ($masjid->status !== 'suspended')
                                                         <form action="{{ route('admin.masjid.suspend', $masjid) }}"
-                                                            method="POST" class="inline"
-                                                            data-confirm="Gantung tenant ini?">
+                                                            method="POST" class="inline">
                                                             @csrf
                                                             @method('PATCH')
-                                                            <button type="submit"
+                                                            <button type="button"
+                                                                data-async-url="{{ route('admin.masjid.suspend', $masjid) }}"
+                                                                data-async-method="PATCH"
+                                                                data-confirm-title="Adakah anda pasti?"
+                                                                data-confirm-text="Gantung tenant ini?"
+                                                                data-confirm-button="Ya, gantung"
+                                                                data-success-message="Tenant berjaya digantung."
+                                                                data-error-message="Ralat semasa menggantung tenant."
+                                                                data-success-redirect-url="{{ request()->fullUrl() }}"
+                                                                data-success-redirect-delay="1200"
                                                                 class="text-amber-600 hover:text-amber-900">
                                                                 Gantung
                                                             </button>
                                                         </form>
                                                     @else
                                                         <form action="{{ route('admin.masjid.activate', $masjid) }}"
-                                                            method="POST" class="inline"
-                                                            data-confirm="Aktifkan semula tenant ini?">
+                                                            method="POST" class="inline">
                                                             @csrf
                                                             @method('PATCH')
-                                                            <button type="submit"
+                                                            <button type="button"
+                                                                data-async-url="{{ route('admin.masjid.activate', $masjid) }}"
+                                                                data-async-method="PATCH"
+                                                                data-confirm-title="Adakah anda pasti?"
+                                                                data-confirm-text="Aktifkan semula tenant ini?"
+                                                                data-confirm-button="Ya, aktifkan"
+                                                                data-success-message="Tenant berjaya diaktifkan semula."
+                                                                data-error-message="Ralat semasa mengaktifkan tenant."
+                                                                data-success-redirect-url="{{ request()->fullUrl() }}"
+                                                                data-success-redirect-delay="1200"
                                                                 class="text-green-600 hover:text-green-900">
                                                                 Aktifkan
                                                             </button>
@@ -131,10 +147,20 @@
 
                                                 @can('masjid.delete')
                                                     <form action="{{ route('admin.masjid.destroy', $masjid) }}"
-                                                        method="POST" class="inline" data-confirm="Adakah anda pasti?">
+                                                        method="POST" class="inline">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="text-red-600 hover:text-red-900">
+                                                        <button type="button"
+                                                            data-async-url="{{ route('admin.masjid.destroy', $masjid) }}"
+                                                            data-async-method="DELETE"
+                                                            data-confirm-title="Adakah anda pasti?"
+                                                            data-confirm-text="Padam tenant ini? Tindakan ini tidak boleh dibatalkan."
+                                                            data-confirm-button="Ya, padam"
+                                                            data-success-message="Tenant berjaya dipadam."
+                                                            data-error-message="Ralat semasa memadam tenant."
+                                                            data-success-redirect-url="{{ request()->fullUrl() }}"
+                                                            data-success-redirect-delay="1200"
+                                                            class="text-red-600 hover:text-red-900">
                                                             Padam
                                                         </button>
                                                     </form>

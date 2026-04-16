@@ -104,7 +104,8 @@
         <x-input-label :value="__('belanja.form.attachment_optional')" />
 
         @if ($belanjaRecord?->bukti_fail)
-            <div class="mt-2 flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+            <div id="existing-attachment-container"
+                class="mt-2 flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
                 <svg class="h-5 w-5 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -114,7 +115,17 @@
                     class="flex-1 truncate text-indigo-600 hover:underline">
                     {{ basename($belanjaRecord->bukti_fail) }}
                 </a>
-                <button type="button" onclick="deleteAttachment({{ $belanjaRecord->id }}, this)"
+                <button type="button"
+                    data-async-delete-url="{{ route('admin.belanja.deleteAttachment', $belanjaRecord) }}"
+                    data-confirm-title="Adakah anda pasti?"
+                    data-confirm-text="{{ __('belanja.confirm_delete_attachment') }}" data-confirm-button="Ya, padam"
+                    data-success-message="{{ __('belanja.success_delete_attachment') }}"
+                    data-error-message="{{ __('belanja.error_delete_attachment') }}"
+                    data-remove-selector="#existing-attachment-container|#existing-attachment-hint"
+                    data-show-selector="#upload-buttons-container"
+                    data-reset-file-inputs="#bukti_fail_input|#bukti_fail_camera_input"
+                    data-reset-label-selector="#file-label"
+                    data-reset-label-text="{{ __('belanja.form.choose_file') }}"
                     class="ml-auto flex items-center gap-1.5 rounded-md bg-red-50 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-100 hover:text-red-700">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -123,7 +134,8 @@
                     <span>{{ __('belanja.form.remove_attachment') }}</span>
                 </button>
             </div>
-            <p class="mt-1 text-xs text-slate-500">{{ __('belanja.form.replace_attachment_hint') }}</p>
+            <p id="existing-attachment-hint" class="mt-1 text-xs text-slate-500">
+                {{ __('belanja.form.replace_attachment_hint') }}</p>
         @endif
 
         <div id="upload-buttons-container" class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center"
@@ -137,7 +149,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                     </svg>
-                    <span id="file-label">{{ __('belanja.form.choose_file') }}</span>
+                    <span id="file-label"
+                        data-default-text="{{ __('belanja.form.choose_file') }}">{{ __('belanja.form.choose_file') }}</span>
                 </div>
                 <input id="bukti_fail_input" type="file" name="bukti_fail" accept=".jpg,.jpeg,.png,.pdf"
                     class="sr-only" onchange="handleFileSelect(this)">
@@ -202,62 +215,6 @@
             const container = document.getElementById('upload-buttons-container');
             if (container) {
                 container.style.display = 'none';
-            }
-        }
-    }
-
-    async function deleteAttachment(belanjaId, triggerButton) {
-        const result = await Swal.fire({
-            title: 'Adakah anda pasti?',
-            icon: 'warning',
-            text: '{{ __('belanja.confirm_delete_attachment') }}',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, teruskan',
-            cancelButtonText: 'Batal',
-            confirmButtonColor: '#2563eb',
-            cancelButtonColor: '#6b7280',
-            reverseButtons: true,
-            focusCancel: true,
-        });
-
-        if (!result.isConfirmed) {
-            return;
-        }
-
-        const button = triggerButton || event?.target?.closest('button');
-        if (button) {
-            button.disabled = true;
-        }
-
-        window.swalShowLoading();
-
-        try {
-            const response = await fetch(`/admin/belanja/${belanjaId}/attachment/delete`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to delete attachment');
-            }
-
-            Swal.close();
-            await window.swalToast('success', '{{ __('belanja.success_delete_attachment') }}');
-            window.location.reload();
-        } catch (error) {
-            Swal.close();
-            await Swal.fire({
-                title: 'Ralat',
-                icon: 'error',
-                text: '{{ __('belanja.error_delete_attachment') }}',
-                confirmButtonText: 'OK',
-            });
-
-            if (button) {
-                button.disabled = false;
             }
         }
     }
