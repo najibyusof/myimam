@@ -4,7 +4,7 @@
 @endphp
 
 <div class="grid gap-4 md:grid-cols-2">
-    @if (auth()->user()->hasRole('Admin'))
+    @if (auth()->user()->hasRole('Superadmin'))
         <div class="md:col-span-2">
             <x-input-label for="id_masjid" :value="__('akaun.form.masjid')" />
             <select id="id_masjid" name="id_masjid"

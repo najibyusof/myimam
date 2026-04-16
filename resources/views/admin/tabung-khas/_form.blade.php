@@ -10,7 +10,7 @@
     </div>
 
     <div class="grid gap-6 md:grid-cols-2">
-        @if (auth()->user()->hasRole('Admin'))
+        @if (auth()->user()->hasRole('Superadmin'))
             <div>
                 <x-input-label for="id_masjid" :value="__('tabung_khas.form.masjid')" />
                 <select id="id_masjid" name="id_masjid"
