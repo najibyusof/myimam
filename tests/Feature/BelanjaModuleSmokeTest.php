@@ -37,8 +37,18 @@ class BelanjaModuleSmokeTest extends TestCase
         ]);
         $role->syncPermissions($permissions);
 
-        $masjidA = Masjid::query()->create(['nama' => 'Masjid Belanja A']);
-        $masjidB = Masjid::query()->create(['nama' => 'Masjid Belanja B']);
+        $masjidA = Masjid::query()->create([
+            'nama' => 'Masjid Belanja A',
+            'status' => 'active',
+            'subscription_status' => 'active',
+            'subscription_expiry' => now()->addDays(30),
+        ]);
+        $masjidB = Masjid::query()->create([
+            'nama' => 'Masjid Belanja B',
+            'status' => 'active',
+            'subscription_status' => 'active',
+            'subscription_expiry' => now()->addDays(30),
+        ]);
 
         $bendahari = User::query()->create([
             'name' => 'Bendahari Belanja',
@@ -137,21 +147,21 @@ class BelanjaModuleSmokeTest extends TestCase
         $this->actingAs($bendahari)
             ->get(route('admin.belanja.index'))
             ->assertOk()
-            ->assertSee('RM 200.00')
-            ->assertSee('RM 450.00')
-            ->assertDontSee('RM 999.00');
+            ->assertSeeText('200.00')
+            ->assertSeeText('450.00')
+            ->assertDontSeeText('999.00');
 
         $this->actingAs($bendahari)
             ->get(route('admin.belanja.index', ['status' => 'draft']))
             ->assertOk()
-            ->assertSee('RM 200.00')
-            ->assertDontSee('RM 450.00');
+            ->assertSeeText('200.00')
+            ->assertDontSeeText('450.00');
 
         $this->actingAs($bendahari)
             ->get(route('admin.belanja.index', ['baucar_id' => $baucarA->id]))
             ->assertOk()
-            ->assertSee('RM 200.00')
-            ->assertDontSee('RM 450.00');
+            ->assertSeeText('200.00')
+            ->assertDontSeeText('450.00');
 
         $this->actingAs($bendahari)
             ->post(route('admin.belanja.store'), [
@@ -161,7 +171,7 @@ class BelanjaModuleSmokeTest extends TestCase
                 'id_akaun' => $akaunA->id,
                 'id_kategori_belanja' => $kategoriA->id,
                 'id_baucar' => $baucarA->id,
-                'is_submitted' => false,
+                'submit_action' => 'draft',
                 'penerima' => 'Pembekal A',
                 'catatan' => 'Belanja baharu ujian',
             ])
@@ -180,7 +190,7 @@ class BelanjaModuleSmokeTest extends TestCase
                 'id_akaun' => $akaunA->id,
                 'id_kategori_belanja' => $kategoriA->id,
                 'id_baucar' => $baucarA->id,
-                'is_submitted' => true,
+                'submit_action' => 'submitted',
                 'penerima' => 'Vendor Utiliti',
                 'catatan' => 'Belanja draf dikemaskini',
             ])
@@ -199,6 +209,6 @@ class BelanjaModuleSmokeTest extends TestCase
         $this->actingAs($bendahari)
             ->get(route('admin.belanja.index'))
             ->assertOk()
-            ->assertDontSee('RM 450.00');
+            ->assertDontSeeText('450.00');
     }
 }

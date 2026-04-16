@@ -7,7 +7,7 @@ return [
     'add_title' => 'Tambah Rekod Belanja',
     'add_subtitle' => 'Rekod perbelanjaan mengikut tarikh, amaun, akaun, kategori, dan pautan baucar jika tersedia.',
     'edit_title' => 'Kemaskini Rekod Belanja',
-    'edit_subtitle' => 'Laraskan status draf atau submitted, akaun, kategori, amaun, dan pautan baucar bagi rekod belanja ini.',
+    'edit_subtitle' => 'Laraskan rekod belanja dan simpan sebagai draf atau submitted mengikut tindakan butang.',
 
     'stats' => [
         'active' => 'Aktif',
@@ -52,9 +52,10 @@ return [
         'voucher_optional' => 'Baucar (Opsyenal)',
         'no_voucher' => 'Tiada baucar',
         'recipient_optional' => 'Penerima (Opsyenal)',
-        'submitted_toggle' => 'Tandakan sebagai submitted',
         'notes_optional' => 'Catatan (Opsyenal)',
+        'current_status' => 'Status semasa',
         'save' => 'Simpan',
+        'save_draft' => 'Simpan Draf',
         'back' => 'Kembali',
     ],
 

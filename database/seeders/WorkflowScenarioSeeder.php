@@ -45,9 +45,8 @@ class WorkflowScenarioSeeder extends Seeder
         $jumaatSource = SumberHasil::query()->where('id_masjid', $masjid->id)->where('kod', 'DERMA-JMT')->firstOrFail();
         $onlineSource = SumberHasil::query()->where('id_masjid', $masjid->id)->where('kod', 'ONLINE')->firstOrFail();
         $fund = TabungKhas::query()->where('id_masjid', $masjid->id)->where('nama_tabung', 'Tabung Operasi')->firstOrFail();
-        $program = ProgramMasjid::query()->where('id_masjid', $masjid->id)->where('nama_program', 'Kelas Tafsir Subuh')->firstOrFail();
         $financeOfficer = User::query()->where('id_masjid', $masjid->id)
-            ->whereHas('roles', fn ($query) => $query->where('name', 'FinanceOfficer'))
+            ->whereHas('roles', fn($query) => $query->where('name', 'FinanceOfficer'))
             ->orderBy('id')
             ->firstOrFail();
 
@@ -65,8 +64,8 @@ class WorkflowScenarioSeeder extends Seeder
                     'amaun_tunai' => $jumaatAmount,
                     'amaun_online' => 0,
                     'jumlah' => $jumaatAmount,
-                    'id_tabung_khas' => $fund->id,
-                    'id_program' => $program->id,
+                    'id_tabung_khas' => null,
+                    'id_program' => null,
                     'jenis_jumaat' => 'biasa',
                     'catatan' => 'Kutipan Jumaat mingguan',
                     'created_by' => $financeOfficer->id,
@@ -102,11 +101,11 @@ class WorkflowScenarioSeeder extends Seeder
         $program = ProgramMasjid::query()->where('id_masjid', $masjid->id)->where('nama_program', 'Iftar Jamaie')->firstOrFail();
 
         $creator = User::query()->where('id_masjid', $masjid->id)
-            ->whereHas('roles', fn ($query) => $query->where('name', 'FinanceOfficer'))
+            ->whereHas('roles', fn($query) => $query->where('name', 'FinanceOfficer'))
             ->orderBy('id')
             ->firstOrFail();
-        $approver = User::query()->whereHas('roles', fn ($query) => $query->where('name', 'Manager'))->orderBy('id')->first()
-            ?? User::query()->whereHas('roles', fn ($query) => $query->where('name', 'Admin'))->orderBy('id')->firstOrFail();
+        $approver = User::query()->whereHas('roles', fn($query) => $query->where('name', 'Manager'))->orderBy('id')->first()
+            ?? User::query()->whereHas('roles', fn($query) => $query->where('name', 'Admin'))->orderBy('id')->firstOrFail();
 
         $approvedVoucher = BaucarBayaran::query()->updateOrCreate(
             ['id_masjid' => $masjid->id, 'no_baucar' => sprintf('BV-%02d-%s-001', $masjid->id, now()->format('Ym'))],
@@ -114,7 +113,7 @@ class WorkflowScenarioSeeder extends Seeder
                 'tarikh' => now()->subDays(10)->toDateString(),
                 'id_akaun' => $bankAccount->id,
                 'kaedah' => 'bank',
-                'no_rujukan' => 'IBG-'.$masjid->id.'-001',
+                'no_rujukan' => 'IBG-' . $masjid->id . '-001',
                 'jumlah' => 3600 + ($index * 450),
                 'catatan' => 'Pembayaran utiliti dan vendor kebersihan bulanan',
                 'status' => 'LULUS',
@@ -137,7 +136,7 @@ class WorkflowScenarioSeeder extends Seeder
                 'id_tabung_khas' => null,
                 'id_program' => null,
                 'catatan' => 'Bil utiliti bulanan',
-                'bukti_fail' => 'bukti/utiliti-'.$masjid->id.'.pdf',
+                'bukti_fail' => 'bukti/utiliti-' . $masjid->id . '.pdf',
                 'created_by' => $creator->id,
                 'status' => 'LULUS',
                 'id_baucar' => $approvedVoucher->id,
@@ -221,7 +220,7 @@ class WorkflowScenarioSeeder extends Seeder
         $from = Akaun::query()->where('id_masjid', $masjid->id)->where('nama_akaun', 'Bank Operasi')->firstOrFail();
         $to = Akaun::query()->where('id_masjid', $masjid->id)->where('nama_akaun', 'Bank Program Komuniti')->firstOrFail();
         $creator = User::query()->where('id_masjid', $masjid->id)
-            ->whereHas('roles', fn ($query) => $query->where('name', 'FinanceOfficer'))
+            ->whereHas('roles', fn($query) => $query->where('name', 'FinanceOfficer'))
             ->orderBy('id')
             ->firstOrFail();
 
@@ -243,11 +242,11 @@ class WorkflowScenarioSeeder extends Seeder
     private function seedActivityAndNotificationWorkflow(Masjid $masjid, int $index): void
     {
         $financeOfficer = User::query()->where('id_masjid', $masjid->id)
-            ->whereHas('roles', fn ($query) => $query->where('name', 'FinanceOfficer'))
+            ->whereHas('roles', fn($query) => $query->where('name', 'FinanceOfficer'))
             ->orderBy('id')
             ->firstOrFail();
-        $manager = User::query()->whereHas('roles', fn ($query) => $query->where('name', 'Manager'))->orderBy('id')->first()
-            ?? User::query()->whereHas('roles', fn ($query) => $query->where('name', 'Admin'))->orderBy('id')->firstOrFail();
+        $manager = User::query()->whereHas('roles', fn($query) => $query->where('name', 'Manager'))->orderBy('id')->first()
+            ?? User::query()->whereHas('roles', fn($query) => $query->where('name', 'Admin'))->orderBy('id')->firstOrFail();
 
         $activities = [
             ['jenis' => 'CREATE', 'modul' => 'Hasil', 'aksi' => 'rekod kutipan Jumaat', 'butiran' => 'Kutipan mingguan berjaya direkodkan', 'user_id' => $financeOfficer->id, 'created_at' => now()->subHours(18)],

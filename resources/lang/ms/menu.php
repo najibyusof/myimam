@@ -17,10 +17,17 @@ return [
     'roles' => 'Pengurusan Peranan',
     'langganan' => 'Pengurusan Langganan',
 
+    'sumber_hasil' => 'Sumber Hasil',
+    'tabung_khas' => 'Tabung Khas',
+    'kategori_belanja' => 'Kategori Belanja',
+    'pindahan_akaun' => 'Pindahan Akaun',
+    'running_no' => 'Nombor Rujukan',
+
     'group_general' => 'Umum',
     'group_finance' => 'Kewangan',
     'group_laporan' => 'Laporan',
     'group_administration' => 'Pentadbiran',
+    'group_superadmin' => 'Super Admin',
 
     'brand' => 'Imam',
     'panel' => 'Panel Dalaman',

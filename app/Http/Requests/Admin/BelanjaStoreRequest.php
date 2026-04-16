@@ -20,7 +20,7 @@ class BelanjaStoreRequest extends FormRequest
             'id_akaun' => ['required', 'integer', 'exists:akaun,id'],
             'id_kategori_belanja' => ['required', 'integer', 'exists:kategori_belanja,id'],
             'id_baucar' => ['nullable', 'integer', 'exists:baucar_bayaran,id'],
-            'is_submitted' => ['nullable', 'boolean'],
+            'submit_action' => ['nullable', 'in:draft,submitted'],
             'penerima' => ['nullable', 'string', 'max:190'],
             'catatan' => ['nullable', 'string'],
         ];
@@ -30,7 +30,9 @@ class BelanjaStoreRequest extends FormRequest
     {
         $this->merge([
             'amaun' => is_numeric($this->input('amaun')) ? (float) $this->input('amaun') : $this->input('amaun'),
-            'is_submitted' => $this->boolean('is_submitted'),
+            'submit_action' => in_array($this->input('submit_action'), ['draft', 'submitted'], true)
+                ? $this->input('submit_action')
+                : 'submitted',
             'penerima' => trim((string) $this->input('penerima')) ?: null,
             'catatan' => trim((string) $this->input('catatan')) ?: null,
             'id_baucar' => $this->filled('id_baucar') ? $this->input('id_baucar') : null,

@@ -37,8 +37,18 @@ class HasilModuleSmokeTest extends TestCase
         ]);
         $role->syncPermissions($permissions);
 
-        $masjidA = Masjid::query()->create(['nama' => 'Masjid Hasil A']);
-        $masjidB = Masjid::query()->create(['nama' => 'Masjid Hasil B']);
+        $masjidA = Masjid::query()->create([
+            'nama' => 'Masjid Hasil A',
+            'status' => 'active',
+            'subscription_status' => 'active',
+            'subscription_expiry' => now()->addDays(30),
+        ]);
+        $masjidB = Masjid::query()->create([
+            'nama' => 'Masjid Hasil B',
+            'status' => 'active',
+            'subscription_status' => 'active',
+            'subscription_expiry' => now()->addDays(30),
+        ]);
 
         $bendahari = User::query()->create([
             'name' => 'Bendahari Hasil',
@@ -141,27 +151,28 @@ class HasilModuleSmokeTest extends TestCase
         $this->actingAs($bendahari)
             ->get(route('admin.hasil.index'))
             ->assertOk()
-            ->assertSee('RM 500.00')
-            ->assertSee('RM 300.00')
-            ->assertDontSee('RM 999.00');
+            ->assertSeeText('500.00')
+            ->assertSeeText('300.00')
+            ->assertSee('Tambah Kutipan Jumaat')
+            ->assertDontSeeText('999.00');
 
         $this->actingAs($bendahari)
             ->get(route('admin.hasil.index', ['from' => '2026-04-09', 'to' => '2026-04-10']))
             ->assertOk()
-            ->assertSee('RM 500.00')
-            ->assertDontSee('RM 300.00');
+            ->assertSeeText('500.00')
+            ->assertDontSeeText('300.00');
 
         $this->actingAs($bendahari)
             ->get(route('admin.hasil.index', ['akaun_id' => $akaunB->id]))
             ->assertOk()
-            ->assertSee('RM 300.00')
-            ->assertDontSee('RM 500.00');
+            ->assertSeeText('300.00')
+            ->assertDontSeeText('500.00');
 
         $this->actingAs($bendahari)
             ->get(route('admin.hasil.index', ['jumaat' => 'yes']))
             ->assertOk()
-            ->assertSee('RM 500.00')
-            ->assertDontSee('RM 300.00');
+            ->assertSeeText('500.00')
+            ->assertDontSeeText('300.00');
 
         $this->actingAs($bendahari)
             ->post(route('admin.hasil.store'), [
@@ -171,7 +182,7 @@ class HasilModuleSmokeTest extends TestCase
                 'id_akaun' => $akaunA->id,
                 'id_sumber_hasil' => $sumberA->id,
                 'id_tabung_khas' => $tabungA->id,
-                'is_jumaat' => false,
+                'is_jumaat' => true,
                 'catatan' => 'Hasil baharu ujian',
             ])
             ->assertRedirect();
@@ -180,6 +191,26 @@ class HasilModuleSmokeTest extends TestCase
         $this->assertNotNull($created);
         $this->assertSame($masjidA->id, $created->id_masjid);
         $this->assertSame('425.50', (string) $created->jumlah);
+        $this->assertNull($created->jenis_jumaat);
+
+        $this->actingAs($bendahari)
+            ->post(route('admin.hasil.jumaat.store'), [
+                'id_masjid' => $masjidA->id,
+                'tarikh' => '2026-04-15',
+                'amaun' => 320,
+                'id_akaun' => $akaunA->id,
+                'is_jumaat' => false,
+                'catatan' => 'Kutipan Jumaat baharu ujian',
+            ])
+            ->assertRedirect();
+
+        $createdJumaat = Hasil::query()->where('catatan', 'Kutipan Jumaat baharu ujian')->first();
+        $this->assertNotNull($createdJumaat);
+        $this->assertSame('biasa', $createdJumaat->jenis_jumaat);
+
+        $this->actingAs($bendahari)
+            ->get(route('admin.hasil.edit', $jumaatRecord))
+            ->assertRedirect(route('admin.hasil.jumaat.edit', $jumaatRecord));
 
         $this->actingAs($bendahari)
             ->put(route('admin.hasil.update', $regularRecord), [
@@ -189,13 +220,29 @@ class HasilModuleSmokeTest extends TestCase
                 'id_akaun' => $akaunB->id,
                 'id_sumber_hasil' => $sumberB->id,
                 'id_tabung_khas' => null,
-                'is_jumaat' => false,
+                'is_jumaat' => true,
                 'catatan' => 'Kemaskini hasil biasa',
             ])
             ->assertRedirect();
 
         $this->assertSame('650.00', (string) $regularRecord->fresh()->jumlah);
         $this->assertSame('Kemaskini hasil biasa', $regularRecord->fresh()->catatan);
+        $this->assertNull($regularRecord->fresh()->jenis_jumaat);
+
+        $this->actingAs($bendahari)
+            ->put(route('admin.hasil.jumaat.update', $jumaatRecord), [
+                'id_masjid' => $masjidA->id,
+                'tarikh' => '2026-04-10',
+                'amaun' => 700,
+                'id_akaun' => $akaunA->id,
+                'is_jumaat' => false,
+                'catatan' => 'Kemaskini kutipan Jumaat',
+            ])
+            ->assertRedirect();
+
+        $this->assertSame('700.00', (string) $jumaatRecord->fresh()->jumlah);
+        $this->assertSame('biasa', $jumaatRecord->fresh()->jenis_jumaat);
+        $this->assertNull($jumaatRecord->fresh()->id_tabung_khas);
 
         $this->actingAs($bendahari)
             ->delete(route('admin.hasil.destroy', $jumaatRecord))

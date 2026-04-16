@@ -57,18 +57,27 @@ class LaporanJumaatController extends Controller
             $jenisPaparan = 'ringkasan_bulanan';
         }
 
+        $bulan = (int) $request->query('bulan', 0);
+        if ($bulan < 1 || $bulan > 12) {
+            $bulan = 0;
+        }
+
         $ringkasan = $this->buildRingkasanBulanan($tahun, $idMasjid, $isSuperadmin);
         $jumlahSetahun = (float) $ringkasan->sum('jumlah');
 
         $senariJumaat = collect();
         if ($jenisPaparan === 'senarai_jumaat') {
-            $senariJumaat = $this->buildSenariJumaat($tahun, $idMasjid, $isSuperadmin);
+            $senariJumaat = $this->buildSenariJumaat($tahun, $bulan, $idMasjid, $isSuperadmin);
         }
+
+        $namaBulan = $this->namaBulan();
 
         return [
             'filters' => [
                 'tahun' => $tahun,
                 'jenis_paparan' => $jenisPaparan,
+                'bulan' => $bulan,
+                'bulan_nama' => $bulan > 0 ? $namaBulan[$bulan] : null,
             ],
             'rows' => $ringkasan,
             'jumlah_setahun' => $jumlahSetahun,
@@ -140,12 +149,16 @@ class LaporanJumaatController extends Controller
      * 
      * @return Collection<int, array<string, mixed>>
      */
-    private function buildSenariJumaat(int $tahun, int $idMasjid, bool $isSuperadmin): Collection
+    private function buildSenariJumaat(int $tahun, int $bulan, int $idMasjid, bool $isSuperadmin): Collection
     {
         $query = Hasil::query()
             ->when($isSuperadmin, fn($builder) => $builder->withoutTenantScope())
             ->jumaat()
             ->whereYear('tarikh', $tahun);
+
+        if ($bulan > 0) {
+            $query->whereMonth('tarikh', $bulan);
+        }
 
         if (!$isSuperadmin) {
             $query->byMasjid($idMasjid);

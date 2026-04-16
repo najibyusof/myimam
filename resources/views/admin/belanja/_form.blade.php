@@ -92,13 +92,6 @@
         </div>
     </div>
 
-    <label class="inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-        <input type="checkbox" name="is_submitted" value="1"
-            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-            @checked(old('is_submitted', $belanjaRecord?->status === 'LULUS'))>
-        <span class="text-sm text-slate-700">{{ __('belanja.form.submitted_toggle') }}</span>
-    </label>
-
     <div>
         <x-input-label for="catatan" :value="__('belanja.form.notes_optional')" />
         <textarea id="catatan" name="catatan" rows="3"
@@ -106,8 +99,25 @@
         <x-input-error class="mt-2" :messages="$errors->get('catatan')" />
     </div>
 
+    @if ($belanjaRecord)
+        <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+            <span class="font-medium">{{ __('belanja.form.current_status') }}:</span>
+            <span
+                class="ml-2 inline-flex rounded-full px-2 py-1 text-xs font-medium {{ $belanjaRecord->status === 'DRAF' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800' }}">
+                {{ $belanjaRecord->status === 'DRAF' ? __('belanja.table.draft') : __('belanja.table.submitted') }}
+            </span>
+        </div>
+    @endif
+
     <div class="flex items-center gap-3">
-        <x-primary-button>{{ __('belanja.form.save') }}</x-primary-button>
+        <button type="submit" name="submit_action" value="submitted"
+            class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
+            {{ __('belanja.form.save') }}
+        </button>
+        <button type="submit" name="submit_action" value="draft"
+            class="inline-flex items-center rounded-md border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 shadow-sm hover:bg-amber-100">
+            {{ __('belanja.form.save_draft') }}
+        </button>
         <a href="{{ route('admin.belanja.index') }}"
             class="inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
             {{ __('belanja.form.back') }}

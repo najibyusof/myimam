@@ -1,13 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-3">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('hasil.edit_title') }}</h2>
-            <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                {{ __('hasil.badge.regular') }}
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('hasil.edit_jumaat_title') }}</h2>
+            <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+                {{ __('hasil.badge.jumaat') }}
             </span>
         </div>
         <div>
-            <p class="mt-1 text-sm text-gray-500">{{ __('hasil.edit_subtitle') }}</p>
+            <p class="mt-1 text-sm text-gray-500">{{ __('hasil.edit_jumaat_subtitle') }}</p>
         </div>
     </x-slot>
 
@@ -21,12 +21,12 @@
                 <div class="rounded-md bg-green-50 p-3 text-sm text-green-800">{{ session('status') }}</div>
             @endif
 
-            <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="overflow-hidden rounded-3xl border border-amber-200 bg-white p-6 shadow-sm">
                 @include('admin.hasil._form', [
-                    'action' => route('admin.hasil.update', $hasilRecord),
+                    'action' => route('admin.hasil.jumaat.update', $hasilRecord),
                     'method' => 'PUT',
                     'hasilRecord' => $hasilRecord,
-                    'formMode' => 'regular',
+                    'formMode' => 'jumaat',
                     'masjidOptions' => $masjidOptions,
                     'akaunOptions' => $akaunOptions,
                     'sumberHasilOptions' => $sumberHasilOptions,

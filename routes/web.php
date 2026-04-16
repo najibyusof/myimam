@@ -167,12 +167,20 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
         Route::post('/admin/hasil', [HasilManagementController::class, 'store'])
             ->middleware('permission:hasil.create')
             ->name('admin.hasil.store');
+        Route::get('/admin/hasil/kutipan-jumaat/create', [HasilManagementController::class, 'createJumaat'])
+            ->name('admin.hasil.jumaat.create');
+        Route::post('/admin/hasil/kutipan-jumaat', [HasilManagementController::class, 'storeJumaat'])
+            ->name('admin.hasil.jumaat.store');
         Route::get('/admin/hasil/{hasil}/edit', [HasilManagementController::class, 'edit'])
             ->middleware('permission:hasil.update')
             ->name('admin.hasil.edit');
         Route::put('/admin/hasil/{hasil}', [HasilManagementController::class, 'update'])
             ->middleware('permission:hasil.update')
             ->name('admin.hasil.update');
+        Route::get('/admin/hasil/kutipan-jumaat/{hasil}/edit', [HasilManagementController::class, 'editJumaat'])
+            ->name('admin.hasil.jumaat.edit');
+        Route::put('/admin/hasil/kutipan-jumaat/{hasil}', [HasilManagementController::class, 'updateJumaat'])
+            ->name('admin.hasil.jumaat.update');
         Route::delete('/admin/hasil/{hasil}', [HasilManagementController::class, 'destroy'])
             ->middleware('permission:hasil.delete')
             ->name('admin.hasil.destroy');

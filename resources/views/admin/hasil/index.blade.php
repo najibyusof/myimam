@@ -6,16 +6,26 @@
                 <p class="mt-1 text-sm text-gray-500">{{ __('hasil.management_subtitle') }}</p>
             </div>
             @can('create', \App\Models\Hasil::class)
-                <a href="{{ route('admin.hasil.create') }}"
-                    class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
-                    {{ __('hasil.add') }}
-                </a>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('admin.hasil.create') }}"
+                        class="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">
+                        {{ __('hasil.add') }}
+                    </a>
+                    <a href="{{ route('admin.hasil.jumaat.create') }}"
+                        class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
+                        {{ __('hasil.add_jumaat') }}
+                    </a>
+                </div>
             @endcan
         </div>
     </x-slot>
 
     <div class="py-8">
         <div class="max-w-7xl mx-auto space-y-4 sm:px-6 lg:px-8">
+            @if (session('error'))
+                <div class="rounded-md bg-red-50 p-3 text-sm text-red-700">{{ session('error') }}</div>
+            @endif
+
             @if (session('status'))
                 <div class="rounded-md bg-green-50 p-3 text-sm text-green-800">{{ session('status') }}</div>
             @endif
@@ -105,7 +115,7 @@
                                 </td>
                                 <td class="px-4 py-3 text-right text-sm space-x-3">
                                     @can('update', $item)
-                                        <a href="{{ route('admin.hasil.edit', $item) }}"
+                                        <a href="{{ $item->jenis_jumaat ? route('admin.hasil.jumaat.edit', $item) : route('admin.hasil.edit', $item) }}"
                                             class="text-indigo-600 hover:text-indigo-900">{{ __('hasil.table.edit') }}</a>
                                     @endcan
                                     @can('delete', $item)

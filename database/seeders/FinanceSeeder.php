@@ -55,12 +55,12 @@ class FinanceSeeder extends Seeder
     private function resolveUsers(Masjid $masjid): ?array
     {
         $admin = $masjid->users()
-            ->whereHas('roles', fn ($q) => $q->where('name', 'Admin'))
+            ->whereHas('roles', fn($q) => $q->where('name', 'Admin'))
             ->orderBy('id')
             ->first();
 
         $creator = $masjid->users()
-            ->whereHas('roles', fn ($q) => $q->where('name', 'Bendahari'))
+            ->whereHas('roles', fn($q) => $q->where('name', 'Bendahari'))
             ->orderBy('id')
             ->first() ?? $admin;
 
@@ -195,7 +195,7 @@ class FinanceSeeder extends Seeder
                     'amaun_tunai' => $cashAmount,
                     'amaun_online' => $onlineAmount,
                     'jumlah' => $cashAmount + $onlineAmount,
-                    'id_tabung_khas' => $funds['kebajikan']->id,
+                    'id_tabung_khas' => null,
                     'id_program' => null,
                     'jenis_jumaat' => 'biasa',
                     'catatan' => 'Kutipan Jumaat mingguan.',
@@ -379,7 +379,7 @@ class FinanceSeeder extends Seeder
             [
                 'data' => [
                     'title' => 'Rekod hasil baru',
-                    'message' => 'Kutipan Jumaat baharu telah direkodkan untuk '.$masjid->nama.'.',
+                    'message' => 'Kutipan Jumaat baharu telah direkodkan untuk ' . $masjid->nama . '.',
                     'masjid_id' => $masjid->id,
                 ],
                 'read_at' => null,

@@ -2,6 +2,7 @@
     'action',
     'method' => 'POST',
     'hasilRecord' => null,
+    'formMode' => 'regular',
     'masjidOptions' => collect(),
     'akaunOptions' => collect(),
     'sumberHasilOptions' => collect(),
@@ -60,42 +61,47 @@
             <x-input-error class="mt-2" :messages="$errors->get('id_akaun')" />
         </div>
 
-        <div>
-            <x-input-label for="id_sumber_hasil" :value="__('hasil.form.source')" />
-            <select id="id_sumber_hasil" name="id_sumber_hasil"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                required>
-                <option value="">{{ __('hasil.form.select_source') }}</option>
-                @foreach ($sumberHasilOptions as $option)
-                    <option value="{{ $option->id }}" @selected(old('id_sumber_hasil', $hasilRecord?->id_sumber_hasil) == $option->id)>
-                        {{ $option->nama_sumber }}
-                    </option>
-                @endforeach
-            </select>
-            <x-input-error class="mt-2" :messages="$errors->get('id_sumber_hasil')" />
-        </div>
+        @if ($formMode !== 'jumaat')
+            <div>
+                <x-input-label for="id_sumber_hasil" :value="__('hasil.form.source')" />
+                <select id="id_sumber_hasil" name="id_sumber_hasil"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    required>
+                    <option value="">{{ __('hasil.form.select_source') }}</option>
+                    @foreach ($sumberHasilOptions as $option)
+                        <option value="{{ $option->id }}" @selected(old('id_sumber_hasil', $hasilRecord?->id_sumber_hasil) == $option->id)>
+                            {{ $option->nama_sumber }}
+                        </option>
+                    @endforeach
+                </select>
+                <x-input-error class="mt-2" :messages="$errors->get('id_sumber_hasil')" />
+            </div>
 
-        <div>
-            <x-input-label for="id_tabung_khas" :value="__('hasil.form.fund_optional')" />
-            <select id="id_tabung_khas" name="id_tabung_khas"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                <option value="">{{ __('hasil.form.no_fund') }}</option>
-                @foreach ($tabungKhasOptions as $option)
-                    <option value="{{ $option->id }}" @selected(old('id_tabung_khas', $hasilRecord?->id_tabung_khas) == $option->id)>
-                        {{ $option->nama_tabung }}
-                    </option>
-                @endforeach
-            </select>
-            <x-input-error class="mt-2" :messages="$errors->get('id_tabung_khas')" />
-        </div>
+            <div>
+                <x-input-label for="id_tabung_khas" :value="__('hasil.form.fund_optional')" />
+                <select id="id_tabung_khas" name="id_tabung_khas"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="">{{ __('hasil.form.no_fund') }}</option>
+                    @foreach ($tabungKhasOptions as $option)
+                        <option value="{{ $option->id }}" @selected(old('id_tabung_khas', $hasilRecord?->id_tabung_khas) == $option->id)>
+                            {{ $option->nama_tabung }}
+                        </option>
+                    @endforeach
+                </select>
+                <x-input-error class="mt-2" :messages="$errors->get('id_tabung_khas')" />
+            </div>
+        @endif
     </div>
 
-    <label class="inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-        <input type="checkbox" name="is_jumaat" value="1"
-            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-            @checked(old('is_jumaat', $hasilRecord?->jenis_jumaat !== null))>
-        <span class="text-sm text-slate-700">{{ __('hasil.form.jumaat_toggle') }}</span>
-    </label>
+    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+        @if ($formMode === 'jumaat')
+            <input type="hidden" name="is_jumaat" value="1">
+            {{ __('hasil.form.jumaat_mode_notice') }}
+        @else
+            <input type="hidden" name="is_jumaat" value="0">
+            {{ __('hasil.form.regular_mode_notice') }}
+        @endif
+    </div>
 
     <div>
         <x-input-label for="catatan" :value="__('hasil.form.notes_optional')" />

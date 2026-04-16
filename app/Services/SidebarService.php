@@ -160,6 +160,11 @@ class SidebarService
             return false;
         }
 
+        // Items flagged as superadmin_only are never shown to regular users
+        if (!empty($item['superadmin_only']) && !$this->isSuperAdmin($user)) {
+            return false;
+        }
+
         if ($this->isSuperAdmin($user)) {
             return true;
         }

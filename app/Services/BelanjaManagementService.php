@@ -56,7 +56,7 @@ class BelanjaManagementService
     private function sanitizePayload(User $actor, array $data): array
     {
         $masjidId = $actor->peranan === 'superadmin' ? ($data['id_masjid'] ?? null) : $actor->id_masjid;
-        $submitted = (bool) ($data['is_submitted'] ?? false);
+        $submitted = ($data['submit_action'] ?? 'submitted') === 'submitted';
         return [
             'id_masjid' => $masjidId,
             'tarikh' => $data['tarikh'],

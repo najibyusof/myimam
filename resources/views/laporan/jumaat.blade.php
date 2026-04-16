@@ -10,6 +10,10 @@
                     'tahun' => $filters['tahun'],
                     'jenis_paparan' => $filters['jenis_paparan'] ?? 'ringkasan_bulanan',
                 ];
+
+                if (($filters['bulan'] ?? 0) > 0) {
+                    $exportParams['bulan'] = $filters['bulan'];
+                }
             @endphp
 
             <div class="rounded-xl bg-white p-5 shadow">
@@ -89,7 +93,9 @@
                             </thead>
                             <tbody class="divide-y divide-gray-100">
                                 @forelse ($rows as $row)
-                                    <tr class="hover:bg-slate-50 transition">
+                                    <tr class="cursor-pointer hover:bg-slate-50 transition"
+                                        data-href="{{ route('laporan.jumaat', ['tahun' => $filters['tahun'], 'jenis_paparan' => 'senarai_jumaat', 'bulan' => $row['bulan_no']]) }}"
+                                        tabindex="0" role="link" aria-label="Lihat kutipan {{ $row['bulan'] }}">
                                         <td class="px-4 py-3">
                                             <span class="font-medium text-gray-800">{{ $row['bulan'] }}</span>
                                         </td>
@@ -119,7 +125,16 @@
                     <div class="border-b border-gray-100 px-4 py-3">
                         <h3 class="text-sm font-semibold text-gray-800">Senarai Kutipan Mengikut Tarikh (Tahun
                             {{ $filters['tahun'] }})</h3>
-                        <p class="mt-1 text-xs text-gray-500">Semua kutipan Jumaat diurutkan mengikut tarikh.</p>
+                        @if (($filters['bulan'] ?? 0) > 0)
+                            <p class="mt-1 text-xs text-gray-500">Paparan bulan {{ $filters['bulan_nama'] }}. Semua
+                                kutipan Jumaat diurutkan mengikut tarikh.</p>
+                            <a href="{{ route('laporan.jumaat', ['tahun' => $filters['tahun'], 'jenis_paparan' => 'senarai_jumaat']) }}"
+                                class="mt-2 inline-flex text-xs font-medium text-indigo-600 hover:text-indigo-700">
+                                Tunjuk semua bulan
+                            </a>
+                        @else
+                            <p class="mt-1 text-xs text-gray-500">Semua kutipan Jumaat diurutkan mengikut tarikh.</p>
+                        @endif
                     </div>
 
                     <div class="overflow-x-auto">
@@ -167,6 +182,36 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const tahunFilter = @json((int) $filters['tahun']);
+            const senaraiBaseUrl = @json(route('laporan.jumaat'));
+
+            function redirectToBulan(bulanNo) {
+                if (!Number.isInteger(bulanNo) || bulanNo < 1 || bulanNo > 12) {
+                    return;
+                }
+
+                const params = new URLSearchParams({
+                    tahun: String(tahunFilter),
+                    jenis_paparan: 'senarai_jumaat',
+                    bulan: String(bulanNo),
+                });
+
+                window.location.href = senaraiBaseUrl + '?' + params.toString();
+            }
+
+            document.querySelectorAll('tr[data-href]').forEach(function(row) {
+                row.addEventListener('click', function() {
+                    window.location.href = row.dataset.href;
+                });
+
+                row.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        window.location.href = row.dataset.href;
+                    }
+                });
+            });
+
             const ctx = document.getElementById('jumaatTrendChart');
             if (!ctx || !window.Chart) {
                 return;
@@ -188,6 +233,15 @@
                     }]
                 },
                 options: {
+                    onClick: function(event, elements) {
+                        if (!elements.length) {
+                            return;
+                        }
+
+                        const dataIndex = elements[0].index;
+                        const bulanNo = dataIndex + 1;
+                        redirectToBulan(bulanNo);
+                    },
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
