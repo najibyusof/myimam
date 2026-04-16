@@ -22,6 +22,7 @@ return [
     'kategori_belanja' => 'Kategori Belanja',
     'pindahan_akaun' => 'Pindahan Akaun',
     'running_no' => 'Nombor Rujukan',
+    'cms' => 'CMS',
 
     'group_general' => 'Umum',
     'group_finance' => 'Kewangan',
