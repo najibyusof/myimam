@@ -331,7 +331,11 @@
         </div>
 
         <div class="meta-bar">
-            <span>Perbandingan dengan: {{ $prev_tempoh_label }}</span>
+            @if (!($hide_comparison ?? false))
+                <span>Perbandingan dengan: {{ $prev_tempoh_label }}</span>
+            @else
+                <span></span>
+            @endif
             <span>Dicetak: {{ now()->translatedFormat('d F Y, H:i') }}</span>
         </div>
 
@@ -347,9 +351,11 @@
                                 <tr>
                                     <th>Butiran</th>
                                     <th class="right">Jumlah (RM)</th>
-                                    <th class="right">%</th>
-                                    <th class="right">Tpoh Lepas</th>
-                                    <th class="right">+/-</th>
+                                    @if (!($hide_comparison ?? false))
+                                        <th class="right">%</th>
+                                        <th class="right">Tpoh Lepas</th>
+                                        <th class="right">+/-</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody>
@@ -357,26 +363,29 @@
                                     <tr>
                                         <td class="butiran">{{ $row['butiran'] }}</td>
                                         <td class="right">{{ number_format($row['jumlah'], 2) }}</td>
-                                        <td class="center">{{ $row['peratus'] }}%</td>
-                                        <td class="right" style="color:#888">
-                                            {{ $row['prev_jumlah'] > 0 ? number_format($row['prev_jumlah'], 2) : '-' }}
-                                        </td>
-                                        <td class="right">
-                                            @if ($row['peratus_perubahan'] !== null)
-                                                <span class="{{ $row['perubahan'] >= 0 ? 'up' : 'down' }}">
-                                                    {{ $row['perubahan'] >= 0 ? '+' : '' }}{{ number_format($row['perubahan'], 2) }}
-                                                    ({{ $row['peratus_perubahan'] >= 0 ? '+' : '' }}{{ $row['peratus_perubahan'] }}%)
-                                                </span>
-                                            @elseif ($row['jumlah'] > 0 && $row['prev_jumlah'] == 0)
-                                                <span class="up">Baharu</span>
-                                            @else
-                                                <span class="flat">-</span>
-                                            @endif
-                                        </td>
+                                        @if (!($hide_comparison ?? false))
+                                            <td class="center">{{ $row['peratus'] }}%</td>
+                                            <td class="right" style="color:#888">
+                                                {{ $row['prev_jumlah'] > 0 ? number_format($row['prev_jumlah'], 2) : '-' }}
+                                            </td>
+                                            <td class="right">
+                                                @if ($row['peratus_perubahan'] !== null)
+                                                    <span class="{{ $row['perubahan'] >= 0 ? 'up' : 'down' }}">
+                                                        {{ $row['perubahan'] >= 0 ? '+' : '' }}{{ number_format($row['perubahan'], 2) }}
+                                                        ({{ $row['peratus_perubahan'] >= 0 ? '+' : '' }}{{ $row['peratus_perubahan'] }}%)
+                                                    </span>
+                                                @elseif ($row['jumlah'] > 0 && $row['prev_jumlah'] == 0)
+                                                    <span class="up">Baharu</span>
+                                                @else
+                                                    <span class="flat">-</span>
+                                                @endif
+                                            </td>
+                                        @endif
                                     </tr>
                                 @empty
                                     <tr class="empty-row">
-                                        <td colspan="5">Tiada rekod pendapatan.</td>
+                                        <td colspan="{{ $hide_comparison ?? false ? 2 : 5 }}">Tiada rekod pendapatan.
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -384,15 +393,17 @@
                                 <tr>
                                     <td>Jumlah Pendapatan</td>
                                     <td class="right">{{ number_format($jumlah_pendapatan, 2) }}</td>
-                                    <td class="right">100%</td>
-                                    <td class="right" style="color:#888; font-size:8pt">
-                                        {{ number_format($prev_jumlah_pendapatan, 2) }}</td>
-                                    <td class="right">
-                                        @php $chg = $jumlah_pendapatan - $prev_jumlah_pendapatan; @endphp
-                                        <span class="{{ $chg >= 0 ? 'up' : 'down' }}">
-                                            {{ $chg >= 0 ? '+' : '' }}{{ number_format($chg, 2) }}
-                                        </span>
-                                    </td>
+                                    @if (!($hide_comparison ?? false))
+                                        <td class="right">100%</td>
+                                        <td class="right" style="color:#888; font-size:8pt">
+                                            {{ number_format($prev_jumlah_pendapatan, 2) }}</td>
+                                        <td class="right">
+                                            @php $chg = $jumlah_pendapatan - $prev_jumlah_pendapatan; @endphp
+                                            <span class="{{ $chg >= 0 ? 'up' : 'down' }}">
+                                                {{ $chg >= 0 ? '+' : '' }}{{ number_format($chg, 2) }}
+                                            </span>
+                                        </td>
+                                    @endif
                                 </tr>
                             </tfoot>
                         </table>
@@ -406,9 +417,11 @@
                                 <tr>
                                     <th>Butiran</th>
                                     <th class="right">Jumlah (RM)</th>
-                                    <th class="right">%</th>
-                                    <th class="right">Tpoh Lepas</th>
-                                    <th class="right">+/-</th>
+                                    @if (!($hide_comparison ?? false))
+                                        <th class="right">%</th>
+                                        <th class="right">Tpoh Lepas</th>
+                                        <th class="right">+/-</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody>
@@ -416,26 +429,29 @@
                                     <tr>
                                         <td class="butiran">{{ $row['butiran'] }}</td>
                                         <td class="right">{{ number_format($row['jumlah'], 2) }}</td>
-                                        <td class="center">{{ $row['peratus'] }}%</td>
-                                        <td class="right" style="color:#888">
-                                            {{ $row['prev_jumlah'] > 0 ? number_format($row['prev_jumlah'], 2) : '-' }}
-                                        </td>
-                                        <td class="right">
-                                            @if ($row['peratus_perubahan'] !== null)
-                                                <span class="{{ $row['perubahan'] >= 0 ? 'down' : 'up' }}">
-                                                    {{ $row['perubahan'] >= 0 ? '+' : '' }}{{ number_format($row['perubahan'], 2) }}
-                                                    ({{ $row['peratus_perubahan'] >= 0 ? '+' : '' }}{{ $row['peratus_perubahan'] }}%)
-                                                </span>
-                                            @elseif ($row['jumlah'] > 0 && $row['prev_jumlah'] == 0)
-                                                <span class="down">Baharu</span>
-                                            @else
-                                                <span class="flat">-</span>
-                                            @endif
-                                        </td>
+                                        @if (!($hide_comparison ?? false))
+                                            <td class="center">{{ $row['peratus'] }}%</td>
+                                            <td class="right" style="color:#888">
+                                                {{ $row['prev_jumlah'] > 0 ? number_format($row['prev_jumlah'], 2) : '-' }}
+                                            </td>
+                                            <td class="right">
+                                                @if ($row['peratus_perubahan'] !== null)
+                                                    <span class="{{ $row['perubahan'] >= 0 ? 'down' : 'up' }}">
+                                                        {{ $row['perubahan'] >= 0 ? '+' : '' }}{{ number_format($row['perubahan'], 2) }}
+                                                        ({{ $row['peratus_perubahan'] >= 0 ? '+' : '' }}{{ $row['peratus_perubahan'] }}%)
+                                                    </span>
+                                                @elseif ($row['jumlah'] > 0 && $row['prev_jumlah'] == 0)
+                                                    <span class="down">Baharu</span>
+                                                @else
+                                                    <span class="flat">-</span>
+                                                @endif
+                                            </td>
+                                        @endif
                                     </tr>
                                 @empty
                                     <tr class="empty-row">
-                                        <td colspan="5">Tiada rekod perbelanjaan.</td>
+                                        <td colspan="{{ $hide_comparison ?? false ? 2 : 5 }}">Tiada rekod
+                                            perbelanjaan.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -443,15 +459,17 @@
                                 <tr>
                                     <td>Jumlah Perbelanjaan</td>
                                     <td class="right">{{ number_format($jumlah_perbelanjaan, 2) }}</td>
-                                    <td class="right">100%</td>
-                                    <td class="right" style="color:#888; font-size:8pt">
-                                        {{ number_format($prev_jumlah_perbelanjaan, 2) }}</td>
-                                    <td class="right">
-                                        @php $chgB = $jumlah_perbelanjaan - $prev_jumlah_perbelanjaan; @endphp
-                                        <span class="{{ $chgB >= 0 ? 'down' : 'up' }}">
-                                            {{ $chgB >= 0 ? '+' : '' }}{{ number_format($chgB, 2) }}
-                                        </span>
-                                    </td>
+                                    @if (!($hide_comparison ?? false))
+                                        <td class="right">100%</td>
+                                        <td class="right" style="color:#888; font-size:8pt">
+                                            {{ number_format($prev_jumlah_perbelanjaan, 2) }}</td>
+                                        <td class="right">
+                                            @php $chgB = $jumlah_perbelanjaan - $prev_jumlah_perbelanjaan; @endphp
+                                            <span class="{{ $chgB >= 0 ? 'down' : 'up' }}">
+                                                {{ $chgB >= 0 ? '+' : '' }}{{ number_format($chgB, 2) }}
+                                            </span>
+                                        </td>
+                                    @endif
                                 </tr>
                             </tfoot>
                         </table>
@@ -467,22 +485,26 @@
                     <tr>
                         <td class="label">Jumlah Pendapatan</td>
                         <td class="value">RM {{ number_format($jumlah_pendapatan, 2) }}</td>
-                        <td class="prev">RM {{ number_format($prev_jumlah_pendapatan, 2) }}</td>
-                        <td class="change">
-                            @php $d = $jumlah_pendapatan - $prev_jumlah_pendapatan; @endphp
-                            <span class="{{ $d >= 0 ? 'up' : 'down' }}">{{ $d >= 0 ? '+' : '' }}RM
-                                {{ number_format($d, 2) }}</span>
-                        </td>
+                        @if (!($hide_comparison ?? false))
+                            <td class="prev">RM {{ number_format($prev_jumlah_pendapatan, 2) }}</td>
+                            <td class="change">
+                                @php $d = $jumlah_pendapatan - $prev_jumlah_pendapatan; @endphp
+                                <span class="{{ $d >= 0 ? 'up' : 'down' }}">{{ $d >= 0 ? '+' : '' }}RM
+                                    {{ number_format($d, 2) }}</span>
+                            </td>
+                        @endif
                     </tr>
                     <tr class="separator">
                         <td class="label">Jumlah Perbelanjaan</td>
                         <td class="value">RM {{ number_format($jumlah_perbelanjaan, 2) }}</td>
-                        <td class="prev">RM {{ number_format($prev_jumlah_perbelanjaan, 2) }}</td>
-                        <td class="change">
-                            @php $dB = $jumlah_perbelanjaan - $prev_jumlah_perbelanjaan; @endphp
-                            <span class="{{ $dB >= 0 ? 'down' : 'up' }}">{{ $dB >= 0 ? '+' : '' }}RM
-                                {{ number_format($dB, 2) }}</span>
-                        </td>
+                        @if (!($hide_comparison ?? false))
+                            <td class="prev">RM {{ number_format($prev_jumlah_perbelanjaan, 2) }}</td>
+                            <td class="change">
+                                @php $dB = $jumlah_perbelanjaan - $prev_jumlah_perbelanjaan; @endphp
+                                <span class="{{ $dB >= 0 ? 'down' : 'up' }}">{{ $dB >= 0 ? '+' : '' }}RM
+                                    {{ number_format($dB, 2) }}</span>
+                            </td>
+                        @endif
                     </tr>
                     <tr class="{{ $lebihan_kurangan >= 0 ? 'lebihan-row' : 'kekurangan-row' }}">
                         <td class="label" style="font-size:10pt">
@@ -490,12 +512,14 @@
                         </td>
                         <td class="value" style="font-size:10pt">RM {{ number_format(abs($lebihan_kurangan), 2) }}
                         </td>
-                        <td class="prev">RM {{ number_format(abs($prev_lebihan_kurangan), 2) }}</td>
-                        <td class="change">
-                            @php $dL = $lebihan_kurangan - $prev_lebihan_kurangan; @endphp
-                            <span class="{{ $dL >= 0 ? 'up' : 'down' }}">{{ $dL >= 0 ? '+' : '' }}RM
-                                {{ number_format($dL, 2) }}</span>
-                        </td>
+                        @if (!($hide_comparison ?? false))
+                            <td class="prev">RM {{ number_format(abs($prev_lebihan_kurangan), 2) }}</td>
+                            <td class="change">
+                                @php $dL = $lebihan_kurangan - $prev_lebihan_kurangan; @endphp
+                                <span class="{{ $dL >= 0 ? 'up' : 'down' }}">{{ $dL >= 0 ? '+' : '' }}RM
+                                    {{ number_format($dL, 2) }}</span>
+                            </td>
+                        @endif
                     </tr>
                 </tbody>
             </table>

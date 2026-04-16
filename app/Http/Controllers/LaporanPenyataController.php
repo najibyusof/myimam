@@ -27,6 +27,7 @@ class LaporanPenyataController extends Controller
         abort_if($this->isSuperadmin($request) && !(int) $request->query('masjid_id', 0), 403);
 
         $data = $this->buildReportData($request);
+        $data['hide_comparison'] = (bool) $request->query('hide_comparison', false);
         $filename = 'penyata-kewangan-' . str_replace(['/', ' ', '(', ')'], ['-', '-', '', ''], strtolower($data['tempoh_label'])) . '.pdf';
 
         return Pdf::loadView('laporan.penyata-pdf', $data)
