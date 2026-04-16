@@ -19,7 +19,7 @@ class SubscriptionSeeder extends Seeder
         $basicPlan = SubscriptionPlan::query()->updateOrCreate(
             ['slug' => 'basic'],
             [
-                'name' => 'Basic',
+                'name' => 'Pelan Asas',
                 'price' => 99.00,
                 'billing_cycle' => 'monthly',
                 'duration_months' => 1,
@@ -37,7 +37,7 @@ class SubscriptionSeeder extends Seeder
         $premiumPlan = SubscriptionPlan::query()->updateOrCreate(
             ['slug' => 'premium'],
             [
-                'name' => 'Premium',
+                'name' => 'Pelan Premium',
                 'price' => 249.00,
                 'billing_cycle' => 'monthly',
                 'duration_months' => 1,
@@ -104,7 +104,7 @@ class SubscriptionSeeder extends Seeder
                         $masjid->code,
                         $item['start_date']->format('Ym')
                     )),
-                    'notes' => 'Seeded subscription for tenancy testing.',
+                    'notes' => 'Data langganan contoh untuk ujian sewaan masjid.',
                     'created_by' => $superAdmin?->id,
                 ]
             );

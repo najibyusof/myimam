@@ -15,7 +15,7 @@ class CmsSeeder extends Seeder
 
         $service->saveLandingContent(null, [
             'hero_title' => 'Platform Kewangan Masjid Berbilang Cawangan',
-            'hero_subtitle' => 'Pantau kutipan, belanja, dan audit setiap masjid dengan kawalan berpusat.',
+            'hero_subtitle' => 'Pantau kutipan, belanja, dan audit setiap masjid kariah di Malaysia dengan kawalan berpusat.',
             'hero_cta_text' => 'Daftar Masjid Anda',
             'hero_image' => null,
             'features_items' => implode("\n", [
@@ -23,7 +23,7 @@ class CmsSeeder extends Seeder
                 'Kawalan akses berperanan untuk pentadbir dan bendahari.',
                 'Jejak audit lengkap bagi setiap transaksi kewangan.',
             ]),
-            'footer_text' => 'Sistem Kewangan Masjid SaaS. Semua hak terpelihara.',
+            'footer_text' => 'Sistem Kewangan Masjid Malaysia. Semua hak terpelihara.',
             'is_active' => true,
         ]);
 
@@ -32,11 +32,11 @@ class CmsSeeder extends Seeder
         if ($masjidAlFalah) {
             $service->saveLandingContent($masjidAlFalah->id, [
                 'hero_title' => 'Masjid Al-Falah Komited Dengan Ketelusan Kewangan',
-                'hero_subtitle' => 'Lihat ringkasan kutipan Jumaat, program komuniti, dan penggunaan tabung khas secara berkala.',
+                'hero_subtitle' => 'Lihat ringkasan kutipan Jumaat, aktiviti kariah, dan penggunaan tabung khas secara berkala.',
                 'hero_cta_text' => 'Lihat Aktiviti Al-Falah',
                 'hero_image' => null,
                 'features_items' => implode("\n", [
-                    'Laporan kutipan mingguan yang mudah difahami jamaah.',
+                    'Laporan kutipan mingguan yang mudah difahami jemaah.',
                     'Perancangan belanja program menggunakan baucar digital.',
                     'Pemantauan tabung pembangunan dan kebajikan secara terpisah.',
                 ]),

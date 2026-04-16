@@ -16,7 +16,7 @@ class MasjidSeeder extends Seeder
             [
                 'nama' => 'Masjid Al-Falah',
                 'code' => 'alfalah',
-                'alamat' => 'Jalan Kebun Bunga 12, Seksyen 7',
+                'alamat' => 'No. 12, Jalan Kristal 7/70A, Seksyen 7, 40000 Shah Alam',
                 'daerah' => 'Petaling',
                 'negeri' => 'Selangor',
                 'no_pendaftaran' => 'SGR-MF-ALF-001',
@@ -28,7 +28,7 @@ class MasjidSeeder extends Seeder
             [
                 'nama' => 'Masjid Ar-Rahman',
                 'code' => 'arrahman',
-                'alamat' => 'Jalan Damai 4, Bandar Baru',
+                'alamat' => 'Lot 2145, Jalan Meru Utama, Taman Seri Andalas, 41200 Klang',
                 'daerah' => 'Klang',
                 'negeri' => 'Selangor',
                 'no_pendaftaran' => 'SGR-MF-ARR-002',
@@ -40,7 +40,7 @@ class MasjidSeeder extends Seeder
             [
                 'nama' => 'Masjid An-Nur',
                 'code' => 'annur',
-                'alamat' => 'Persiaran Ilmu 18, Presint Komuniti',
+                'alamat' => 'Persiaran Ilmu 18, Bandar Baru Salak Tinggi, 43900 Sepang',
                 'daerah' => 'Sepang',
                 'negeri' => 'Selangor',
                 'no_pendaftaran' => 'SGR-MF-ANN-003',

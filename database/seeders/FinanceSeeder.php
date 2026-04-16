@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\HasMalaySampleData;
 use App\Models\Akaun;
 use App\Models\BaucarBayaran;
 use App\Models\Belanja;
@@ -19,6 +20,8 @@ use Illuminate\Database\Seeder;
 
 class FinanceSeeder extends Seeder
 {
+    use HasMalaySampleData;
+
     public function run(): void
     {
         $faker = fake('ms_MY');
@@ -100,16 +103,24 @@ class FinanceSeeder extends Seeder
     {
         return [
             'jumaat' => $masjid->sumberHasil()->updateOrCreate(
-                ['kod' => 'DERMA-JMT'],
-                ['nama_sumber' => 'Derma Jumaat', 'jenis' => 'derma', 'aktif' => true]
+                ['kod' => 'SUMB-JMT'],
+                ['nama_sumber' => 'Sumbangan Jumaat', 'jenis' => 'derma', 'aktif' => true]
             ),
-            'online' => $masjid->sumberHasil()->updateOrCreate(
-                ['kod' => 'ONLINE'],
-                ['nama_sumber' => 'Sumbangan Online', 'jenis' => 'online', 'aktif' => true]
+            'individu' => $masjid->sumberHasil()->updateOrCreate(
+                ['kod' => 'DERMA-IND'],
+                ['nama_sumber' => 'Derma Individu', 'jenis' => 'derma', 'aktif' => true]
             ),
-            'dewan' => $masjid->sumberHasil()->updateOrCreate(
-                ['kod' => 'SEWA'],
-                ['nama_sumber' => 'Sewaan Dewan', 'jenis' => 'sewaan', 'aktif' => true]
+            'tabung' => $masjid->sumberHasil()->updateOrCreate(
+                ['kod' => 'DERMA-TAB'],
+                ['nama_sumber' => 'Derma Tabung Masjid', 'jenis' => 'derma', 'aktif' => true]
+            ),
+            'ramadan' => $masjid->sumberHasil()->updateOrCreate(
+                ['kod' => 'SUMB-RAM'],
+                ['nama_sumber' => 'Sumbangan Ihya Ramadan', 'jenis' => 'derma', 'aktif' => true]
+            ),
+            'wakaf' => $masjid->sumberHasil()->updateOrCreate(
+                ['kod' => 'WAKAF-BINA'],
+                ['nama_sumber' => 'Wakaf Pembinaan', 'jenis' => 'wakaf', 'aktif' => true]
             ),
         ];
     }
@@ -119,19 +130,27 @@ class FinanceSeeder extends Seeder
         return [
             'utiliti' => $masjid->kategoriBelanja()->updateOrCreate(
                 ['kod' => 'UTIL'],
-                ['nama_kategori' => 'Utiliti', 'aktif' => true]
+                ['nama_kategori' => 'UTILITI', 'aktif' => true]
+            ),
+            'baik_pulih' => $masjid->kategoriBelanja()->updateOrCreate(
+                ['kod' => 'BAIKPULIH'],
+                ['nama_kategori' => 'BAIK PULIH', 'aktif' => true]
+            ),
+            'penceramah' => $masjid->kategoriBelanja()->updateOrCreate(
+                ['kod' => 'PENCERAMAH'],
+                ['nama_kategori' => 'BAYARAN PENCERAMAH', 'aktif' => true]
+            ),
+            'elaun' => $masjid->kategoriBelanja()->updateOrCreate(
+                ['kod' => 'ELAUN'],
+                ['nama_kategori' => 'ELAUN & EMOLUMEN', 'aktif' => true]
+            ),
+            'peralatan' => $masjid->kategoriBelanja()->updateOrCreate(
+                ['kod' => 'PERALATAN'],
+                ['nama_kategori' => 'PEMBELIAN PERALATAN', 'aktif' => true]
             ),
             'selenggara' => $masjid->kategoriBelanja()->updateOrCreate(
                 ['kod' => 'SELENGGARA'],
-                ['nama_kategori' => 'Penyelenggaraan', 'aktif' => true]
-            ),
-            'gaji' => $masjid->kategoriBelanja()->updateOrCreate(
-                ['kod' => 'GAJI'],
-                ['nama_kategori' => 'Gaji', 'aktif' => true]
-            ),
-            'program' => $masjid->kategoriBelanja()->updateOrCreate(
-                ['kod' => 'PROGRAM'],
-                ['nama_kategori' => 'Program', 'aktif' => true]
+                ['nama_kategori' => 'PENYELENGGARAAN', 'aktif' => true]
             ),
         ];
     }
@@ -139,12 +158,24 @@ class FinanceSeeder extends Seeder
     private function seedTabungKhas(Masjid $masjid): array
     {
         return [
-            'pembangunan' => $masjid->tabungKhas()->updateOrCreate(
-                ['nama_tabung' => 'Tabung Pembangunan'],
+            'ramadan' => $masjid->tabungKhas()->updateOrCreate(
+                ['nama_tabung' => 'Tabung Ihya Ramadan 2026'],
+                ['aktif' => true]
+            ),
+            'wakaf' => $masjid->tabungKhas()->updateOrCreate(
+                ['nama_tabung' => 'Wakaf Bangunan Masjid'],
                 ['aktif' => true]
             ),
             'kebajikan' => $masjid->tabungKhas()->updateOrCreate(
                 ['nama_tabung' => 'Tabung Kebajikan'],
+                ['aktif' => true]
+            ),
+            'pendidikan' => $masjid->tabungKhas()->updateOrCreate(
+                ['nama_tabung' => 'Tabung Pendidikan'],
+                ['aktif' => true]
+            ),
+            'operasi' => $masjid->tabungKhas()->updateOrCreate(
+                ['nama_tabung' => 'Tabung Operasi Masjid'],
                 ['aktif' => true]
             ),
         ];
@@ -158,7 +189,7 @@ class FinanceSeeder extends Seeder
                 ['aktif' => true]
             ),
             'ramadan' => $masjid->programMasjid()->updateOrCreate(
-                ['nama_program' => 'Program Ramadan'],
+                ['nama_program' => 'Ihya Ramadan'],
                 ['aktif' => true]
             ),
         ];
@@ -195,10 +226,10 @@ class FinanceSeeder extends Seeder
                     'amaun_tunai' => $cashAmount,
                     'amaun_online' => $onlineAmount,
                     'jumlah' => $cashAmount + $onlineAmount,
-                    'id_tabung_khas' => null,
+                    'id_tabung_khas' => $funds['operasi']->id,
                     'id_program' => null,
                     'jenis_jumaat' => 'biasa',
-                    'catatan' => 'Kutipan Jumaat mingguan.',
+                    'catatan' => 'Sumbangan selepas solat Jumaat',
                     'created_by' => $creator->id,
                 ]
             );
@@ -208,9 +239,25 @@ class FinanceSeeder extends Seeder
 
         for ($i = 1; $i <= 12; $i++) {
             $date = now()->subDays($faker->numberBetween(1, 90))->startOfDay();
-            $source = $i % 3 === 0 ? $sources['dewan'] : $sources['online'];
-            $isOnline = $source->kod === 'ONLINE';
+            $source = $i % 4 === 0
+                ? $sources['ramadan']
+                : ($i % 3 === 0 ? $sources['wakaf'] : ($i % 2 === 0 ? $sources['tabung'] : $sources['individu']));
+            $isOnline = in_array($source->kod, ['DERMA-IND', 'SUMB-RAM', 'WAKAF-BINA'], true);
             $amount = (float) $faker->numberBetween(200, 4500);
+
+            $tabungId = match ($source->kod) {
+                'SUMB-RAM' => $funds['ramadan']->id,
+                'WAKAF-BINA' => $funds['wakaf']->id,
+                'DERMA-TAB' => $funds['kebajikan']->id,
+                default => $funds['pendidikan']->id,
+            };
+
+            $catatan = match ($source->kod) {
+                'SUMB-RAM' => 'Sumbangan ihya Ramadan daripada jemaah',
+                'WAKAF-BINA' => 'Wakaf pembangunan masjid',
+                'DERMA-TAB' => 'Derma tabung khas masjid',
+                default => 'Derma daripada jemaah',
+            };
 
             $masjid->hasil()->updateOrCreate(
                 ['no_resit' => sprintf('HSL-%s-OTR-%02d', strtoupper($masjid->code), $i)],
@@ -221,10 +268,10 @@ class FinanceSeeder extends Seeder
                     'amaun_tunai' => $isOnline ? 0 : $amount,
                     'amaun_online' => $isOnline ? $amount : 0,
                     'jumlah' => $amount,
-                    'id_tabung_khas' => $funds['pembangunan']->id,
-                    'id_program' => $i % 4 === 0 ? $programs['ramadan']->id : null,
+                    'id_tabung_khas' => $tabungId,
+                    'id_program' => $source->kod === 'SUMB-RAM' ? $programs['ramadan']->id : null,
                     'jenis_jumaat' => null,
-                    'catatan' => $isOnline ? 'Sumbangan online portal.' : 'Sewaan dewan komuniti.',
+                    'catatan' => $catatan,
                     'created_by' => $creator->id,
                 ]
             );
@@ -251,7 +298,7 @@ class FinanceSeeder extends Seeder
                     'kaedah' => $i % 2 === 0 ? 'bank' : 'tunai',
                     'no_rujukan' => $i % 2 === 0 ? strtoupper($faker->bothify('IBG-######')) : null,
                     'jumlah' => 0,
-                    'catatan' => 'Baucar bayaran untuk operasi masjid.',
+                    'catatan' => 'Baucar bayaran perbelanjaan operasi masjid.',
                     'status' => $status,
                     'created_by' => $creator->id,
                     'dilulus_oleh' => $status === 'LULUS' ? $approver->id : null,
@@ -286,6 +333,16 @@ class FinanceSeeder extends Seeder
             $amount = (float) $faker->numberBetween(120, 3000);
             $date = now()->subDays($faker->numberBetween(1, 90));
             $category = $categoryList[$i % count($categoryList)];
+            $penerima = $this->resolvePenerimaByKategori($category->kod);
+
+            $tabungId = match ($category->kod) {
+                'PENCERAMAH' => $funds['ramadan']->id,
+                'PERALATAN' => $funds['pendidikan']->id,
+                'BAIKPULIH', 'SELENGGARA' => $funds['wakaf']->id,
+                default => $funds['operasi']->id,
+            };
+
+            $programId = $category->kod === 'PENCERAMAH' ? $programs['kuliah']->id : null;
 
             $belanja = $masjid->belanja()->updateOrCreate(
                 [
@@ -293,12 +350,12 @@ class FinanceSeeder extends Seeder
                     'id_akaun' => $i % 2 === 0 ? $akaun['bank']->id : $akaun['cash']->id,
                     'id_kategori_belanja' => $category->id,
                     'amaun' => $amount,
-                    'penerima' => $faker->company(),
+                    'penerima' => $penerima,
                 ],
                 [
-                    'id_tabung_khas' => $i % 2 === 0 ? $funds['pembangunan']->id : $funds['kebajikan']->id,
-                    'id_program' => $category->kod === 'PROGRAM' ? $programs['kuliah']->id : null,
-                    'catatan' => 'Perbelanjaan operasi dan aktiviti masjid.',
+                    'id_tabung_khas' => $tabungId,
+                    'id_program' => $programId,
+                    'catatan' => 'Perbelanjaan berkaitan keperluan dan aktiviti masjid.',
                     'bukti_fail' => null,
                     'created_by' => $creator->id,
                     'status' => $status,
@@ -340,11 +397,39 @@ class FinanceSeeder extends Seeder
                 ],
                 [
                     'amaun' => (float) $faker->numberBetween(500, 5000),
-                    'catatan' => 'Pindahan dalaman untuk imbangan tunai dan bank.',
+                    'catatan' => 'Pindahan dalaman untuk pengurusan aliran tunai masjid.',
                     'created_by' => $creator->id,
                 ]
             );
         }
+    }
+
+    private function resolvePenerimaByKategori(string $kodKategori): string
+    {
+        return match ($kodKategori) {
+            'UTIL' => fake()->randomElement([
+                'Tenaga Nasional Berhad',
+                'Air Selangor',
+                'Perkhidmatan Internet Masjid',
+            ]),
+            'BAIKPULIH' => fake()->randomElement([
+                'Kontraktor Bina Jaya',
+                'Syarikat Maju Jaya',
+                'Perkhidmatan Elektrik Ali',
+            ]),
+            'PENCERAMAH' => $this->generateMalayName(),
+            'ELAUN' => $this->generateMalayName(),
+            'PERALATAN' => fake()->randomElement([
+                'Syarikat Maju Jaya',
+                'Pembekal Peralatan Masjid',
+                'Kedai Alatan Komuniti',
+            ]),
+            default => fake()->randomElement([
+                'Kontraktor Bina Jaya',
+                'Perkhidmatan Elektrik Ali',
+                $this->generateMalayName(),
+            ]),
+        };
     }
 
     private function seedRunningNo(Masjid $masjid, int $hasilCount, int $belanjaCount): void
@@ -379,7 +464,7 @@ class FinanceSeeder extends Seeder
             [
                 'data' => [
                     'title' => 'Rekod hasil baru',
-                    'message' => 'Kutipan Jumaat baharu telah direkodkan untuk ' . $masjid->nama . '.',
+                    'message' => 'Sumbangan baharu telah direkodkan untuk ' . $masjid->nama . '.',
                     'masjid_id' => $masjid->id,
                 ],
                 'read_at' => null,
@@ -394,8 +479,8 @@ class FinanceSeeder extends Seeder
             ],
             [
                 'data' => [
-                    'title' => 'Belanja memerlukan semakan',
-                    'message' => 'Beberapa baucar belanja telah disediakan dan menunggu tindakan.',
+                    'title' => 'Belanja untuk semakan',
+                    'message' => 'Beberapa baucar belanja telah disediakan dan menunggu semakan.',
                     'masjid_id' => $masjid->id,
                 ],
                 'read_at' => now()->subHour(),

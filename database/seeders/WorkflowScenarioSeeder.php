@@ -42,9 +42,9 @@ class WorkflowScenarioSeeder extends Seeder
     {
         $cashAccount = Akaun::query()->where('id_masjid', $masjid->id)->where('nama_akaun', 'Tunai Utama')->firstOrFail();
         $bankAccount = Akaun::query()->where('id_masjid', $masjid->id)->where('nama_akaun', 'Bank Operasi')->firstOrFail();
-        $jumaatSource = SumberHasil::query()->where('id_masjid', $masjid->id)->where('kod', 'DERMA-JMT')->firstOrFail();
-        $onlineSource = SumberHasil::query()->where('id_masjid', $masjid->id)->where('kod', 'ONLINE')->firstOrFail();
-        $fund = TabungKhas::query()->where('id_masjid', $masjid->id)->where('nama_tabung', 'Tabung Operasi')->firstOrFail();
+        $jumaatSource = SumberHasil::query()->where('id_masjid', $masjid->id)->where('kod', 'SUMB-JMT')->firstOrFail();
+        $onlineSource = SumberHasil::query()->where('id_masjid', $masjid->id)->where('kod', 'DERMA-IND')->firstOrFail();
+        $fund = TabungKhas::query()->where('id_masjid', $masjid->id)->where('nama_tabung', 'Tabung Operasi Masjid')->firstOrFail();
         $financeOfficer = User::query()->where('id_masjid', $masjid->id)
             ->whereHas('roles', fn($query) => $query->where('name', 'FinanceOfficer'))
             ->orderBy('id')
@@ -67,7 +67,7 @@ class WorkflowScenarioSeeder extends Seeder
                     'id_tabung_khas' => null,
                     'id_program' => null,
                     'jenis_jumaat' => 'biasa',
-                    'catatan' => 'Kutipan Jumaat mingguan',
+                    'catatan' => 'Sumbangan selepas solat Jumaat',
                     'created_by' => $financeOfficer->id,
                 ]
             );
@@ -84,7 +84,7 @@ class WorkflowScenarioSeeder extends Seeder
                     'id_tabung_khas' => $fund->id,
                     'id_program' => null,
                     'jenis_jumaat' => null,
-                    'catatan' => 'Sumbangan online automatik',
+                    'catatan' => 'Derma daripada jemaah melalui pindahan online',
                     'created_by' => $financeOfficer->id,
                 ]
             );
@@ -96,8 +96,8 @@ class WorkflowScenarioSeeder extends Seeder
         $bankAccount = Akaun::query()->where('id_masjid', $masjid->id)->where('nama_akaun', 'Bank Operasi')->firstOrFail();
         $programAccount = Akaun::query()->where('id_masjid', $masjid->id)->where('nama_akaun', 'Bank Program Komuniti')->firstOrFail();
         $utilities = KategoriBelanja::query()->where('id_masjid', $masjid->id)->where('kod', 'UTIL')->firstOrFail();
-        $programmeCategory = KategoriBelanja::query()->where('id_masjid', $masjid->id)->where('kod', 'PROGRAM')->firstOrFail();
-        $fund = TabungKhas::query()->where('id_masjid', $masjid->id)->where('nama_tabung', 'Dana Kecemasan')->firstOrFail();
+        $programmeCategory = KategoriBelanja::query()->where('id_masjid', $masjid->id)->where('kod', 'PENCERAMAH')->firstOrFail();
+        $fund = TabungKhas::query()->where('id_masjid', $masjid->id)->where('nama_tabung', 'Wakaf Bangunan Masjid')->firstOrFail();
         $program = ProgramMasjid::query()->where('id_masjid', $masjid->id)->where('nama_program', 'Iftar Jamaie')->firstOrFail();
 
         $creator = User::query()->where('id_masjid', $masjid->id)
@@ -115,7 +115,7 @@ class WorkflowScenarioSeeder extends Seeder
                 'kaedah' => 'bank',
                 'no_rujukan' => 'IBG-' . $masjid->id . '-001',
                 'jumlah' => 3600 + ($index * 450),
-                'catatan' => 'Pembayaran utiliti dan vendor kebersihan bulanan',
+                'catatan' => 'Pembayaran utiliti dan perkhidmatan penyelenggaraan bulanan',
                 'status' => 'LULUS',
                 'created_by' => $creator->id,
                 'dilulus_oleh' => $approver->id,
@@ -135,7 +135,7 @@ class WorkflowScenarioSeeder extends Seeder
             [
                 'id_tabung_khas' => null,
                 'id_program' => null,
-                'catatan' => 'Bil utiliti bulanan',
+                'catatan' => 'Bil utiliti bulanan masjid',
                 'bukti_fail' => 'bukti/utiliti-' . $masjid->id . '.pdf',
                 'created_by' => $creator->id,
                 'status' => 'LULUS',
@@ -156,7 +156,7 @@ class WorkflowScenarioSeeder extends Seeder
                 'kaedah' => 'tunai',
                 'no_rujukan' => null,
                 'jumlah' => 2200 + ($index * 200),
-                'catatan' => 'Draf baucar untuk program komuniti hujung minggu',
+                'catatan' => 'Draf baucar bagi bayaran penceramah hujung minggu',
                 'status' => 'DRAF',
                 'created_by' => $creator->id,
                 'dilulus_oleh' => null,
@@ -171,12 +171,12 @@ class WorkflowScenarioSeeder extends Seeder
                 'id_akaun' => $programAccount->id,
                 'id_kategori_belanja' => $programmeCategory->id,
                 'amaun' => 2200 + ($index * 200),
-                'penerima' => 'Pembekal Makanan Komuniti',
+                'penerima' => 'Ustaz Ahmad bin Ismail',
             ],
             [
                 'id_tabung_khas' => $fund->id,
                 'id_program' => $program->id,
-                'catatan' => 'Belanja draft menunggu semakan akhir',
+                'catatan' => 'Belanja draf menunggu semakan akhir',
                 'bukti_fail' => null,
                 'created_by' => $creator->id,
                 'status' => 'DRAF',
@@ -196,12 +196,12 @@ class WorkflowScenarioSeeder extends Seeder
                 'id_akaun' => $bankAccount->id,
                 'id_kategori_belanja' => $programmeCategory->id,
                 'amaun' => 750.00,
-                'penerima' => 'Duplicate Catering Entry',
+                'penerima' => 'Syarikat Maju Jaya',
             ],
             [
                 'id_tabung_khas' => $fund->id,
                 'id_program' => $program->id,
-                'catatan' => 'Dibuat sebagai kes tepi untuk rekod padam logik',
+                'catatan' => 'Contoh rekod untuk kes padam logik',
                 'bukti_fail' => null,
                 'created_by' => $creator->id,
                 'status' => 'DRAF',
@@ -233,7 +233,7 @@ class WorkflowScenarioSeeder extends Seeder
             ],
             [
                 'amaun' => 5000 + ($index * 500),
-                'catatan' => 'Pemindahan baki untuk sokongan program komuniti',
+                'catatan' => 'Pemindahan baki untuk sokongan aktiviti masjid',
                 'created_by' => $creator->id,
             ]
         );
@@ -276,9 +276,9 @@ class WorkflowScenarioSeeder extends Seeder
         }
 
         $logs = [
-            ['suffix' => '001', 'user' => $financeOfficer, 'channel' => 'email', 'subject' => 'Budget approval sent', 'message' => 'Budget approval message delivered successfully.', 'status' => 'sent', 'error' => null, 'retry' => 0, 'sent_at' => now()->subHours(3)],
-            ['suffix' => '002', 'user' => $financeOfficer, 'channel' => 'telegram', 'subject' => 'Failed payout alert', 'message' => 'Telegram delivery failed for payout alert.', 'status' => 'failed', 'error' => 'Telegram chat not reachable', 'retry' => 2, 'sent_at' => null],
-            ['suffix' => '003', 'user' => $manager, 'channel' => 'database', 'subject' => 'Draft voucher pending', 'message' => 'A draft voucher still requires managerial action.', 'status' => 'pending', 'error' => null, 'retry' => 0, 'sent_at' => null],
+            ['suffix' => '001', 'user' => $financeOfficer, 'channel' => 'email', 'subject' => 'Permohonan kelulusan bajet dihantar', 'message' => 'Notifikasi kelulusan bajet berjaya dihantar.', 'status' => 'sent', 'error' => null, 'retry' => 0, 'sent_at' => now()->subHours(3)],
+            ['suffix' => '002', 'user' => $financeOfficer, 'channel' => 'telegram', 'subject' => 'Amaran transaksi gagal', 'message' => 'Penghantaran notifikasi Telegram gagal untuk transaksi pembayaran.', 'status' => 'failed', 'error' => 'Saluran Telegram tidak dapat dihubungi', 'retry' => 2, 'sent_at' => null],
+            ['suffix' => '003', 'user' => $manager, 'channel' => 'database', 'subject' => 'Draf baucar menunggu tindakan', 'message' => 'Draf baucar masih menunggu tindakan pengurus.', 'status' => 'pending', 'error' => null, 'retry' => 0, 'sent_at' => null],
         ];
 
         foreach ($logs as $log) {
