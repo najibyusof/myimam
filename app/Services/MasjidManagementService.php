@@ -4,12 +4,15 @@ namespace App\Services;
 
 use App\Models\Masjid;
 use App\Models\User;
+use App\Services\SumberHasilManagementService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class MasjidManagementService
 {
+    public function __construct(private readonly SumberHasilManagementService $sumberHasilService) {}
+
     /**
      * Create a new masjid with the provided data.
      */
@@ -31,6 +34,7 @@ class MasjidManagementService
             ]);
 
             $this->handleAdminAssignment($masjid, $data);
+            $this->sumberHasilService->createBaseline($masjid->id);
 
             return $masjid;
         });

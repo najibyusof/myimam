@@ -21,12 +21,14 @@ class SumberHasil extends Model
         'nama_sumber',
         'jenis',
         'aktif',
+        'is_baseline',
     ];
 
     protected function casts(): array
     {
         return [
             'aktif' => 'boolean',
+            'is_baseline' => 'boolean',
         ];
     }
 

@@ -25,8 +25,23 @@ class SumberHasilManagementService
         });
     }
 
+    public function createBaseline(int $idMasjid): SumberHasil
+    {
+        return SumberHasil::query()->firstOrCreate(
+            ['id_masjid' => $idMasjid, 'kod' => 'DERMA-JMT'],
+            [
+                'nama_sumber' => 'Derma Jumaat',
+                'jenis' => 'derma',
+                'aktif' => true,
+                'is_baseline' => true,
+            ]
+        );
+    }
+
     public function toggleStatus(SumberHasil $sumberHasil, User $actor): SumberHasil
     {
+        abort_if($sumberHasil->is_baseline, 403, 'Sumber hasil asas tidak boleh dinyahaktifkan.');
+
         return DB::transaction(function () use ($sumberHasil, $actor): SumberHasil {
             $this->ensureScoped($sumberHasil, $actor);
             $sumberHasil->update(['aktif' => !$sumberHasil->aktif]);
@@ -37,6 +52,8 @@ class SumberHasilManagementService
 
     public function delete(SumberHasil $sumberHasil, User $actor): void
     {
+        abort_if($sumberHasil->is_baseline, 403, 'Sumber hasil asas tidak boleh dipadamkan.');
+
         DB::transaction(function () use ($sumberHasil, $actor): void {
             $this->ensureScoped($sumberHasil, $actor);
             $sumberHasil->delete();

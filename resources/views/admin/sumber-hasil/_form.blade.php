@@ -43,13 +43,18 @@
         <x-input-error :messages="$errors->get('nama_sumber')" class="mt-2" />
     </div>
 
-    <div>
-        <x-input-label for="aktif" :value="__('sumber_hasil.form.status')" />
-        <select id="aktif" name="aktif"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-            <option value="1" @selected((bool) old('aktif', $sumberHasilModel->aktif ?? true) === true)>{{ __('sumber_hasil.form.active') }}</option>
-            <option value="0" @selected((bool) old('aktif', $sumberHasilModel->aktif ?? true) === false)>{{ __('sumber_hasil.form.inactive') }}</option>
-        </select>
-        <x-input-error :messages="$errors->get('aktif')" class="mt-2" />
-    </div>
+    @if (!($sumberHasilModel->is_baseline ?? false) || auth()->user()->hasRole('Superadmin'))
+        <div>
+            <x-input-label for="aktif" :value="__('sumber_hasil.form.status')" />
+            <select id="aktif" name="aktif"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <option value="1" @selected((bool) old('aktif', $sumberHasilModel->aktif ?? true) === true)>{{ __('sumber_hasil.form.active') }}</option>
+                <option value="0" @selected((bool) old('aktif', $sumberHasilModel->aktif ?? true) === false)>{{ __('sumber_hasil.form.inactive') }}</option>
+            </select>
+            <x-input-error :messages="$errors->get('aktif')" class="mt-2" />
+        </div>
+    @else
+        {{-- Baseline record: non-superadmin cannot change status; lock it to active --}}
+        <input type="hidden" name="aktif" value="1">
+    @endif
 </div>

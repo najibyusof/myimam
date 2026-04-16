@@ -7,16 +7,20 @@ use App\Models\Hasil;
 use App\Models\SumberHasil;
 use App\Models\TabungKhas;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class HasilManagementService
 {
+    public function __construct(private readonly RunningNoManagementService $runningNoService) {}
+
     public function create(User $actor, array $data): Hasil
     {
         return DB::transaction(function () use ($actor, $data): Hasil {
             $payload = $this->sanitizePayload($actor, $data);
             $this->validateRelations($payload);
+            $payload['no_resit'] = $this->generateReceiptNumber($payload);
 
             return Hasil::query()->create($payload);
         });
@@ -50,6 +54,7 @@ class HasilManagementService
     {
         $masjidId = $actor->peranan === 'superadmin' ? ($data['id_masjid'] ?? null) : $actor->id_masjid;
         $amaun = $data['amaun'];
+
         return [
             'id_masjid' => $masjidId,
             'tarikh' => $data['tarikh'],
@@ -98,6 +103,30 @@ class HasilManagementService
                 'id_tabung_khas' => 'Tabung khas yang dipilih tidak sepadan dengan masjid transaksi.',
             ]);
         }
+    }
+
+    private function generateReceiptNumber(array $payload): string
+    {
+        $tarikh = Carbon::parse($payload['tarikh']);
+
+        return $this->runningNoService->generate(
+            (int) $payload['id_masjid'],
+            'RESIT',
+            (int) $tarikh->format('Y'),
+            (int) $tarikh->format('n')
+        );
+    }
+
+    public function generateReceiptNo(Hasil $hasil): string
+    {
+        $tarikh = Carbon::parse($hasil->tarikh);
+
+        return $this->runningNoService->generate(
+            (int) $hasil->id_masjid,
+            'RESIT',
+            (int) $tarikh->format('Y'),
+            (int) $tarikh->format('n')
+        );
     }
 
     private function ensureScoped(Hasil $hasil, User $actor): void

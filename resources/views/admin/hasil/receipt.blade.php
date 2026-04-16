@@ -27,10 +27,18 @@
         }
 
         .receipt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
             text-align: left;
             margin-bottom: 30px;
             border-bottom: 2px solid #000;
             padding-bottom: 20px;
+        }
+
+        .receipt-header-main {
+            flex: 1;
         }
 
         .masjid-name {
@@ -43,18 +51,6 @@
             font-size: 13px;
             line-height: 1.6;
             color: #333;
-        }
-
-        .receipt-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 30px;
-            gap: 20px;
-        }
-
-        .receipt-left {
-            flex: 1;
         }
 
         .receipt-right {
@@ -91,12 +87,6 @@
             color: #000;
         }
 
-        .receipt-date {
-            font-size: 11px;
-            color: #666;
-            margin-top: 10px;
-        }
-
         .divider {
             border-bottom: 1px solid #000;
             margin: 20px 0;
@@ -116,7 +106,8 @@
         .detail-label {
             font-weight: 600;
             color: #333;
-            min-width: 120px;
+            min-width: 160px;
+            padding-right: 20px;
         }
 
         .detail-value {
@@ -158,6 +149,10 @@
             body {
                 background-color: white;
                 padding: 0;
+            }
+
+            .receipt-header {
+                align-items: flex-start;
             }
 
             .receipt-container {
@@ -210,37 +205,26 @@
     <div class="receipt-container">
         <!-- Header -->
         <div class="receipt-header">
-            <div class="masjid-name">{{ $hasil->masjid->nama ?? 'N/A' }}</div>
-            <div class="masjid-address">
-                @if ($hasil->masjid)
-                    @if ($hasil->masjid->alamat || $hasil->masjid->daerah || $hasil->masjid->negeri)
-                        {{ $hasil->masjid->alamat ?? '' }}{{ $hasil->masjid->daerah ? ', ' . $hasil->masjid->daerah : '' }}{{ $hasil->masjid->negeri ? ', ' . $hasil->masjid->negeri : '' }}<br>
+            <div class="receipt-header-main">
+                <div class="masjid-name">{{ $hasil->masjid->nama ?? 'N/A' }}</div>
+                <div class="masjid-address">
+                    @if ($hasil->masjid)
+                        @if ($hasil->masjid->alamat || $hasil->masjid->daerah || $hasil->masjid->negeri)
+                            {{ $hasil->masjid->alamat ?? '' }}{{ $hasil->masjid->daerah ? ', ' . $hasil->masjid->daerah : '' }}{{ $hasil->masjid->negeri ? ', ' . $hasil->masjid->negeri : '' }}<br>
+                        @endif
+                        @if ($hasil->masjid->no_pendaftaran)
+                            {{ __('hasil.receipt.registration') }}: {{ $hasil->masjid->no_pendaftaran }}<br>
+                        @endif
                     @endif
-                    @if ($hasil->masjid->no_pendaftaran)
-                        {{ __('hasil.receipt.registration') }}: {{ $hasil->masjid->no_pendaftaran }}<br>
-                    @endif
-                    @if ($hasil->created_at)
-                        {{ __('hasil.receipt.created_at') }}: {{ $hasil->created_at->format('d/m/Y H:i') }}
-                    @endif
-                @endif
-            </div>
-        </div>
-
-        <!-- Amount and Receipt Number -->
-        <div class="receipt-info">
-            <div class="receipt-left">
-                <!-- Reserved for future use -->
+                </div>
             </div>
             <div class="receipt-right">
                 <div class="receipt-amount-title">{{ __('hasil.receipt.total_received') }}</div>
                 <div class="receipt-amount">RM {{ number_format($hasil->jumlah, 2) }}</div>
                 <div class="receipt-no-label">{{ __('hasil.receipt.receipt_no') }}:</div>
                 <div class="receipt-no">{{ $hasil->no_resit ?? 'N/A' }}</div>
-                <div class="receipt-date">{{ optional($hasil->tarikh)->format('d/m/Y') ?? 'N/A' }}</div>
             </div>
         </div>
-
-        <div class="divider"></div>
 
         <!-- Transaction Details -->
         <div class="details-section">

@@ -29,11 +29,19 @@ class SumberHasilPolicy
 
     public function delete(User $authUser, SumberHasil $sumberHasil): bool
     {
+        if ($sumberHasil->is_baseline) {
+            return false;
+        }
+
         return $this->inScope($authUser, $sumberHasil) && $authUser->hasAnyRole(['Admin', 'Bendahari']);
     }
 
     public function toggleStatus(User $authUser, SumberHasil $sumberHasil): bool
     {
+        if ($sumberHasil->is_baseline) {
+            return false;
+        }
+
         return $this->inScope($authUser, $sumberHasil) && $authUser->hasAnyRole(['Admin', 'Bendahari']);
     }
 

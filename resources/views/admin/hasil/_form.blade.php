@@ -15,6 +15,14 @@
         @method($method)
     @endif
 
+    @if ($hasilRecord?->no_resit)
+        <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                {{ __('hasil.receipt.receipt_no') }}</p>
+            <h3 class="mt-1 text-lg font-semibold text-slate-900">{{ $hasilRecord->no_resit }}</h3>
+        </div>
+    @endif
+
     <div class="grid gap-6 md:grid-cols-2">
         @if (auth()->user()->hasRole('Superadmin'))
             <div>
@@ -93,15 +101,11 @@
         @endif
     </div>
 
-    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-        @if ($formMode === 'jumaat')
-            <input type="hidden" name="is_jumaat" value="1">
-            {{ __('hasil.form.jumaat_mode_notice') }}
-        @else
-            <input type="hidden" name="is_jumaat" value="0">
-            {{ __('hasil.form.regular_mode_notice') }}
-        @endif
-    </div>
+    @if ($formMode === 'jumaat')
+        <input type="hidden" name="is_jumaat" value="1">
+    @else
+        <input type="hidden" name="is_jumaat" value="0">
+    @endif
 
     <div>
         <x-input-label for="catatan" :value="__('hasil.form.notes_optional')" />

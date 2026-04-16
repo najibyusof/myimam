@@ -114,7 +114,7 @@
                                     @can('delete', $item)
                                         <form method="POST" action="{{ route('admin.sumber-hasil.destroy', $item) }}"
                                             class="inline"
-                                            onsubmit="return confirm('{{ __('sumber_hasil.confirm_delete') }}');">
+                                            onsubmit="return confirm('{{ __('sumber_hasil.confirm_delete') }}');">>
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"

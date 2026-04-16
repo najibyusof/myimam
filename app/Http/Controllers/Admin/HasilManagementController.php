@@ -149,6 +149,11 @@ class HasilManagementController extends Controller
                 ->with('error', __('hasil.guard.use_jumaat_edit'));
         }
 
+        if (empty($hasil->no_resit)) {
+            $hasil->no_resit = $this->service->generateReceiptNo($hasil);
+            $hasil->save();
+        }
+
         return view('admin.hasil.edit', $this->formData($request, $hasil) + [
             'hasilRecord' => $hasil,
             'formMode' => 'regular',
@@ -265,6 +270,7 @@ class HasilManagementController extends Controller
             ->when($selectedMasjidId > 0, fn($builder) => $builder->byMasjid($selectedMasjidId))
             ->when($selectedMasjidId <= 0 && $masjidScope, fn($builder) => $builder->byMasjid($masjidScope))
             ->aktif()
+            ->where('is_baseline', false)
             ->orderBy('nama_sumber')
             ->get(['id', 'nama_sumber', 'id_masjid']);
 
