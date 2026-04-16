@@ -6,6 +6,7 @@ use App\Exports\LaporanBukuTunaiExport;
 use App\Models\Akaun;
 use App\Models\Belanja;
 use App\Models\Hasil;
+use App\Models\Masjid;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -21,32 +22,47 @@ class LaporanBukuTunaiController extends Controller
         $actor = $request->user();
         $idMasjid = (int) ($actor?->id_masjid ?? 0);
         $isSuperadmin = $this->isSuperadmin($request);
+        $selectedMasjidId = $isSuperadmin ? (int) $request->query('masjid_id', 0) : $idMasjid;
+        $requiresMasjidSelection = $isSuperadmin && $selectedMasjidId <= 0;
 
         abort_if($idMasjid <= 0 && !$isSuperadmin, 403);
 
-        $akaunList = Akaun::query()
-            ->when($isSuperadmin, fn($query) => $query->withoutTenantScope())
-            ->when(!$isSuperadmin, fn($query) => $query->byMasjid($idMasjid))
+        $akaunList = $requiresMasjidSelection
+            ? collect()
+            : Akaun::query()
+            ->when($isSuperadmin, fn($query) => $query->withoutTenantScope()->byMasjid($selectedMasjidId))
+            ->when(!$isSuperadmin, fn($query) => $query->byMasjid($selectedMasjidId))
             ->aktif()
             ->orderBy('nama_akaun')
             ->get(['id', 'id_masjid', 'nama_akaun']);
 
+        $masjidList = $isSuperadmin
+            ? Masjid::query()->orderBy('nama')->get(['id', 'nama'])
+            : collect();
+
         $filters = [
+            'masjid_id' => $selectedMasjidId > 0 ? $selectedMasjidId : null,
             'akaun_id' => (int) $request->query('akaun_id', 0) > 0 ? (int) $request->query('akaun_id') : null,
             'tarikh_mula' => $request->query('tarikh_mula') ?: now()->startOfMonth()->toDateString(),
             'tarikh_akhir' => $request->query('tarikh_akhir') ?: now()->toDateString(),
             'baki_awal' => (float) $request->query('baki_awal', 0),
         ];
 
+        $selectedAkaunValid = $filters['akaun_id'] !== null
+            && $akaunList->contains(fn($akaun) => (int) $akaun->id === (int) $filters['akaun_id']);
+
         $laporan = null;
-        if ($request->filled(['akaun_id', 'tarikh_mula', 'tarikh_akhir'])) {
-            $laporan = $this->generate($request, $idMasjid);
+        if (!$requiresMasjidSelection && $selectedAkaunValid && $request->filled(['akaun_id', 'tarikh_mula', 'tarikh_akhir'])) {
+            $laporan = $this->generate($request);
         }
 
         return view('laporan.buku-tunai', [
             'akaunList' => $akaunList,
+            'masjidList' => $masjidList,
             'filters' => $filters,
             'laporan' => $laporan,
+            'isSuperadmin' => $isSuperadmin,
+            'requiresMasjidSelection' => $requiresMasjidSelection,
         ]);
     }
 
@@ -80,27 +96,22 @@ class LaporanBukuTunaiController extends Controller
     /**
      * @return array<string, mixed>
      */
-    public function generate(Request $request, ?int $idMasjid = null): array
+    public function generate(Request $request): array
     {
         $isSuperadmin = $this->isSuperadmin($request);
-        $idMasjid = $idMasjid ?? (int) ($request->user()?->id_masjid ?? 0);
-        abort_if($idMasjid <= 0 && !$isSuperadmin, 403);
+        $userMasjidId = (int) ($request->user()?->id_masjid ?? 0);
+        $selectedMasjidId = $isSuperadmin ? (int) $request->query('masjid_id', 0) : $userMasjidId;
 
-        $validated = $this->validateFilters($request);
+        abort_if($selectedMasjidId <= 0, 403);
+
+        $validated = $this->validateFilters($request, $isSuperadmin);
 
         $akaunId = (int) $validated['akaun_id'];
         $tarikhMula = (string) $validated['tarikh_mula'];
         $tarikhAkhir = (string) $validated['tarikh_akhir'];
         $bakiAwal = (float) ($validated['baki_awal'] ?? 0);
 
-        if ($idMasjid <= 0 && $isSuperadmin) {
-            $idMasjid = (int) Akaun::query()
-                ->withoutTenantScope()
-                ->whereKey($akaunId)
-                ->value('id_masjid');
-        }
-
-        abort_if($idMasjid <= 0, 403);
+        $idMasjid = $selectedMasjidId;
 
         $akaun = Akaun::query()
             ->when($isSuperadmin, fn($query) => $query->withoutTenantScope())
@@ -109,6 +120,7 @@ class LaporanBukuTunaiController extends Controller
             ->firstOrFail(['id', 'nama_akaun']);
 
         $transaksiHasil = Hasil::query()
+            ->when($isSuperadmin, fn($query) => $query->withoutTenantScope())
             ->byMasjid($idMasjid)
             ->byAkaun($akaunId)
             ->betweenDates($tarikhMula, $tarikhAkhir)
@@ -125,6 +137,7 @@ class LaporanBukuTunaiController extends Controller
             ]);
 
         $transaksiBelanja = Belanja::query()
+            ->when($isSuperadmin, fn($query) => $query->withoutTenantScope())
             ->byMasjid($idMasjid)
             ->where('id_akaun', $akaunId)
             ->notDeleted()
@@ -198,17 +211,25 @@ class LaporanBukuTunaiController extends Controller
     /**
      * @return array{akaun_id:int,tarikh_mula:string,tarikh_akhir:string,baki_awal?:float|int|string|null}
      */
-    private function validateFilters(Request $request): array
+    private function validateFilters(Request $request, bool $isSuperadmin): array
     {
+        $rules = [
+            'masjid_id' => ['nullable', 'integer', 'exists:masjid,id'],
+            'akaun_id' => ['required', 'integer', 'exists:akaun,id'],
+            'tarikh_mula' => ['required', 'date', 'before_or_equal:tarikh_akhir', 'before_or_equal:today'],
+            'tarikh_akhir' => ['required', 'date', 'after_or_equal:tarikh_mula', 'before_or_equal:today'],
+            'baki_awal' => ['nullable', 'numeric'],
+        ];
+
+        if ($isSuperadmin) {
+            $rules['masjid_id'][] = 'required';
+        }
+
         $validator = Validator::make(
             $request->all(),
+            $rules,
             [
-                'akaun_id' => ['required', 'integer', 'exists:akaun,id'],
-                'tarikh_mula' => ['required', 'date', 'before_or_equal:tarikh_akhir', 'before_or_equal:today'],
-                'tarikh_akhir' => ['required', 'date', 'after_or_equal:tarikh_mula', 'before_or_equal:today'],
-                'baki_awal' => ['nullable', 'numeric'],
-            ],
-            [
+                'masjid_id.required' => 'Sila pilih masjid.',
                 'tarikh_mula.before_or_equal' => 'Tarikh mula mesti sama atau sebelum tarikh akhir.',
                 'tarikh_akhir.after_or_equal' => 'Tarikh akhir mesti sama atau selepas tarikh mula.',
                 'tarikh_akhir.before_or_equal' => 'Tarikh akhir tidak boleh melebihi tarikh hari ini.',

@@ -18,12 +18,12 @@
             @endphp
 
             <div class="rounded-xl bg-white p-5 shadow">
-                <form method="GET" action="{{ route('laporan.belanja') }}" class="space-y-4">
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                        @if ($is_superadmin)
+                <form method="GET" action="{{ route('laporan.belanja') }}" id="laporan-belanja-form" class="space-y-4">
+                    @if ($is_superadmin)
+                        <div class="grid grid-cols-1 md:max-w-sm">
                             <div>
                                 <label class="mb-1 block text-xs font-medium text-gray-600">Masjid</label>
-                                <select name="masjid_id"
+                                <select name="masjid_id" id="laporan-belanja-masjid" required
                                     class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                                     <option value="">Pilih Masjid</option>
                                     @foreach ($masjid_list as $masjid)
@@ -33,23 +33,26 @@
                                     @endforeach
                                 </select>
                             </div>
-                        @endif
+                        </div>
+                    @endif
 
-                        <div>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+
+                        <div class="md:col-span-3">
                             <label class="mb-1 block text-xs font-medium text-gray-600">Tarikh Dari</label>
                             <input type="date" name="tarikh_dari" value="{{ $filters['tarikh_dari'] }}"
                                 class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                         </div>
 
-                        <div>
+                        <div class="md:col-span-3">
                             <label class="mb-1 block text-xs font-medium text-gray-600">Tarikh Hingga</label>
                             <input type="date" name="tarikh_hingga" value="{{ $filters['tarikh_hingga'] }}"
                                 class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                         </div>
 
-                        <div>
+                        <div class="md:col-span-3">
                             <label class="mb-1 block text-xs font-medium text-gray-600">Kategori</label>
-                            <select name="kategori_id"
+                            <select name="kategori_id" id="laporan-belanja-kategori"
                                 class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">Semua Kategori</option>
                                 @foreach ($kategori_list as $kategori)
@@ -60,9 +63,9 @@
                             </select>
                         </div>
 
-                        <div>
+                        <div class="md:col-span-3">
                             <label class="mb-1 block text-xs font-medium text-gray-600">Akaun</label>
-                            <select name="akaun_id"
+                            <select name="akaun_id" id="laporan-belanja-akaun"
                                 class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">Semua Akaun</option>
                                 @foreach ($akaun_list as $akaun)
@@ -74,8 +77,8 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-end">
-                        <div>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-end">
+                        <div class="md:col-span-3">
                             <label class="mb-1 block text-xs font-medium text-gray-600">Status</label>
                             <select name="status"
                                 class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -85,7 +88,7 @@
                             </select>
                         </div>
 
-                        <div>
+                        <div class="md:col-span-3">
                             <label class="mb-1 block text-xs font-medium text-gray-600">Jenis Paparan</label>
                             <select name="jenis_paparan"
                                 class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -98,7 +101,7 @@
                             </select>
                         </div>
 
-                        <div>
+                        <div class="md:col-span-6">
                             <button type="submit"
                                 class="w-full rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white transition hover:bg-indigo-700">
                                 Jana Laporan
@@ -282,4 +285,25 @@
             </div>
         </div>
     </div>
+
+    @if ($is_superadmin)
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('laporan-belanja-form');
+                const masjidSelect = document.getElementById('laporan-belanja-masjid');
+                const kategoriSelect = document.getElementById('laporan-belanja-kategori');
+                const akaunSelect = document.getElementById('laporan-belanja-akaun');
+
+                if (!form || !masjidSelect || !kategoriSelect || !akaunSelect) {
+                    return;
+                }
+
+                masjidSelect.addEventListener('change', function() {
+                    kategoriSelect.value = '';
+                    akaunSelect.value = '';
+                    form.submit();
+                });
+            });
+        </script>
+    @endif
 </x-app-layout>

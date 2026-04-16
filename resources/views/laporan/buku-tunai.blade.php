@@ -7,8 +7,12 @@
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             @php
                 $bolehEksport =
-                    !empty($filters['akaun_id']) && !empty($filters['tarikh_mula']) && !empty($filters['tarikh_akhir']);
+                    !$requiresMasjidSelection &&
+                    !empty($filters['akaun_id']) &&
+                    !empty($filters['tarikh_mula']) &&
+                    !empty($filters['tarikh_akhir']);
                 $exportParams = [
+                    'masjid_id' => $filters['masjid_id'] ?? null,
                     'akaun_id' => $filters['akaun_id'] ?? null,
                     'tarikh_mula' => $filters['tarikh_mula'] ?? null,
                     'tarikh_akhir' => $filters['tarikh_akhir'] ?? null,
@@ -17,74 +21,101 @@
             @endphp
 
             <div class="rounded-xl bg-white p-5 shadow">
-                <form method="GET" action="{{ route('laporan.buku-tunai') }}"
-                    class="grid grid-cols-1 gap-4 md:grid-cols-5 md:items-end">
-                    <div>
-                        <label class="mb-1 block text-xs font-medium text-gray-600">Pilihan Akaun</label>
-                        <select name="akaun_id" required
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <option value="">Pilih Akaun</option>
-                            @foreach ($akaunList as $akaun)
-                                <option value="{{ $akaun->id }}" @selected((int) ($filters['akaun_id'] ?? 0) === (int) $akaun->id)>
-                                    {{ $akaun->nama_akaun }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('akaun_id')
-                            <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                <form method="GET" action="{{ route('laporan.buku-tunai') }}" class="space-y-4">
+                    @if ($isSuperadmin)
+                        <div class="grid grid-cols-1 md:max-w-sm">
+                            <div>
+                                <label class="mb-1 block text-xs font-medium text-gray-600">Masjid</label>
+                                <select name="masjid_id" id="buku-tunai-masjid" required
+                                    class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="">Pilih Masjid</option>
+                                    @foreach ($masjidList as $masjid)
+                                        <option value="{{ $masjid->id }}" @selected((int) ($filters['masjid_id'] ?? 0) === (int) $masjid->id)>
+                                            {{ $masjid->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('masjid_id')
+                                    <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    @endif
 
-                    <div>
-                        <label class="mb-1 block text-xs font-medium text-gray-600">Tarikh Mula</label>
-                        <input type="date" name="tarikh_mula" required value="{{ $filters['tarikh_mula'] }}"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        @error('tarikh_mula')
-                            <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-end">
+                        <div class="md:col-span-3">
+                            <label class="mb-1 block text-xs font-medium text-gray-600">Pilihan Akaun</label>
+                            <select name="akaun_id" id="buku-tunai-akaun"
+                                class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">Pilih Akaun</option>
+                                @foreach ($akaunList as $akaun)
+                                    <option value="{{ $akaun->id }}" @selected((int) ($filters['akaun_id'] ?? 0) === (int) $akaun->id)>
+                                        {{ $akaun->nama_akaun }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('akaun_id')
+                                <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                    <div>
-                        <label class="mb-1 block text-xs font-medium text-gray-600">Tarikh Akhir</label>
-                        <input type="date" name="tarikh_akhir" required value="{{ $filters['tarikh_akhir'] }}"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        @error('tarikh_akhir')
-                            <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                        <div class="md:col-span-2">
+                            <label class="mb-1 block text-xs font-medium text-gray-600">Tarikh Mula</label>
+                            <input type="date" name="tarikh_mula" required value="{{ $filters['tarikh_mula'] }}"
+                                class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            @error('tarikh_mula')
+                                <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                    <div>
-                        <label class="mb-1 block text-xs font-medium text-gray-600">Baki Awal</label>
-                        <input type="number" step="0.01" name="baki_awal" value="{{ $filters['baki_awal'] }}"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        @error('baki_awal')
-                            <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                        <div class="md:col-span-2">
+                            <label class="mb-1 block text-xs font-medium text-gray-600">Tarikh Akhir</label>
+                            <input type="date" name="tarikh_akhir" required value="{{ $filters['tarikh_akhir'] }}"
+                                class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            @error('tarikh_akhir')
+                                <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                    <div>
-                        <button type="submit"
-                            class="w-full rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white transition hover:bg-indigo-700">
-                            Jana Laporan
-                        </button>
-                    </div>
+                        <div class="md:col-span-2">
+                            <label class="mb-1 block text-xs font-medium text-gray-600">Baki Awal</label>
+                            <input type="number" step="0.01" name="baki_awal" value="{{ $filters['baki_awal'] }}"
+                                class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            @error('baki_awal')
+                                <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                    <div class="md:col-span-5 flex flex-wrap items-center gap-2 pt-2">
-                        <a href="{{ $bolehEksport ? route('laporan.buku-tunai.export.pdf', $exportParams) : '#' }}"
-                            class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100 {{ $bolehEksport ? '' : 'pointer-events-none opacity-50' }}">
-                            Eksport PDF
-                        </a>
-                        <a href="{{ $bolehEksport ? route('laporan.buku-tunai.export.excel', $exportParams) : '#' }}"
-                            class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100 {{ $bolehEksport ? '' : 'pointer-events-none opacity-50' }}">
-                            Eksport Excel
-                        </a>
-                        <a href="{{ $bolehEksport ? route('laporan.buku-tunai.print', $exportParams) : '#' }}"
-                            target="_blank"
-                            class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100 {{ $bolehEksport ? '' : 'pointer-events-none opacity-50' }}">
-                            Paparan Cetak
-                        </a>
+                        <div class="md:col-span-3">
+                            <button type="submit"
+                                class="w-full rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white transition hover:bg-indigo-700">
+                                Jana Laporan
+                            </button>
+                        </div>
+
+                        <div class="md:col-span-12 flex flex-wrap items-center gap-2 pt-2">
+                            <a href="{{ $bolehEksport ? route('laporan.buku-tunai.export.pdf', $exportParams) : '#' }}"
+                                class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100 {{ $bolehEksport ? '' : 'pointer-events-none opacity-50' }}">
+                                Eksport PDF
+                            </a>
+                            <a href="{{ $bolehEksport ? route('laporan.buku-tunai.export.excel', $exportParams) : '#' }}"
+                                class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100 {{ $bolehEksport ? '' : 'pointer-events-none opacity-50' }}">
+                                Eksport Excel
+                            </a>
+                            <a href="{{ $bolehEksport ? route('laporan.buku-tunai.print', $exportParams) : '#' }}"
+                                target="_blank"
+                                class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100 {{ $bolehEksport ? '' : 'pointer-events-none opacity-50' }}">
+                                Paparan Cetak
+                            </a>
+                        </div>
                     </div>
                 </form>
+
+                @if ($requiresMasjidSelection)
+                    <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        Sila pilih masjid terlebih dahulu untuk jana Laporan Buku Tunai.
+                    </div>
+                @endif
             </div>
 
             @if ($laporan)
@@ -164,4 +195,21 @@
             @endif
         </div>
     </div>
+
+    @if ($isSuperadmin)
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const masjidSelect = document.getElementById('buku-tunai-masjid');
+                const akaunSelect = document.getElementById('buku-tunai-akaun');
+                if (!masjidSelect || !akaunSelect || !masjidSelect.form) {
+                    return;
+                }
+
+                masjidSelect.addEventListener('change', function() {
+                    akaunSelect.value = '';
+                    masjidSelect.form.submit();
+                });
+            });
+        </script>
+    @endif
 </x-app-layout>

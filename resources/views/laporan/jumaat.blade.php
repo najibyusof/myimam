@@ -7,6 +7,7 @@
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             @php
                 $exportParams = [
+                    'masjid_id' => $filters['masjid_id'] ?? null,
                     'tahun' => $filters['tahun'],
                     'jenis_paparan' => $filters['jenis_paparan'] ?? 'ringkasan_bulanan',
                 ];
@@ -17,48 +18,74 @@
             @endphp
 
             <div class="rounded-xl bg-white p-5 shadow">
-                <form method="GET" action="{{ route('laporan.jumaat') }}"
-                    class="grid grid-cols-1 gap-4 md:grid-cols-3 md:items-end">
-                    <div>
-                        <label class="mb-1 block text-xs font-medium text-gray-600">Tahun</label>
-                        <select name="tahun"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            @php
-                                $tahunSemasa = (int) now()->format('Y');
-                            @endphp
-                            @for ($tahun = $tahunSemasa; $tahun >= $tahunSemasa - 10; $tahun--)
-                                <option value="{{ $tahun }}" @selected((int) $filters['tahun'] === $tahun)>
-                                    {{ $tahun }}
+                <form method="GET" action="{{ route('laporan.jumaat') }}" id="laporan-jumaat-form" class="space-y-4">
+                    @if ($is_superadmin)
+                        <div class="grid grid-cols-1 md:max-w-sm">
+                            <div>
+                                <label class="mb-1 block text-xs font-medium text-gray-600">Masjid</label>
+                                <select name="masjid_id" id="laporan-jumaat-masjid" required
+                                    class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="">Pilih Masjid</option>
+                                    @foreach ($masjid_list as $masjid)
+                                        <option value="{{ $masjid->id }}" @selected((int) ($filters['masjid_id'] ?? 0) === (int) $masjid->id)>
+                                            {{ $masjid->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-end">
+                        <div class="md:col-span-2">
+                            <label class="mb-1 block text-xs font-medium text-gray-600">Tahun</label>
+                            <select name="tahun"
+                                class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                @php
+                                    $tahunSemasa = (int) now()->format('Y');
+                                @endphp
+                                @for ($tahun = $tahunSemasa; $tahun >= $tahunSemasa - 10; $tahun--)
+                                    <option value="{{ $tahun }}" @selected((int) $filters['tahun'] === $tahun)>
+                                        {{ $tahun }}
+                                    </option>
+                                @endfor
+                            </select>
+                        </div>
+
+                        <div class="md:col-span-4">
+                            <label class="mb-1 block text-xs font-medium text-gray-600">Jenis Paparan</label>
+                            <select name="jenis_paparan"
+                                class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="ringkasan_bulanan" @selected(($filters['jenis_paparan'] ?? 'ringkasan_bulanan') === 'ringkasan_bulanan')>Ringkasan Bulanan
                                 </option>
-                            @endfor
-                        </select>
-                    </div>
+                                <option value="senarai_jumaat" @selected(($filters['jenis_paparan'] ?? 'ringkasan_bulanan') === 'senarai_jumaat')>Senarai Setiap Jumaat
+                                </option>
+                            </select>
+                        </div>
 
-                    <div>
-                        <label class="mb-1 block text-xs font-medium text-gray-600">Jenis Paparan</label>
-                        <select name="jenis_paparan"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <option value="ringkasan_bulanan" @selected(($filters['jenis_paparan'] ?? 'ringkasan_bulanan') === 'ringkasan_bulanan')>Ringkasan Bulanan</option>
-                            <option value="senarai_jumaat" @selected(($filters['jenis_paparan'] ?? 'ringkasan_bulanan') === 'senarai_jumaat')>Senarai Setiap Jumaat</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <button type="submit"
-                            class="w-full rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white transition hover:bg-indigo-700">
-                            Jana Laporan
-                        </button>
+                        <div class="md:col-span-6">
+                            <button type="submit"
+                                class="w-full rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white transition hover:bg-indigo-700">
+                                Jana Laporan
+                            </button>
+                        </div>
                     </div>
                 </form>
                 <p class="mt-3 text-xs text-gray-500">Sumber: transaksi yang direkod sebagai 'Kutipan Jumaat'.</p>
 
+                @if ($requires_masjid_selection)
+                    <div class="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        Sila pilih masjid terlebih dahulu untuk jana Laporan Kutipan Jumaat.
+                    </div>
+                @endif
+
                 <div class="mt-3 flex flex-wrap items-center gap-2">
-                    <a href="{{ route('laporan.jumaat.export.pdf', $exportParams) }}"
-                        class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100">
+                    <a href="{{ !$requires_masjid_selection ? route('laporan.jumaat.export.pdf', $exportParams) : '#' }}"
+                        class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100 {{ $requires_masjid_selection ? 'pointer-events-none opacity-50' : '' }}">
                         Eksport PDF
                     </a>
-                    <a href="{{ route('laporan.jumaat.export.excel', $exportParams) }}"
-                        class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100">
+                    <a href="{{ !$requires_masjid_selection ? route('laporan.jumaat.export.excel', $exportParams) : '#' }}"
+                        class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100 {{ $requires_masjid_selection ? 'pointer-events-none opacity-50' : '' }}">
                         Eksport Excel
                     </a>
                 </div>
@@ -94,7 +121,7 @@
                             <tbody class="divide-y divide-gray-100">
                                 @forelse ($rows as $row)
                                     <tr class="cursor-pointer hover:bg-slate-50 transition"
-                                        data-href="{{ route('laporan.jumaat', ['tahun' => $filters['tahun'], 'jenis_paparan' => 'senarai_jumaat', 'bulan' => $row['bulan_no']]) }}"
+                                        data-href="{{ route('laporan.jumaat', ['masjid_id' => $filters['masjid_id'] ?? null, 'tahun' => $filters['tahun'], 'jenis_paparan' => 'senarai_jumaat', 'bulan' => $row['bulan_no']]) }}"
                                         tabindex="0" role="link" aria-label="Lihat kutipan {{ $row['bulan'] }}">
                                         <td class="px-4 py-3">
                                             <span class="font-medium text-gray-800">{{ $row['bulan'] }}</span>
@@ -128,7 +155,7 @@
                         @if (($filters['bulan'] ?? 0) > 0)
                             <p class="mt-1 text-xs text-gray-500">Paparan bulan {{ $filters['bulan_nama'] }}. Semua
                                 kutipan Jumaat diurutkan mengikut tarikh.</p>
-                            <a href="{{ route('laporan.jumaat', ['tahun' => $filters['tahun'], 'jenis_paparan' => 'senarai_jumaat']) }}"
+                            <a href="{{ route('laporan.jumaat', ['masjid_id' => $filters['masjid_id'] ?? null, 'tahun' => $filters['tahun'], 'jenis_paparan' => 'senarai_jumaat']) }}"
                                 class="mt-2 inline-flex text-xs font-medium text-indigo-600 hover:text-indigo-700">
                                 Tunjuk semua bulan
                             </a>
@@ -182,6 +209,16 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            @if ($is_superadmin)
+                const jumaatForm = document.getElementById('laporan-jumaat-form');
+                const masjidSelect = document.getElementById('laporan-jumaat-masjid');
+                if (jumaatForm && masjidSelect) {
+                    masjidSelect.addEventListener('change', function() {
+                        jumaatForm.submit();
+                    });
+                }
+            @endif
+
             const tahunFilter = @json((int) $filters['tahun']);
             const senaraiBaseUrl = @json(route('laporan.jumaat'));
 
@@ -190,11 +227,14 @@
                     return;
                 }
 
-                const params = new URLSearchParams({
-                    tahun: String(tahunFilter),
-                    jenis_paparan: 'senarai_jumaat',
-                    bulan: String(bulanNo),
-                });
+                const params = new URLSearchParams();
+                const masjidId = @json($filters['masjid_id'] ?? null);
+                if (masjidId) {
+                    params.set('masjid_id', String(masjidId));
+                }
+                params.set('tahun', String(tahunFilter));
+                params.set('jenis_paparan', 'senarai_jumaat');
+                params.set('bulan', String(bulanNo));
 
                 window.location.href = senaraiBaseUrl + '?' + params.toString();
             }

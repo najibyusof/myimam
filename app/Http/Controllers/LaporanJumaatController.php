@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\LaporanJumaatExport;
 use App\Models\Hasil;
+use App\Models\Masjid;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -21,6 +22,10 @@ class LaporanJumaatController extends Controller
 
     public function exportPdf(Request $request)
     {
+        if ($this->isSuperadmin($request) && (int) $request->query('masjid_id', 0) <= 0) {
+            abort(403, 'Sila pilih masjid terlebih dahulu.');
+        }
+
         $data = $this->buildLaporanData($request);
         $filename = 'laporan-kutipan-jumaat-' . now()->format('Ymd_His') . '.pdf';
 
@@ -29,6 +34,10 @@ class LaporanJumaatController extends Controller
 
     public function exportExcel(Request $request)
     {
+        if ($this->isSuperadmin($request) && (int) $request->query('masjid_id', 0) <= 0) {
+            abort(403, 'Sila pilih masjid terlebih dahulu.');
+        }
+
         $data = $this->buildLaporanData($request);
         $filename = 'laporan-kutipan-jumaat-' . now()->format('Ymd_His') . '.xlsx';
 
@@ -41,10 +50,12 @@ class LaporanJumaatController extends Controller
     private function buildLaporanData(Request $request): array
     {
         $actor = $request->user();
-        $idMasjid = (int) ($actor?->id_masjid ?? 0);
+        $userMasjidId = (int) ($actor?->id_masjid ?? 0);
         $isSuperadmin = $this->isSuperadmin($request);
+        $selectedMasjidId = $isSuperadmin ? (int) $request->query('masjid_id', 0) : $userMasjidId;
+        $requiresMasjidSelection = $isSuperadmin && $selectedMasjidId <= 0;
 
-        abort_if($idMasjid <= 0 && !$isSuperadmin, 403);
+        abort_if($userMasjidId <= 0 && !$isSuperadmin, 403);
 
         $tahunSemasa = (int) now()->format('Y');
         $tahun = (int) $request->query('tahun', $tahunSemasa);
@@ -62,18 +73,26 @@ class LaporanJumaatController extends Controller
             $bulan = 0;
         }
 
-        $ringkasan = $this->buildRingkasanBulanan($tahun, $idMasjid, $isSuperadmin);
-        $jumlahSetahun = (float) $ringkasan->sum('jumlah');
+        $ringkasan = collect();
+        $jumlahSetahun = 0.0;
+        if (!$requiresMasjidSelection) {
+            $ringkasan = $this->buildRingkasanBulanan($tahun, $selectedMasjidId, $isSuperadmin);
+            $jumlahSetahun = (float) $ringkasan->sum('jumlah');
+        }
 
         $senariJumaat = collect();
-        if ($jenisPaparan === 'senarai_jumaat') {
-            $senariJumaat = $this->buildSenariJumaat($tahun, $bulan, $idMasjid, $isSuperadmin);
+        if ($jenisPaparan === 'senarai_jumaat' && !$requiresMasjidSelection) {
+            $senariJumaat = $this->buildSenariJumaat($tahun, $bulan, $selectedMasjidId, $isSuperadmin);
         }
 
         $namaBulan = $this->namaBulan();
+        $masjidList = $isSuperadmin
+            ? Masjid::query()->orderBy('nama')->get(['id', 'nama'])
+            : collect();
 
         return [
             'filters' => [
+                'masjid_id' => $selectedMasjidId > 0 ? $selectedMasjidId : null,
                 'tahun' => $tahun,
                 'jenis_paparan' => $jenisPaparan,
                 'bulan' => $bulan,
@@ -85,6 +104,8 @@ class LaporanJumaatController extends Controller
             'chart_labels' => $ringkasan->pluck('bulan')->values(),
             'chart_data' => $ringkasan->pluck('jumlah')->values(),
             'is_superadmin' => $isSuperadmin,
+            'masjid_list' => $masjidList,
+            'requires_masjid_selection' => $requiresMasjidSelection,
         ];
     }
 
@@ -98,9 +119,7 @@ class LaporanJumaatController extends Controller
             ->jumaat()
             ->whereYear('tarikh', $tahun);
 
-        if (!$isSuperadmin) {
-            $query->byMasjid($idMasjid);
-        }
+        $query->byMasjid($idMasjid);
 
         $aggregated = $query
             ->selectRaw('MONTH(tarikh) as bulan_no, SUM(jumlah) as jumlah, COUNT(*) as bil_rekod')
@@ -137,9 +156,7 @@ class LaporanJumaatController extends Controller
             ->orderBy('tarikh')
             ->orderBy('id');
 
-        if (!$isSuperadmin) {
-            $query->byMasjid($idMasjid);
-        }
+        $query->byMasjid($idMasjid);
 
         return $query->get(['id', 'id_masjid', 'tarikh', 'no_resit', 'id_akaun', 'jumlah', 'catatan']);
     }
@@ -160,9 +177,7 @@ class LaporanJumaatController extends Controller
             $query->whereMonth('tarikh', $bulan);
         }
 
-        if (!$isSuperadmin) {
-            $query->byMasjid($idMasjid);
-        }
+        $query->byMasjid($idMasjid);
 
         $records = $query
             ->selectRaw('DATE(tarikh) as tarikh, SUM(jumlah) as jumlah_kutipan, COUNT(*) as bil_rekod')

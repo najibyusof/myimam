@@ -377,78 +377,82 @@
 
                 {{-- Filter form --}}
                 <div class="no-print mt-6 border-t border-gray-100 pt-5">
-                    <form method="GET" action="{{ route('laporan.penyata') }}"
-                        class="grid grid-cols-1 gap-4 md:grid-cols-5 md:items-end">
+                    <form method="GET" action="{{ route('laporan.penyata') }}" id="laporan-penyata-form"
+                        class="space-y-4">
                         @if ($is_superadmin)
-                            <div>
-                                <label class="mb-1 block text-xs font-medium text-gray-600">Masjid</label>
-                                <select name="masjid_id"
+                            <div class="grid grid-cols-1 md:max-w-sm">
+                                <div>
+                                    <label class="mb-1 block text-xs font-medium text-gray-600">Masjid</label>
+                                    <select name="masjid_id" id="laporan-penyata-masjid" required
+                                        class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                        <option value="">Pilih Masjid</option>
+                                        @foreach ($masjid_list as $masjid)
+                                            <option value="{{ $masjid['id'] }}" @selected((string) ($filters['masjid_id'] ?? '') === (string) $masjid['id'])>
+                                                {{ $masjid['name'] }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-end">
+                            <div class="md:col-span-2">
+                                <label class="mb-1 block text-xs font-medium text-gray-600">Jenis Penyata</label>
+                                <select name="jenis_penyata" onchange="this.form.submit()"
                                     class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                    <option value="">Pilih Masjid</option>
-                                    @foreach ($masjid_list as $masjid)
-                                        <option value="{{ $masjid['id'] }}" @selected((string) ($filters['masjid_id'] ?? '') === (string) $masjid['id'])>
-                                            {{ $masjid['name'] }}
+                                    <option value="bulanan" @selected(($filters['jenis_penyata'] ?? 'bulanan') === 'bulanan')>Bulanan</option>
+                                    <option value="tahunan" @selected(($filters['jenis_penyata'] ?? 'bulanan') === 'tahunan')>Tahunan</option>
+                                </select>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="mb-1 block text-xs font-medium text-gray-600">Tahun</label>
+                                <select name="tahun"
+                                    class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    @foreach ($tahun_opsyen as $tahun)
+                                        <option value="{{ $tahun }}" @selected((int) ($filters['tahun'] ?? now()->year) === (int) $tahun)>
+                                            {{ $tahun }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
-                        @endif
 
-                        <div>
-                            <label class="mb-1 block text-xs font-medium text-gray-600">Jenis Penyata</label>
-                            <select name="jenis_penyata" onchange="this.form.submit()"
-                                class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="bulanan" @selected(($filters['jenis_penyata'] ?? 'bulanan') === 'bulanan')>Bulanan</option>
-                                <option value="tahunan" @selected(($filters['jenis_penyata'] ?? 'bulanan') === 'tahunan')>Tahunan</option>
-                            </select>
-                        </div>
+                            <div class="md:col-span-2">
+                                <label class="mb-1 block text-xs font-medium text-gray-600">Bulan</label>
+                                <select name="bulan" @disabled(($filters['jenis_penyata'] ?? 'bulanan') !== 'bulanan')
+                                    class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-100">
+                                    @foreach ($bulan_opsyen as $bulan)
+                                        <option value="{{ $bulan['id'] }}" @selected((int) ($filters['bulan'] ?? now()->month) === (int) $bulan['id'])>
+                                            {{ ucfirst($bulan['nama']) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                        <div>
-                            <label class="mb-1 block text-xs font-medium text-gray-600">Tahun</label>
-                            <select name="tahun"
-                                class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                @foreach ($tahun_opsyen as $tahun)
-                                    <option value="{{ $tahun }}" @selected((int) ($filters['tahun'] ?? now()->year) === (int) $tahun)>{{ $tahun }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="mb-1 block text-xs font-medium text-gray-600">Bulan</label>
-                            <select name="bulan" @disabled(($filters['jenis_penyata'] ?? 'bulanan') !== 'bulanan')
-                                class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-100">
-                                @foreach ($bulan_opsyen as $bulan)
-                                    <option value="{{ $bulan['id'] }}" @selected((int) ($filters['bulan'] ?? now()->month) === (int) $bulan['id'])>
-                                        {{ ucfirst($bulan['nama']) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                            <button type="submit"
-                                class="w-full rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 sm:w-auto">
-                                Jana Penyata
-                            </button>
-                            <div
-                                class="flex items-center gap-2 border-t border-gray-100 pt-2 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
-                                <button type="button" id="comparisonToggle" aria-pressed="false"
-                                    class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-                                    title="Sembunyi perbandingan tempoh lepas">
-                                    Sembunyi Perbandingan
-                                </button>
-                                <a id="pdfLink"
-                                    href="{{ !empty($filters['masjid_id']) || !$is_superadmin ? route('laporan.penyata.export.pdf', $filters) : '#' }}"
-                                    data-base-url="{{ !empty($filters['masjid_id']) || !$is_superadmin ? route('laporan.penyata.export.pdf', $filters) : '' }}"
-                                    class="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-100 {{ $is_superadmin && empty($filters['masjid_id']) ? 'pointer-events-none opacity-50' : '' }}"
-                                    title="Muat turun PDF">
-                                    PDF
-                                </a>
-                                <button type="button" onclick="window.print()"
-                                    class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-                                    title="Cetak halaman">
-                                    Cetak
-                                </button>
+                            <div class="md:col-span-6 min-w-0">
+                                <div class="flex items-center gap-2 md:justify-end md:flex-nowrap">
+                                    <button type="submit"
+                                        class="whitespace-nowrap rounded-lg bg-indigo-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700">
+                                        Jana Penyata
+                                    </button>
+                                    <button type="button" id="comparisonToggle" aria-pressed="false"
+                                        class="whitespace-nowrap rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                                        title="Sembunyi perbandingan tempoh lepas">
+                                        Sembunyi Perbandingan
+                                    </button>
+                                    <a id="pdfLink"
+                                        href="{{ !empty($filters['masjid_id']) || !$is_superadmin ? route('laporan.penyata.export.pdf', $filters) : '#' }}"
+                                        data-base-url="{{ !empty($filters['masjid_id']) || !$is_superadmin ? route('laporan.penyata.export.pdf', $filters) : '' }}"
+                                        class="whitespace-nowrap rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-100 {{ $is_superadmin && empty($filters['masjid_id']) ? 'pointer-events-none opacity-50' : '' }}"
+                                        title="Muat turun PDF">
+                                        PDF
+                                    </a>
+                                    <button type="button" onclick="window.print()"
+                                        class="whitespace-nowrap rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                                        title="Cetak halaman">
+                                        Cetak
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -858,6 +862,16 @@
 
                 const pdfLink = document.getElementById('pdfLink');
 
+                @if ($is_superadmin)
+                    const penyataForm = document.getElementById('laporan-penyata-form');
+                    const masjidSelect = document.getElementById('laporan-penyata-masjid');
+                    if (penyataForm && masjidSelect) {
+                        masjidSelect.addEventListener('change', function() {
+                            penyataForm.submit();
+                        });
+                    }
+                @endif
+
                 function updatePdfLink(hidden) {
                     if (!pdfLink) return;
                     const base = pdfLink.dataset.baseUrl;
@@ -1020,7 +1034,8 @@
                                     @if ($row['peratus_perubahan'] !== null)
                                         <span
                                             class="{{ $row['perubahan'] >= 0 ? 'pv-up' : 'pv-down' }}">{{ $row['perubahan'] >= 0 ? '+' : '' }}{{ number_format($row['perubahan'], 2) }}
-                                            ({{ $row['peratus_perubahan'] >= 0 ? '+' : '' }}{{ $row['peratus_perubahan'] }}%)</span>
+                                            ({{ $row['peratus_perubahan'] >= 0 ? '+' : '' }}{{ $row['peratus_perubahan'] }}%)
+                                        </span>
                                     @elseif ($row['jumlah'] > 0 && $row['prev_jumlah'] == 0)
                                         <span class="pv-up">Baharu</span>
                                     @else
@@ -1076,7 +1091,8 @@
                                     @if ($row['peratus_perubahan'] !== null)
                                         <span
                                             class="{{ $row['perubahan'] >= 0 ? 'pv-down' : 'pv-up' }}">{{ $row['perubahan'] >= 0 ? '+' : '' }}{{ number_format($row['perubahan'], 2) }}
-                                            ({{ $row['peratus_perubahan'] >= 0 ? '+' : '' }}{{ $row['peratus_perubahan'] }}%)</span>
+                                            ({{ $row['peratus_perubahan'] >= 0 ? '+' : '' }}{{ $row['peratus_perubahan'] }}%)
+                                        </span>
                                     @elseif ($row['jumlah'] > 0 && $row['prev_jumlah'] == 0)
                                         <span class="pv-down">Baharu</span>
                                     @else

@@ -7,6 +7,7 @@
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             @php
                 $exportParams = [
+                    'masjid_id' => $filters['masjid_id'] ?? null,
                     'tarikh_dari' => $filters['tarikh_dari'],
                     'tarikh_hingga' => $filters['tarikh_hingga'],
                     'jenis_paparan' => $filters['jenis_paparan'] ?? 'ringkasan_sumber',
@@ -14,49 +15,73 @@
             @endphp
 
             <div class="rounded-xl bg-white p-5 shadow">
-                <form method="GET" action="{{ route('laporan.derma') }}"
-                    class="grid grid-cols-1 gap-4 md:grid-cols-4 md:items-end">
-                    <div>
-                        <label class="mb-1 block text-xs font-medium text-gray-600">Tarikh Dari</label>
-                        <input type="date" name="tarikh_dari" value="{{ $filters['tarikh_dari'] }}"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    </div>
+                <form method="GET" action="{{ route('laporan.derma') }}" id="laporan-derma-form" class="space-y-4">
+                    @if ($is_superadmin)
+                        <div class="grid grid-cols-1 md:max-w-sm">
+                            <div>
+                                <label class="mb-1 block text-xs font-medium text-gray-600">Masjid</label>
+                                <select name="masjid_id" id="laporan-derma-masjid" required
+                                    class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="">Pilih Masjid</option>
+                                    @foreach ($masjid_list as $masjid)
+                                        <option value="{{ $masjid->id }}" @selected((int) ($filters['masjid_id'] ?? 0) === (int) $masjid->id)>
+                                            {{ $masjid->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    @endif
 
-                    <div>
-                        <label class="mb-1 block text-xs font-medium text-gray-600">Tarikh Hingga</label>
-                        <input type="date" name="tarikh_hingga" value="{{ $filters['tarikh_hingga'] }}"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    </div>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-end">
+                        <div class="md:col-span-2">
+                            <label class="mb-1 block text-xs font-medium text-gray-600">Tarikh Dari</label>
+                            <input type="date" name="tarikh_dari" value="{{ $filters['tarikh_dari'] }}"
+                                class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
 
-                    <div>
-                        <label class="mb-1 block text-xs font-medium text-gray-600">Jenis Paparan</label>
-                        <select name="jenis_paparan"
-                            class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <option value="ringkasan_sumber" @selected(($filters['jenis_paparan'] ?? 'ringkasan_sumber') === 'ringkasan_sumber')>Ringkasan Mengikut Sumber
-                            </option>
-                            <option value="ringkasan_bulan" @selected(($filters['jenis_paparan'] ?? 'ringkasan_sumber') === 'ringkasan_bulan')>Ringkasan Mengikut Bulan
-                            </option>
-                            <option value="senarai_transaksi" @selected(($filters['jenis_paparan'] ?? 'ringkasan_sumber') === 'senarai_transaksi')>Senarai Transaksi
-                            </option>
-                        </select>
-                    </div>
+                        <div class="md:col-span-2">
+                            <label class="mb-1 block text-xs font-medium text-gray-600">Tarikh Hingga</label>
+                            <input type="date" name="tarikh_hingga" value="{{ $filters['tarikh_hingga'] }}"
+                                class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
 
-                    <div>
-                        <button type="submit"
-                            class="w-full rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white transition hover:bg-indigo-700">
-                            Jana Laporan
-                        </button>
+                        <div class="md:col-span-4">
+                            <label class="mb-1 block text-xs font-medium text-gray-600">Jenis Paparan</label>
+                            <select name="jenis_paparan"
+                                class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="ringkasan_sumber" @selected(($filters['jenis_paparan'] ?? 'ringkasan_sumber') === 'ringkasan_sumber')>Ringkasan Mengikut Sumber
+                                </option>
+                                <option value="ringkasan_bulan" @selected(($filters['jenis_paparan'] ?? 'ringkasan_sumber') === 'ringkasan_bulan')>Ringkasan Mengikut Bulan
+                                </option>
+                                <option value="senarai_transaksi" @selected(($filters['jenis_paparan'] ?? 'ringkasan_sumber') === 'senarai_transaksi')>Senarai Transaksi
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="md:col-span-4">
+                            <button type="submit"
+                                class="w-full rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white transition hover:bg-indigo-700">
+                                Jana Laporan
+                            </button>
+                        </div>
                     </div>
                 </form>
                 <p class="mt-3 text-xs text-gray-500">Tidak termasuk kutipan Jumaat.</p>
 
+                @if ($requires_masjid_selection)
+                    <div class="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        Sila pilih masjid terlebih dahulu untuk jana Laporan Derma / Hasil Lain.
+                    </div>
+                @endif
+
                 <div class="mt-3 flex flex-wrap items-center gap-2">
-                    <a href="{{ route('laporan.derma.export.pdf', $exportParams) }}"
-                        class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100">
+                    <a href="{{ !$requires_masjid_selection ? route('laporan.derma.export.pdf', $exportParams) : '#' }}"
+                        class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100 {{ $requires_masjid_selection ? 'pointer-events-none opacity-50' : '' }}">
                         Eksport PDF
                     </a>
-                    <a href="{{ route('laporan.derma.export.excel', $exportParams) }}"
-                        class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100">
+                    <a href="{{ !$requires_masjid_selection ? route('laporan.derma.export.excel', $exportParams) : '#' }}"
+                        class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100 {{ $requires_masjid_selection ? 'pointer-events-none opacity-50' : '' }}">
                         Eksport Excel
                     </a>
                 </div>
@@ -176,14 +201,16 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="px-4 py-8 text-center text-gray-400">Tiada rekod derma
+                                        <td colspan="4" class="px-4 py-8 text-center text-gray-400">Tiada rekod
+                                            derma
                                             atau hasil lain untuk tempoh ini.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
                             <tfoot>
                                 <tr class="bg-indigo-50">
-                                    <td colspan="3" class="px-4 py-3 font-semibold text-gray-800">Jumlah Keseluruhan
+                                    <td colspan="3" class="px-4 py-3 font-semibold text-gray-800">Jumlah
+                                        Keseluruhan
                                     </td>
                                     <td class="px-4 py-3 text-right font-semibold text-indigo-700">
                                         {{ number_format($jumlah_keseluruhan, 2, '.', ',') }}</td>
@@ -290,5 +317,17 @@
                 closeDetail();
             }
         });
+
+        @if ($is_superadmin)
+            document.addEventListener('DOMContentLoaded', function() {
+                const dermaForm = document.getElementById('laporan-derma-form');
+                const masjidSelect = document.getElementById('laporan-derma-masjid');
+                if (dermaForm && masjidSelect) {
+                    masjidSelect.addEventListener('change', function() {
+                        dermaForm.submit();
+                    });
+                }
+            });
+        @endif
     </script>
 </x-app-layout>

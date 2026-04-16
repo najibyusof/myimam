@@ -6,6 +6,7 @@ use App\Exports\LaporanTabungExport;
 use App\Exports\LaporanTabungDetailExport;
 use App\Models\Belanja;
 use App\Models\Hasil;
+use App\Models\Masjid;
 use App\Models\TabungKhas;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -22,6 +23,10 @@ class LaporanTabungController extends Controller
 
     public function exportPdf(Request $request)
     {
+        if ($this->isSuperadmin($request) && (int) $request->query('masjid_id', 0) <= 0) {
+            abort(403, 'Sila pilih masjid terlebih dahulu.');
+        }
+
         $data = $this->buildIndexData($request);
         $filename = 'laporan-tabung-khas-' . now()->format('Ymd_His') . '.pdf';
 
@@ -30,6 +35,10 @@ class LaporanTabungController extends Controller
 
     public function exportExcel(Request $request)
     {
+        if ($this->isSuperadmin($request) && (int) $request->query('masjid_id', 0) <= 0) {
+            abort(403, 'Sila pilih masjid terlebih dahulu.');
+        }
+
         $data = $this->buildIndexData($request);
         $filename = 'laporan-tabung-khas-' . now()->format('Ymd_His') . '.xlsx';
 
@@ -43,6 +52,10 @@ class LaporanTabungController extends Controller
 
     public function exportDetailExcel(Request $request, int $tabung)
     {
+        if ($this->isSuperadmin($request) && (int) $request->query('masjid_id', 0) <= 0) {
+            abort(403, 'Sila pilih masjid terlebih dahulu.');
+        }
+
         $data = $this->buildDetailData($request, $tabung);
         $filename = 'laporan-tabung-khas-detail-' . $tabung . '-' . now()->format('Ymd_His') . '.xlsx';
 
@@ -51,6 +64,10 @@ class LaporanTabungController extends Controller
 
     public function exportDetailPdf(Request $request, int $tabung)
     {
+        if ($this->isSuperadmin($request) && (int) $request->query('masjid_id', 0) <= 0) {
+            abort(403, 'Sila pilih masjid terlebih dahulu.');
+        }
+
         $data = $this->buildDetailData($request, $tabung);
         $filename = 'laporan-tabung-khas-detail-' . $tabung . '-' . now()->format('Ymd_His') . '.pdf';
 
@@ -65,11 +82,40 @@ class LaporanTabungController extends Controller
         [$tarikhDari, $tarikhHingga] = $this->resolveDateRange($request);
 
         $actor = $request->user();
-        $isSuperadmin = (bool) $actor?->hasRole('Superadmin');
-        $idMasjid = (int) ($actor?->id_masjid ?? 0);
+        $isSuperadmin = $this->isSuperadmin($request);
+        $userMasjidId = (int) ($actor?->id_masjid ?? 0);
+        $selectedMasjidId = $isSuperadmin ? (int) $request->query('masjid_id', 0) : $userMasjidId;
+        $requiresMasjidSelection = $isSuperadmin && $selectedMasjidId <= 0;
 
-        if (!$isSuperadmin && $idMasjid <= 0) {
+        if (!$isSuperadmin && $userMasjidId <= 0) {
             abort(403);
+        }
+
+        $masjidList = $isSuperadmin
+            ? Masjid::query()->orderBy('nama')->get(['id', 'nama'])
+            : collect();
+
+        if ($requiresMasjidSelection) {
+            return [
+                'tempoh_label' => $this->buildTempohLabel($tarikhDari, $tarikhHingga),
+                'filters' => [
+                    'masjid_id' => null,
+                    'tarikh_dari' => $tarikhDari,
+                    'tarikh_hingga' => $tarikhHingga,
+                ],
+                'rows' => collect(),
+                'total_masuk' => 0.0,
+                'total_keluar' => 0.0,
+                'total_baki' => 0.0,
+                'chart' => [
+                    'labels' => collect(),
+                    'masuk' => collect(),
+                    'keluar' => collect(),
+                ],
+                'is_superadmin' => true,
+                'masjid_list' => $masjidList,
+                'requires_masjid_selection' => true,
+            ];
         }
 
         $hasilQuery = Hasil::query()
@@ -80,10 +126,13 @@ class LaporanTabungController extends Controller
             ->whereNotNull('id_tabung_khas')
             ->whereBetween('tarikh', [$tarikhDari, $tarikhHingga]);
 
-        if (!$isSuperadmin) {
-            $hasilQuery->byMasjid($idMasjid);
-            $belanjaQuery->byMasjid($idMasjid);
+        if ($isSuperadmin) {
+            $hasilQuery->withoutTenantScope();
+            $belanjaQuery->withoutTenantScope();
         }
+
+        $hasilQuery->byMasjid($selectedMasjidId);
+        $belanjaQuery->byMasjid($selectedMasjidId);
 
         $hasilByTabung = $hasilQuery
             ->selectRaw('id_tabung_khas, SUM(jumlah) as masuk_tempoh')
@@ -103,7 +152,8 @@ class LaporanTabungController extends Controller
             ->values();
 
         $namaTabungById = TabungKhas::query()
-            ->when(!$isSuperadmin, fn($q) => $q->byMasjid($idMasjid))
+            ->when($isSuperadmin, fn($q) => $q->withoutTenantScope())
+            ->byMasjid($selectedMasjidId)
             ->whereIn('id', $tabungIds)
             ->pluck('nama_tabung', 'id');
 
@@ -123,6 +173,7 @@ class LaporanTabungController extends Controller
         return [
             'tempoh_label' => $this->buildTempohLabel($tarikhDari, $tarikhHingga),
             'filters' => [
+                'masjid_id' => $selectedMasjidId,
                 'tarikh_dari' => $tarikhDari,
                 'tarikh_hingga' => $tarikhHingga,
             ],
@@ -135,6 +186,9 @@ class LaporanTabungController extends Controller
                 'masuk' => $rows->pluck('masuk_tempoh')->values(),
                 'keluar' => $rows->pluck('keluar_tempoh')->values(),
             ],
+            'is_superadmin' => $isSuperadmin,
+            'masjid_list' => $masjidList,
+            'requires_masjid_selection' => false,
         ];
     }
 
@@ -146,17 +200,22 @@ class LaporanTabungController extends Controller
         [$tarikhDari, $tarikhHingga] = $this->resolveDateRange($request);
 
         $actor = $request->user();
-        $isSuperadmin = (bool) $actor?->hasRole('Superadmin');
-        $idMasjid = (int) ($actor?->id_masjid ?? 0);
+        $isSuperadmin = $this->isSuperadmin($request);
+        $userMasjidId = (int) ($actor?->id_masjid ?? 0);
+        $selectedMasjidId = $isSuperadmin ? (int) $request->query('masjid_id', 0) : $userMasjidId;
 
-        if (!$isSuperadmin && $idMasjid <= 0) {
+        if (!$isSuperadmin && $userMasjidId <= 0) {
             abort(403);
         }
 
-        $tabungQuery = TabungKhas::query()->whereKey($tabung);
-        if (!$isSuperadmin) {
-            $tabungQuery->byMasjid($idMasjid);
+        if ($selectedMasjidId <= 0) {
+            abort(403, 'Sila pilih masjid terlebih dahulu.');
         }
+
+        $tabungQuery = TabungKhas::query()
+            ->when($isSuperadmin, fn($q) => $q->withoutTenantScope())
+            ->byMasjid($selectedMasjidId)
+            ->whereKey($tabung);
 
         $tabungModel = $tabungQuery->firstOrFail(['id', 'nama_tabung']);
 
@@ -178,12 +237,17 @@ class LaporanTabungController extends Controller
             ->where('id_tabung_khas', $tabungModel->id)
             ->where('tarikh', '<', $tarikhDari);
 
-        if (!$isSuperadmin) {
-            $hasilQuery->byMasjid($idMasjid);
-            $belanjaQuery->byMasjid($idMasjid);
-            $openingHasilQuery->byMasjid($idMasjid);
-            $openingBelanjaQuery->byMasjid($idMasjid);
+        if ($isSuperadmin) {
+            $hasilQuery->withoutTenantScope();
+            $belanjaQuery->withoutTenantScope();
+            $openingHasilQuery->withoutTenantScope();
+            $openingBelanjaQuery->withoutTenantScope();
         }
+
+        $hasilQuery->byMasjid($selectedMasjidId);
+        $belanjaQuery->byMasjid($selectedMasjidId);
+        $openingHasilQuery->byMasjid($selectedMasjidId);
+        $openingBelanjaQuery->byMasjid($selectedMasjidId);
 
         $transaksiMasuk = $hasilQuery
             ->orderBy('tarikh', 'desc')
@@ -227,6 +291,7 @@ class LaporanTabungController extends Controller
         return [
             'tabung' => $tabungModel,
             'filters' => [
+                'masjid_id' => $selectedMasjidId,
                 'tarikh_dari' => $tarikhDari,
                 'tarikh_hingga' => $tarikhHingga,
             ],
@@ -335,5 +400,19 @@ class LaporanTabungController extends Controller
     private function buildTempohLabel(string $tarikhDari, string $tarikhHingga): string
     {
         return Carbon::parse($tarikhDari)->format('d/m/Y') . ' - ' . Carbon::parse($tarikhHingga)->format('d/m/Y');
+    }
+
+    private function isSuperadmin(Request $request): bool
+    {
+        $actor = $request->user();
+
+        if (!$actor) {
+            return false;
+        }
+
+        return ($actor->peranan ?? null) === 'superadmin'
+            || $actor->hasRole('Superadmin')
+            || $actor->hasRole('SuperAdmin')
+            || $actor->hasRole('superadmin');
     }
 }
