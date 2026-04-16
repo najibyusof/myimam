@@ -107,7 +107,6 @@ return [
         'route' => ['admin.sumber-hasil.index'],
         'icon' => 'tag',
         'permission' => ['sumber_hasil.view'],
-        'superadmin_only' => true,
     ],
     [
         'group_key' => 'menu.group_superadmin',
@@ -115,7 +114,6 @@ return [
         'route' => ['admin.tabung-khas.index'],
         'icon' => 'archive',
         'permission' => ['tabung_khas.view'],
-        'superadmin_only' => true,
     ],
     [
         'group_key' => 'menu.group_superadmin',
@@ -123,7 +121,6 @@ return [
         'route' => ['admin.kategori-belanja.index'],
         'icon' => 'list',
         'permission' => ['kategori_belanja.view'],
-        'superadmin_only' => true,
     ],
     [
         'group_key' => 'menu.group_superadmin',
@@ -131,7 +128,6 @@ return [
         'route' => ['admin.pindahan-akaun.index'],
         'icon' => 'switch-horizontal',
         'permission' => ['pindahan_akaun.view'],
-        'superadmin_only' => true,
     ],
     [
         'group_key' => 'menu.group_superadmin',
@@ -139,7 +135,6 @@ return [
         'route' => ['admin.running-no.index'],
         'icon' => 'hashtag',
         'permission' => ['running_no.view'],
-        'superadmin_only' => true,
     ],
     [
         'group_key' => 'menu.group_superadmin',
