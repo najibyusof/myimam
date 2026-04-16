@@ -109,8 +109,7 @@
                                     @endcan
                                     @can('delete', $item)
                                         <form method="POST" action="{{ route('admin.belanja.destroy', $item) }}"
-                                            class="inline"
-                                            onsubmit="return confirm('{{ __('belanja.confirm_delete') }}');">
+                                            class="inline" data-confirm="{{ __('belanja.confirm_delete') }}">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"

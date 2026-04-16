@@ -53,6 +53,12 @@ return [
         'no_voucher' => 'Tiada baucar',
         'recipient_optional' => 'Penerima (Opsyenal)',
         'notes_optional' => 'Catatan (Opsyenal)',
+        'attachment_optional' => 'Dokumen Sokongan (Opsyenal)',
+        'choose_file' => 'Pilih fail atau seret ke sini',
+        'take_photo' => 'Ambil Gambar',
+        'attachment_hint' => 'Dibenarkan: JPG, PNG, PDF. Saiz maksimum 5MB.',
+        'replace_attachment_hint' => 'Muat naik fail baharu untuk menggantikan lampiran semasa.',
+        'remove_attachment' => 'Buang lampiran',
         'current_status' => 'Status semasa',
         'save' => 'Simpan',
         'save_draft' => 'Simpan Draf',
@@ -60,4 +66,7 @@ return [
     ],
 
     'confirm_delete' => 'Padam rekod belanja ini?',
+    'confirm_delete_attachment' => 'Buang lampiran ini?',
+    'success_delete_attachment' => 'Lampiran berjaya dibuang.',
+    'error_delete_attachment' => 'Gagal membuang lampiran. Sila cuba lagi.',
 ];

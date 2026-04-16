@@ -67,7 +67,7 @@
                     <div class="flex items-center justify-between gap-3 pt-2 border-t border-gray-100">
                         @can('delete', $record)
                             <form method="POST" action="{{ route('admin.pindahan-akaun.destroy', $record) }}"
-                                onsubmit="return confirm('{{ __('pindahan_akaun.confirm_delete') }}')">
+                                data-confirm="{{ __('pindahan_akaun.confirm_delete') }}">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit"

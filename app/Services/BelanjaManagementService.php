@@ -32,6 +32,7 @@ class BelanjaManagementService
             $payload['is_deleted'] = $belanja->is_deleted;
             $payload['deleted_by'] = $belanja->deleted_by;
             $payload['deleted_at'] = $belanja->deleted_at;
+            // bukti_fail is resolved by the controller before calling this method
 
             $belanja->update($payload);
 
@@ -67,7 +68,7 @@ class BelanjaManagementService
             'id_program' => null,
             'penerima' => $data['penerima'] ?? null,
             'catatan' => $data['catatan'] ?? null,
-            'bukti_fail' => null,
+            'bukti_fail' => $data['bukti_fail'] ?? null,
             'created_by' => $actor->id,
             'status' => $submitted ? 'LULUS' : 'DRAF',
             'id_baucar' => $data['id_baucar'] ?? null,

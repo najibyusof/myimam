@@ -20,7 +20,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans antialiased">
+<body class="font-sans antialiased" data-flash-success="{{ e((string) session('success', '')) }}"
+    data-flash-status="{{ e((string) session('status', '')) }}"
+    data-flash-error="{{ e((string) session('error', '')) }}">
     <x-layout :header="$header ?? null">
         {{ $slot }}
     </x-layout>

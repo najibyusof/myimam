@@ -138,7 +138,7 @@
                                                 @can('delete', $record)
                                                     <form method="POST"
                                                         action="{{ route('admin.pindahan-akaun.destroy', $record) }}"
-                                                        onsubmit="return confirm('{{ __('pindahan_akaun.confirm_delete') }}')">
+                                                        data-confirm="{{ __('pindahan_akaun.confirm_delete') }}">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"

@@ -23,6 +23,8 @@ class BelanjaStoreRequest extends FormRequest
             'submit_action' => ['nullable', 'in:draft,submitted'],
             'penerima' => ['nullable', 'string', 'max:190'],
             'catatan' => ['nullable', 'string'],
+            'bukti_fail' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'bukti_fail_camera' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:5120'],
         ];
     }
 

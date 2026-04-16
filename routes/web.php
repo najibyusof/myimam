@@ -208,6 +208,9 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
         Route::delete('/admin/belanja/{belanja}', [BelanjaManagementController::class, 'destroy'])
             ->middleware('permission:belanja.delete')
             ->name('admin.belanja.destroy');
+        Route::delete('/admin/belanja/{belanja}/attachment/delete', [BelanjaManagementController::class, 'deleteAttachment'])
+            ->middleware('permission:belanja.update')
+            ->name('admin.belanja.deleteAttachment');
     });
 
     Route::middleware('role_or_permission:Admin|pindahan_akaun.view|pindahan_akaun.create|pindahan_akaun.update|pindahan_akaun.delete')->group(function () {

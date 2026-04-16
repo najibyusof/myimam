@@ -116,7 +116,7 @@
                                     @endcan
                                     @can('delete', $item)
                                         <form method="POST" action="{{ route('admin.akaun.destroy', $item) }}"
-                                            class="inline" onsubmit="return confirm('{{ __('akaun.confirm_delete') }}');">
+                                            class="inline" data-confirm="{{ __('akaun.confirm_delete') }}">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"

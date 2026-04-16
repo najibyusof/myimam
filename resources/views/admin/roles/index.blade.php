@@ -142,7 +142,7 @@
 
                                         @if ($canDelete)
                                             <form method="POST" action="{{ route('admin.roles.destroy', $role) }}"
-                                                onsubmit="return confirm('Delete role \'{{ addslashes($role->name) }}\'? This cannot be undone.')">
+                                                data-confirm="Delete role '{{ $role->name }}'? This cannot be undone.">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"

@@ -20,7 +20,7 @@
             </div>
             @can('delete', $role)
                 <form method="POST" action="{{ route('admin.roles.destroy', $role) }}"
-                    onsubmit="return confirm('Permanently delete role \'{{ addslashes($role->name) }}\'? This cannot be undone.')">
+                    data-confirm="Permanently delete role '{{ $role->name }}'? This cannot be undone.">
                     @csrf
                     @method('DELETE')
                     <button type="submit"

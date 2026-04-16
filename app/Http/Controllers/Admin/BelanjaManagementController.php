@@ -13,13 +13,13 @@ use App\Models\Masjid;
 use App\Services\BelanjaManagementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class BelanjaManagementController extends Controller
 {
-    public function __construct(private readonly BelanjaManagementService $service)
-    {
-    }
+    public function __construct(private readonly BelanjaManagementService $service) {}
 
     public function index(Request $request): View
     {
@@ -31,7 +31,7 @@ class BelanjaManagementController extends Controller
         $baucarId = (int) $request->query('baucar_id', 0);
 
         $query = Belanja::query()
-            ->when($masjidScope, fn ($builder) => $builder->byMasjid($masjidScope))
+            ->when($masjidScope, fn($builder) => $builder->byMasjid($masjidScope))
             ->notDeleted()
             ->with(['akaun:id,nama_akaun', 'kategoriBelanja:id,nama_kategori', 'baucar:id,no_baucar'])
             ->latest('tarikh')
@@ -50,7 +50,7 @@ class BelanjaManagementController extends Controller
         $belanja = $query->paginate(15)->withQueryString();
 
         $baseStats = Belanja::query()
-            ->when($masjidScope, fn ($builder) => $builder->byMasjid($masjidScope))
+            ->when($masjidScope, fn($builder) => $builder->byMasjid($masjidScope))
             ->notDeleted();
 
         $stats = [
@@ -61,7 +61,7 @@ class BelanjaManagementController extends Controller
         ];
 
         $baucarOptions = BaucarBayaran::query()
-            ->when($masjidScope, fn ($builder) => $builder->byMasjid($masjidScope))
+            ->when($masjidScope, fn($builder) => $builder->byMasjid($masjidScope))
             ->orderByDesc('tarikh')
             ->orderBy('no_baucar')
             ->get(['id', 'no_baucar']);
@@ -86,7 +86,15 @@ class BelanjaManagementController extends Controller
     {
         $this->authorize('create', Belanja::class);
 
-        $belanja = $this->service->create($request->user(), $request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('bukti_fail')) {
+            $data['bukti_fail'] = $request->file('bukti_fail')->store('belanja-bukti', 'public');
+        } elseif ($request->hasFile('bukti_fail_camera')) {
+            $data['bukti_fail'] = $request->file('bukti_fail_camera')->store('belanja-bukti', 'public');
+        }
+
+        $belanja = $this->service->create($request->user(), $data);
 
         return redirect()
             ->route('admin.belanja.edit', $belanja)
@@ -106,7 +114,26 @@ class BelanjaManagementController extends Controller
     {
         $this->authorize('update', $belanja);
 
-        $this->service->update($belanja, $request->user(), $request->validated());
+        $data = $request->validated();
+
+        if ($request->boolean('remove_bukti_fail') && $belanja->bukti_fail) {
+            Storage::disk('public')->delete($belanja->bukti_fail);
+            $data['bukti_fail'] = null;
+        } elseif ($request->hasFile('bukti_fail')) {
+            if ($belanja->bukti_fail) {
+                Storage::disk('public')->delete($belanja->bukti_fail);
+            }
+            $data['bukti_fail'] = $request->file('bukti_fail')->store('belanja-bukti', 'public');
+        } elseif ($request->hasFile('bukti_fail_camera')) {
+            if ($belanja->bukti_fail) {
+                Storage::disk('public')->delete($belanja->bukti_fail);
+            }
+            $data['bukti_fail'] = $request->file('bukti_fail_camera')->store('belanja-bukti', 'public');
+        } else {
+            $data['bukti_fail'] = $belanja->bukti_fail;
+        }
+
+        $this->service->update($belanja, $request->user(), $data);
 
         return redirect()
             ->route('admin.belanja.edit', $belanja)
@@ -124,14 +151,26 @@ class BelanjaManagementController extends Controller
             ->with('status', 'Rekod belanja dipindahkan keluar daripada senarai aktif.');
     }
 
+    public function deleteAttachment(Belanja $belanja): Response
+    {
+        $this->authorize('update', $belanja);
+
+        if ($belanja->bukti_fail) {
+            Storage::disk('public')->delete($belanja->bukti_fail);
+            $belanja->update(['bukti_fail' => null]);
+        }
+
+        return response()->json(['success' => true], 200);
+    }
+
     private function formData(Request $request, ?Belanja $belanja = null): array
     {
         $selectedMasjidId = (int) old('id_masjid', $belanja?->id_masjid ?? $request->user()->id_masjid);
         $masjidScope = $request->user()->peranan === 'superadmin' ? null : $request->user()->id_masjid;
 
-        $scope = fn ($builder) => $builder
-            ->when($selectedMasjidId > 0, fn ($query) => $query->byMasjid($selectedMasjidId))
-            ->when($selectedMasjidId <= 0 && $masjidScope, fn ($query) => $query->byMasjid($masjidScope));
+        $scope = fn($builder) => $builder
+            ->when($selectedMasjidId > 0, fn($query) => $query->byMasjid($selectedMasjidId))
+            ->when($selectedMasjidId <= 0 && $masjidScope, fn($query) => $query->byMasjid($masjidScope));
 
         return [
             'masjidOptions' => $request->user()->peranan === 'superadmin'

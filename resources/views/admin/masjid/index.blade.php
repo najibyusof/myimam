@@ -106,22 +106,22 @@
 
                                                     @if ($masjid->status !== 'suspended')
                                                         <form action="{{ route('admin.masjid.suspend', $masjid) }}"
-                                                            method="POST" class="inline">
+                                                            method="POST" class="inline"
+                                                            data-confirm="Gantung tenant ini?">
                                                             @csrf
                                                             @method('PATCH')
                                                             <button type="submit"
-                                                                onclick="return confirm('Gantung tenant ini?')"
                                                                 class="text-amber-600 hover:text-amber-900">
                                                                 Gantung
                                                             </button>
                                                         </form>
                                                     @else
                                                         <form action="{{ route('admin.masjid.activate', $masjid) }}"
-                                                            method="POST" class="inline">
+                                                            method="POST" class="inline"
+                                                            data-confirm="Aktifkan semula tenant ini?">
                                                             @csrf
                                                             @method('PATCH')
                                                             <button type="submit"
-                                                                onclick="return confirm('Aktifkan semula tenant ini?')"
                                                                 class="text-green-600 hover:text-green-900">
                                                                 Aktifkan
                                                             </button>
@@ -131,12 +131,10 @@
 
                                                 @can('masjid.delete')
                                                     <form action="{{ route('admin.masjid.destroy', $masjid) }}"
-                                                        method="POST" class="inline">
+                                                        method="POST" class="inline" data-confirm="Adakah anda pasti?">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit"
-                                                            onclick="return confirm('Adakah anda pasti?')"
-                                                            class="text-red-600 hover:text-red-900">
+                                                        <button type="submit" class="text-red-600 hover:text-red-900">
                                                             Padam
                                                         </button>
                                                     </form>

@@ -8,7 +8,7 @@
     'baucarOptions' => collect(),
 ])
 
-<form method="POST" action="{{ $action }}" class="space-y-6">
+<form method="POST" action="{{ $action }}" class="space-y-6" enctype="multipart/form-data">
     @csrf
     @if ($method !== 'POST')
         @method($method)
@@ -99,6 +99,72 @@
         <x-input-error class="mt-2" :messages="$errors->get('catatan')" />
     </div>
 
+    {{-- Attachment --}}
+    <div>
+        <x-input-label :value="__('belanja.form.attachment_optional')" />
+
+        @if ($belanjaRecord?->bukti_fail)
+            <div class="mt-2 flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                <svg class="h-5 w-5 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 002.112 2.13" />
+                </svg>
+                <a href="{{ Storage::disk('public')->url($belanjaRecord->bukti_fail) }}" target="_blank"
+                    class="flex-1 truncate text-indigo-600 hover:underline">
+                    {{ basename($belanjaRecord->bukti_fail) }}
+                </a>
+                <button type="button" onclick="deleteAttachment({{ $belanjaRecord->id }}, this)"
+                    class="ml-auto flex items-center gap-1.5 rounded-md bg-red-50 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-100 hover:text-red-700">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 2.5h-2.25m-7.86 0H9.84m-8.86 3.21c.342-.052.68-.107 1.02-.166m0 0a48.11 48.11 0 017.7 0" />
+                    </svg>
+                    <span>{{ __('belanja.form.remove_attachment') }}</span>
+                </button>
+            </div>
+            <p class="mt-1 text-xs text-slate-500">{{ __('belanja.form.replace_attachment_hint') }}</p>
+        @endif
+
+        <div id="upload-buttons-container" class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center"
+            @if ($belanjaRecord?->bukti_fail) style="display: none;" @endif>
+            {{-- File picker --}}
+            <label class="flex-1 cursor-pointer">
+                <div id="file-drop-zone"
+                    class="flex items-center gap-3 rounded-lg border-2 border-dashed border-slate-300 bg-white px-4 py-3 text-sm text-slate-500 transition hover:border-indigo-400 hover:text-indigo-600">
+                    <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                    </svg>
+                    <span id="file-label">{{ __('belanja.form.choose_file') }}</span>
+                </div>
+                <input id="bukti_fail_input" type="file" name="bukti_fail" accept=".jpg,.jpeg,.png,.pdf"
+                    class="sr-only" onchange="handleFileSelect(this)">
+            </label>
+
+            {{-- Camera button --}}
+            <label class="cursor-pointer">
+                <div
+                    class="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-600 transition hover:border-indigo-400 hover:text-indigo-600">
+                    <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                    </svg>
+                    <span>{{ __('belanja.form.take_photo') }}</span>
+                </div>
+                <input id="bukti_fail_camera_input" type="file" name="bukti_fail_camera" accept="image/*"
+                    capture="environment" class="sr-only" onchange="handleFileSelect(this)">
+            </label>
+        </div>
+
+        <p class="mt-1 text-xs text-slate-500">{{ __('belanja.form.attachment_hint') }}</p>
+        <x-input-error class="mt-2" :messages="array_merge($errors->get('bukti_fail'), $errors->get('bukti_fail_camera'))" />
+    </div>
+
     @if ($belanjaRecord)
         <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
             <span class="font-medium">{{ __('belanja.form.current_status') }}:</span>
@@ -124,3 +190,75 @@
         </a>
     </div>
 </form>
+
+<script>
+    function handleFileSelect(input) {
+        const label = document.getElementById('file-label');
+        if (input.files && input.files.length > 0) {
+            if (label) {
+                label.textContent = input.files[0].name;
+            }
+            // Hide upload buttons after file selection
+            const container = document.getElementById('upload-buttons-container');
+            if (container) {
+                container.style.display = 'none';
+            }
+        }
+    }
+
+    async function deleteAttachment(belanjaId, triggerButton) {
+        const result = await Swal.fire({
+            title: 'Adakah anda pasti?',
+            icon: 'warning',
+            text: '{{ __('belanja.confirm_delete_attachment') }}',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, teruskan',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#6b7280',
+            reverseButtons: true,
+            focusCancel: true,
+        });
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        const button = triggerButton || event?.target?.closest('button');
+        if (button) {
+            button.disabled = true;
+        }
+
+        window.swalShowLoading();
+
+        try {
+            const response = await fetch(`/admin/belanja/${belanjaId}/attachment/delete`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete attachment');
+            }
+
+            Swal.close();
+            await window.swalToast('success', '{{ __('belanja.success_delete_attachment') }}');
+            window.location.reload();
+        } catch (error) {
+            Swal.close();
+            await Swal.fire({
+                title: 'Ralat',
+                icon: 'error',
+                text: '{{ __('belanja.error_delete_attachment') }}',
+                confirmButtonText: 'OK',
+            });
+
+            if (button) {
+                button.disabled = false;
+            }
+        }
+    }
+</script>

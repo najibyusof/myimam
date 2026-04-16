@@ -120,8 +120,7 @@
                                     @endcan
                                     @can('delete', $item)
                                         <form method="POST" action="{{ route('admin.program-masjid.destroy', $item) }}"
-                                            class="inline"
-                                            onsubmit="return confirm('{{ __('program_masjid.confirm_delete') }}');">
+                                            class="inline" data-confirm="{{ __('program_masjid.confirm_delete') }}">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"

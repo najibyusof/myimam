@@ -15,7 +15,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans antialiased bg-gray-50">
+<body class="font-sans antialiased bg-gray-50" data-flash-success="{{ e((string) session('success', '')) }}"
+    data-flash-status="{{ e((string) session('status', '')) }}"
+    data-flash-error="{{ e((string) session('error', '')) }}">
     <div class="flex h-screen bg-gray-50" x-data="{
         sidebarOpen: window.innerWidth >= 768,
         mobileMenuOpen: false,

@@ -115,7 +115,7 @@
                                     @can('delete', $user)
                                         @if (auth()->id() !== $user->id)
                                             <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
-                                                class="inline-block ml-3" onsubmit="return confirm('Delete this user?');">
+                                                class="inline-block ml-3" data-confirm="Delete this user?">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
