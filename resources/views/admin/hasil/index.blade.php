@@ -114,6 +114,10 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-3 text-right text-sm space-x-3">
+                                    @if (!$item->jenis_jumaat)
+                                        <a href="{{ route('admin.hasil.receipt', $item) }}" target="_blank"
+                                            class="text-blue-600 hover:text-blue-900">{{ __('hasil.receipt.print') }}</a>
+                                    @endif
                                     @can('update', $item)
                                         <a href="{{ $item->jenis_jumaat ? route('admin.hasil.jumaat.edit', $item) : route('admin.hasil.edit', $item) }}"
                                             class="text-indigo-600 hover:text-indigo-900">{{ __('hasil.table.edit') }}</a>

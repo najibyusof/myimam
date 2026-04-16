@@ -79,4 +79,22 @@ return [
     ],
 
     'confirm_delete' => 'Padam transaksi hasil ini?',
+
+    'receipt' => [
+        'title' => 'Resit Hasil',
+        'back' => 'Kembali ke Senarai',
+        'print' => 'Cetak Resit',
+        'total_received' => 'JUMLAH TERIMAAN',
+        'receipt_no' => 'No Resit',
+        'created_at' => 'Dicatat',
+        'date' => 'Tarikh Terimaan',
+        'type' => 'Jenis Derma / Hasil',
+        'account' => 'Akaun Masuk',
+        'fund' => 'Tabung / Program',
+        'fund_type' => 'Tabung',
+        'amount' => 'Amaun',
+        'notes' => 'Catatan',
+        'registration' => 'No Pendaftaran',
+        'footer' => 'Dokumen ini dijana secara otomatik oleh sistem. Terima kasih atas sumbangan anda.',
+    ],
 ];

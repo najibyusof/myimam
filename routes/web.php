@@ -184,6 +184,9 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
         Route::delete('/admin/hasil/{hasil}', [HasilManagementController::class, 'destroy'])
             ->middleware('permission:hasil.delete')
             ->name('admin.hasil.destroy');
+        Route::get('/admin/hasil/{hasil}/receipt', [HasilManagementController::class, 'receipt'])
+            ->middleware('permission:hasil.view')
+            ->name('admin.hasil.receipt');
     });
 
     Route::middleware('role_or_permission:Admin|belanja.view|belanja.create|belanja.update|belanja.delete')->group(function () {

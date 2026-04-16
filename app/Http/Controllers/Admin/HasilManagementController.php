@@ -233,6 +233,22 @@ class HasilManagementController extends Controller
             ->with('status', 'Transaksi hasil berjaya dipadamkan.');
     }
 
+    public function receipt(Request $request, Hasil $hasil): View
+    {
+        $this->authorize('view', $hasil);
+
+        // Receipts are only for non-Jumaat hasil
+        if ($hasil->jenis_jumaat !== null) {
+            abort(403, 'Kutipan Jumaat tidak boleh dicetak resit.');
+        }
+
+        $hasil->load(['masjid', 'akaun', 'sumberHasil', 'tabungKhas']);
+
+        return view('admin.hasil.receipt', [
+            'hasil' => $hasil,
+        ]);
+    }
+
     private function formData(Request $request, ?Hasil $hasil = null): array
     {
         $selectedMasjidId = (int) old('id_masjid', $hasil?->id_masjid ?? $request->user()->id_masjid);
