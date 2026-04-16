@@ -74,6 +74,13 @@ return [
     ],
     [
         'group_key' => 'menu.group_laporan',
+        'title_key' => 'menu.laporan_tabung_khas',
+        'route' => ['laporan.tabung', 'laporan.tabung.detail'],
+        'icon' => 'chart',
+        'permission' => ['view laporan tabung'],
+    ],
+    [
+        'group_key' => 'menu.group_laporan',
         'title_key' => 'menu.laporan_sedia_ada',
         'route' => ['report.index', 'admin.reporting.index'],
         'icon' => 'chart',

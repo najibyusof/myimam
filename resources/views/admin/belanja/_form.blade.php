@@ -211,11 +211,6 @@
             if (label) {
                 label.textContent = input.files[0].name;
             }
-            // Hide upload buttons after file selection
-            const container = document.getElementById('upload-buttons-container');
-            if (container) {
-                container.style.display = 'none';
-            }
         }
     }
 </script>

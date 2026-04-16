@@ -22,6 +22,7 @@ use App\Http\Controllers\LaporanJumaatController;
 use App\Http\Controllers\LaporanDermaController;
 use App\Http\Controllers\LaporanBelanjaController;
 use App\Http\Controllers\LaporanPenyataController;
+use App\Http\Controllers\LaporanTabungController;
 use App\Http\Controllers\NotificationCenterController;
 use App\Http\Controllers\SidebarBadgeController;
 use App\Http\Controllers\PublicLandingController;
@@ -335,6 +336,30 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
     Route::get('/laporan/penyata/detail/belanja/{kategori}', [LaporanPenyataController::class, 'detailBelanja'])
         ->name('laporan.penyata.detail.belanja')
         ->middleware('permission:view laporan penyata');
+
+    Route::get('/laporan/tabung', [LaporanTabungController::class, 'index'])
+        ->name('laporan.tabung')
+        ->middleware('permission:view laporan tabung');
+
+    Route::get('/laporan/tabung/export/pdf', [LaporanTabungController::class, 'exportPdf'])
+        ->name('laporan.tabung.export.pdf')
+        ->middleware('permission:view laporan tabung');
+
+    Route::get('/laporan/tabung/export/excel', [LaporanTabungController::class, 'exportExcel'])
+        ->name('laporan.tabung.export.excel')
+        ->middleware('permission:view laporan tabung');
+
+    Route::get('/laporan/tabung/{tabung}/export/excel', [LaporanTabungController::class, 'exportDetailExcel'])
+        ->name('laporan.tabung.detail.export.excel')
+        ->middleware('permission:view laporan tabung');
+
+    Route::get('/laporan/tabung/{tabung}/export/pdf', [LaporanTabungController::class, 'exportDetailPdf'])
+        ->name('laporan.tabung.detail.export.pdf')
+        ->middleware('permission:view laporan tabung');
+
+    Route::get('/laporan/tabung/{tabung}', [LaporanTabungController::class, 'detail'])
+        ->name('laporan.tabung.detail')
+        ->middleware('permission:view laporan tabung');
 
     Route::middleware('role_or_permission:Admin|sumber_hasil.view|sumber_hasil.create|sumber_hasil.update|sumber_hasil.delete')->group(function () {
         Route::get('/admin/sumber-hasil', [SumberHasilManagementController::class, 'index'])

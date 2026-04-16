@@ -12,6 +12,7 @@ use App\Models\KategoriBelanja;
 use App\Models\Masjid;
 use App\Services\BelanjaManagementService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
@@ -151,7 +152,7 @@ class BelanjaManagementController extends Controller
             ->with('status', 'Rekod belanja dipindahkan keluar daripada senarai aktif.');
     }
 
-    public function deleteAttachment(Belanja $belanja): Response
+    public function deleteAttachment(Belanja $belanja): JsonResponse
     {
         $this->authorize('update', $belanja);
 
