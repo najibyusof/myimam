@@ -75,17 +75,6 @@
 
             <div class="overflow-hidden rounded-xl bg-white shadow">
                 <div class="border-b border-gray-100 px-4 py-3">
-                    <h3 class="text-sm font-semibold text-gray-800">Carta Masuk vs Keluar Mengikut Tabung</h3>
-                    <p class="mt-1 text-xs text-gray-500">Perbandingan jumlah transaksi masuk dan keluar bagi setiap
-                        tabung khas.</p>
-                </div>
-                <div class="p-4">
-                    <canvas id="tabungSummaryChart" height="120"></canvas>
-                </div>
-            </div>
-
-            <div class="overflow-hidden rounded-xl bg-white shadow">
-                <div class="border-b border-gray-100 px-4 py-3">
                     <h3 class="text-sm font-semibold text-gray-800">Ringkasan Tabung Khas</h3>
                     <p class="mt-1 text-xs text-gray-500">Ringkasan aliran masuk dan keluar mengikut tabung khas.</p>
                 </div>
@@ -144,6 +133,17 @@
                             </tr>
                         </tfoot>
                     </table>
+                </div>
+            </div>
+
+            <div class="overflow-hidden rounded-xl bg-white shadow">
+                <div class="border-b border-gray-100 px-4 py-3">
+                    <h3 class="text-sm font-semibold text-gray-800">Carta Masuk vs Keluar Mengikut Tabung</h3>
+                    <p class="mt-1 text-xs text-gray-500">Perbandingan jumlah transaksi masuk dan keluar bagi setiap
+                        tabung khas.</p>
+                </div>
+                <div class="p-4">
+                    <canvas id="tabungSummaryChart" height="120"></canvas>
                 </div>
             </div>
         </div>

@@ -32,7 +32,7 @@ class CheckTenantActive
 
         // No tenant resolved — user account has no masjid assigned.
         if (! TenantContext::isResolved()) {
-            abort(403, 'Your account is not assigned to any mosque. Please contact the administrator.');
+            abort(403, 'Akaun anda tidak ditetapkan kepada mana-mana masjid. Sila hubungi pentadbir.');
         }
 
         $masjidId = TenantContext::get();
@@ -41,7 +41,7 @@ class CheckTenantActive
         $masjid = Cache::remember(
             "tenant_status:{$masjidId}",
             60,
-            fn () => Masjid::withoutGlobalScopes()->select(['id', 'nama', 'status', 'subscription_status', 'subscription_expiry'])
+            fn() => Masjid::withoutGlobalScopes()->select(['id', 'nama', 'status', 'subscription_status', 'subscription_expiry'])
                 ->find($masjidId)
         );
 

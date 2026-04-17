@@ -152,4 +152,13 @@ return [
         'superadmin_only' => false,
         'tenant_scoped' => true,
     ],
+    [
+        'group_key' => 'menu.group_superadmin',
+        'title_key' => 'menu.system_settings',
+        'route' => ['admin.settings.index'],
+        'icon' => 'cog',
+        'permission' => ['superadmin'],
+        'superadmin_only' => true,
+        'tenant_scoped' => false,
+    ],
 ];

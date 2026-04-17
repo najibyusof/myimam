@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\SubscriptionManagementController;
 use App\Http\Controllers\Admin\CmsBuilderController;
 use App\Http\Controllers\Admin\CmsLandingController;
 use App\Http\Controllers\Admin\AiPageGeneratorController;
+use App\Http\Controllers\Admin\SystemSettingController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LaporanBukuTunaiController;
@@ -172,6 +173,14 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
         Route::put('/admin/cms/landing', [CmsLandingController::class, 'update'])
             ->middleware('permission:cms.manage')
             ->name('admin.cms.landing.update');
+    });
+
+    // System Settings — superadmin only
+    Route::middleware('role:Superadmin')->group(function () {
+        Route::get('/admin/settings', [SystemSettingController::class, 'index'])
+            ->name('admin.settings.index');
+        Route::put('/admin/settings', [SystemSettingController::class, 'update'])
+            ->name('admin.settings.update');
     });
 
     Route::middleware('role_or_permission:Admin|akaun.view|akaun.create|akaun.update|akaun.delete')->group(function () {

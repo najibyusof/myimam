@@ -152,10 +152,15 @@
                 @enderror
             </div>
 
-            <div>
+            <div x-data="{ showAdminPassword: false }">
                 <label for="admin_password" class="block text-sm font-medium text-gray-700">Kata Laluan Admin</label>
-                <input type="password" name="admin_password" id="admin_password"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm @error('admin_password') border-red-500 @enderror" />
+                <div class="relative mt-1">
+                    <input :type="showAdminPassword ? 'text' : 'password'" name="admin_password" id="admin_password"
+                        class="block w-full px-3 py-2 pr-16 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm @error('admin_password') border-red-500 @enderror" />
+                    <button type="button" @click="showAdminPassword = !showAdminPassword"
+                        class="absolute inset-y-0 right-1 my-1 rounded-md px-2 text-xs font-semibold text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                        x-text="showAdminPassword ? @js(__('form.hide')) : @js(__('form.show'))"></button>
+                </div>
                 @error('admin_password')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror

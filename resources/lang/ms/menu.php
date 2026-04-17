@@ -24,6 +24,7 @@ return [
     'pindahan_akaun' => 'Pindahan Akaun',
     'running_no' => 'Nombor Rujukan',
     'cms' => 'CMS',
+    'system_settings' => 'Tetapan Sistem',
 
     'group_general' => 'Umum',
     'group_finance' => 'Kewangan',
