@@ -44,6 +44,17 @@
                     <p class="text-[10px] leading-none text-indigo-300">
                         {{ $tenantMasjid?->nama ?? 'Sistem Kewangan Masjid' }}
                     </p>
+                    @if ($tenantMasjid)
+                        <div
+                            class="mt-1 flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-indigo-200">
+                            @if (!empty($tenantSource))
+                                <span>{{ $tenantSource }}</span>
+                            @endif
+                            @if (!empty($tenantMasjid->code))
+                                <span>{{ $tenantMasjid->code }}</span>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </div>
 

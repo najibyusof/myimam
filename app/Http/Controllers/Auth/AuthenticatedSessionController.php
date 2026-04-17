@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Services\LoginDemoAccountService;
+use App\Services\CmsPageBuilderService;
+use App\Services\CmsRenderer;
 use App\Models\Masjid;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,9 +19,39 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): View
-    {
-        return view('auth.login');
+    public function create(
+        Request $request,
+        CmsPageBuilderService $builderService,
+        CmsRenderer $renderer,
+        LoginDemoAccountService $demoAccountService
+    ): View {
+        $masjid = $request->attributes->get('current_masjid');
+        $demoData = $demoAccountService->forLoginPage($masjid);
+        $builderPage = $builderService->getRenderablePage('login', $masjid?->id);
+
+        if ($builderPage) {
+            $renderedHtml = $renderer->render($builderPage->content_json, [
+                'tenantMasjid' => $masjid,
+                'demoAccounts' => $demoData['accounts'],
+                'demoCopyPayload' => $demoData['copy_payload'],
+            ]);
+
+            return view('cms.page', [
+                'pageTitle' => $builderPage->title,
+                'seoTitle' => $builderPage->seo_title ?: $builderPage->title,
+                'seoDescription' => $builderPage->seo_meta_description,
+                'renderedHtml' => $renderedHtml,
+                'tenantMasjid' => $masjid,
+                'tenantSource' => $request->attributes->get('current_masjid_source'),
+                'bodyClass' => 'bg-slate-100 text-slate-900 antialiased',
+            ]);
+        }
+
+        return view('auth.login', [
+            'demoAccounts' => $demoData['accounts'],
+            'demoCopyPayload' => $demoData['copy_payload'],
+            'showDemoAccounts' => true,
+        ]);
     }
 
     /**

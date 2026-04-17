@@ -218,7 +218,6 @@ class RolePermissionController extends Controller
             'masjid.create',
             'masjid.delete',
             'subscriptions.manage',
-            'cms.manage',
             'settings.manage',
         ];
 
@@ -246,7 +245,6 @@ class RolePermissionController extends Controller
             'masjid.create',
             'masjid.delete',
             'subscriptions.manage',
-            'cms.manage',
             'settings.manage',
         ];
 

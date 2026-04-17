@@ -15,6 +15,12 @@
 </head>
 
 <body class="font-sans antialiased">
+    @php
+        $demoAccounts = $demoAccounts ?? [];
+        $demoCopyPayload = $demoCopyPayload ?? '';
+        $showDemoAccounts = $showDemoAccounts ?? true;
+    @endphp
+
     <x-auth-card title="{{ __('auth.system_title') }}" subtitle="{{ __('auth.system_subtitle') }}"
         left-title="{{ __('auth.left_title_demo') }}">
         <div class="mb-6">
@@ -24,40 +30,38 @@
 
         <x-auth-session-status class="mb-4" :status="session('status')" />
 
-        <div class="mb-6 rounded-xl border border-sky-200 bg-sky-50 p-4" x-data="{ open: false }">
-            <div class="flex items-center justify-between gap-3">
-                <button type="button" @click="open = !open"
-                    class="inline-flex items-center gap-2 text-sm font-semibold text-sky-800">
-                    <span>{{ __('auth.demo_accounts') }}</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform"
-                        :class="open ? 'rotate-180' : 'rotate-0'" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.51a.75.75 0 01-1.08 0l-4.25-4.51a.75.75 0 01.02-1.06z"
-                            clip-rule="evenodd" />
-                    </svg>
-                </button>
-                <button type="button"
-                    class="rounded-md border border-sky-300 px-2.5 py-1 text-xs font-semibold text-sky-700 transition hover:bg-sky-100"
-                    @click="navigator.clipboard.writeText(@js(__('messages.demo_copy_payload')))">
-                    {{ __('form.copy_all') }}
-                </button>
-            </div>
+        @if ($showDemoAccounts)
+            <div class="mb-6 rounded-xl border border-sky-200 bg-sky-50 p-4" x-data="{ open: false }">
+                <div class="flex items-center justify-between gap-3">
+                    <button type="button" @click="open = !open"
+                        class="inline-flex items-center gap-2 text-sm font-semibold text-sky-800">
+                        <span>{{ __('auth.demo_accounts') }}</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform"
+                            :class="open ? 'rotate-180' : 'rotate-0'" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.51a.75.75 0 01-1.08 0l-4.25-4.51a.75.75 0 01.02-1.06z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <button type="button"
+                        class="rounded-md border border-sky-300 px-2.5 py-1 text-xs font-semibold text-sky-700 transition hover:bg-sky-100"
+                        @click="navigator.clipboard.writeText(@js($demoCopyPayload))">
+                        {{ __('form.copy_all') }}
+                    </button>
+                </div>
 
-            <div x-show="open" x-cloak class="mt-3 space-y-2 text-xs text-sky-900">
-                <p><span class="font-semibold">{{ __('auth.system_admin') }}:</span> superadmin@imam.com /
-                    {{ __('auth.password') }}</p>
-                <p><span class="font-semibold">{{ __('auth.masjid_al_falah_admin') }}:</span> admin@alfalah.com /
-                    {{ __('auth.password') }}</p>
-                <p><span class="font-semibold">{{ __('auth.masjid_al_falah_bendahari') }}:</span> bendahari@alfalah.com
-                    /
-                    {{ __('auth.password') }}</p>
-                <p><span class="font-semibold">{{ __('auth.masjid_al_falah_ajk') }}:</span> ajk.kewangan@alfalah.com /
-                    {{ __('auth.password') }}</p>
-                <p><span class="font-semibold">{{ __('auth.masjid_al_falah_auditor') }}:</span> auditor@alfalah.com /
-                    {{ __('auth.password') }}
-                </p>
+                <div x-show="open" x-cloak class="mt-3 space-y-2 text-xs text-sky-900">
+                    @forelse ($demoAccounts as $account)
+                        <p>
+                            <span class="font-semibold">{{ $account['label'] ?? '' }}:</span>
+                            {{ $account['email'] ?? '' }} / {{ $account['password_hint'] ?? __('auth.password') }}
+                        </p>
+                    @empty
+                        <p class="text-sky-700">Tiada akaun demo tersedia.</p>
+                    @endforelse
+                </div>
             </div>
-        </div>
+        @endif
 
         <form method="POST" action="{{ route('login') }}" x-data="{ submitting: false, showPassword: false }" @submit="submitting = true"
             class="space-y-4">

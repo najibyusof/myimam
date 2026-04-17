@@ -77,6 +77,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view laporan tabung',
             'subscriptions.manage',
             'cms.manage',
+            'manage cms',
             'settings.manage',
             'audit.view',
         ];
@@ -149,6 +150,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'finance.approve',
                 'reports.view',
                 'reports.export',
+                'cms.manage',
+                'manage cms',
                 'view laporan buku tunai',
                 'view laporan jumaat',
                 'view laporan derma',

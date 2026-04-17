@@ -14,7 +14,9 @@ use App\Http\Controllers\Admin\SumberHasilManagementController;
 use App\Http\Controllers\Admin\TabungKhasManagementController;
 use App\Http\Controllers\Admin\RolePermissionController;
 use App\Http\Controllers\Admin\SubscriptionManagementController;
+use App\Http\Controllers\Admin\CmsBuilderController;
 use App\Http\Controllers\Admin\CmsLandingController;
+use App\Http\Controllers\Admin\AiPageGeneratorController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LaporanBukuTunaiController;
@@ -128,9 +130,44 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
     });
 
     Route::middleware('role_or_permission:Admin|cms.manage')->group(function () {
-        Route::get('/admin/cms/landing', [CmsLandingController::class, 'edit'])
+        Route::get('/admin/cms/builder/{slug?}', [CmsBuilderController::class, 'edit'])
             ->middleware('permission:cms.manage')
-            ->name('admin.cms.landing.edit');
+            ->where('slug', 'home|login')
+            ->name('admin.cms.builder.edit');
+
+        Route::put('/admin/cms/builder/{slug}', [CmsBuilderController::class, 'update'])
+            ->middleware('permission:cms.manage')
+            ->where('slug', 'home|login')
+            ->name('admin.cms.builder.update');
+
+        Route::post('/admin/cms/builder/media/upload', [CmsBuilderController::class, 'uploadMedia'])
+            ->middleware('permission:cms.manage')
+            ->name('admin.cms.builder.media.upload');
+
+        Route::get('/admin/cms/builder/media', [CmsBuilderController::class, 'mediaLibrary'])
+            ->middleware('permission:cms.manage')
+            ->name('admin.cms.builder.media.index');
+
+        Route::post('/admin/cms/builder/preview', [CmsBuilderController::class, 'preview'])
+            ->middleware('permission:cms.manage')
+            ->name('admin.cms.builder.preview');
+
+        Route::post('/admin/cms/builder/generate', [AiPageGeneratorController::class, 'generate'])
+            ->middleware('permission:cms.manage')
+            ->name('admin.cms.builder.generate');
+
+        Route::get('/admin/cms/builder/presets', [AiPageGeneratorController::class, 'getPresets'])
+            ->middleware('permission:cms.manage')
+            ->name('admin.cms.builder.presets');
+
+        Route::post('/admin/cms/builder/{slug}/versions/{version}/restore', [CmsBuilderController::class, 'restoreVersion'])
+            ->middleware('permission:cms.manage')
+            ->where('slug', 'home|login')
+            ->name('admin.cms.builder.versions.restore');
+
+        Route::get('/admin/cms/landing', function () {
+            return redirect()->route('admin.cms.builder.edit', ['slug' => 'home']);
+        })->name('admin.cms.landing.edit');
 
         Route::put('/admin/cms/landing', [CmsLandingController::class, 'update'])
             ->middleware('permission:cms.manage')

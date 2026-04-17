@@ -146,10 +146,10 @@ return [
     [
         'group_key' => 'menu.group_superadmin',
         'title_key' => 'menu.cms',
-        'route' => ['admin.cms.landing.edit'],
+        'route' => ['admin.cms.builder.edit'],
         'icon' => 'file-text',
         'permission' => ['cms.manage'],
-        'superadmin_only' => true,
-        'tenant_scoped' => false,
+        'superadmin_only' => false,
+        'tenant_scoped' => true,
     ],
 ];
