@@ -26,13 +26,16 @@ class AuthenticatedSessionController extends Controller
         LoginDemoAccountService $demoAccountService
     ): View {
         $masjid = $request->attributes->get('current_masjid');
-        $demoData = $demoAccountService->forLoginPage($masjid);
+        $selectedRole = $request->filled('role') ? (string) $request->query('role') : null;
+        $demoData = $demoAccountService->forLoginPage($masjid, $selectedRole);
         $builderPage = $builderService->getRenderablePage('login', $masjid?->id);
 
         if ($builderPage) {
             $renderedHtml = $renderer->render($builderPage->content_json, [
                 'tenantMasjid' => $masjid,
                 'demoAccounts' => $demoData['accounts'],
+                'activeDemoRole' => $demoData['active_role'],
+                'activeDemoAccount' => $demoData['active_account'],
                 'demoCopyPayload' => $demoData['copy_payload'],
             ]);
 
@@ -49,6 +52,8 @@ class AuthenticatedSessionController extends Controller
 
         return view('auth.login', [
             'demoAccounts' => $demoData['accounts'],
+            'activeDemoRole' => $demoData['active_role'],
+            'activeDemoAccount' => $demoData['active_account'],
             'demoCopyPayload' => $demoData['copy_payload'],
             'showDemoAccounts' => true,
         ]);

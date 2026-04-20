@@ -25,16 +25,28 @@ class LoginDemoAccountsVisibilityTest extends TestCase
         $demoData = $service->forLoginPage(null);
 
         $this->assertCount(5, $demoData['accounts']);
+        $this->assertSame('Superadmin', $demoData['active_role']);
 
         $response = $this->get('/login');
 
         $response->assertOk();
         $response->assertSee(__('auth.demo_accounts'));
-
         foreach ($demoData['accounts'] as $account) {
-            $response->assertSee($account['label']);
-            $response->assertSee($account['email']);
+            $response->assertSee($account['role']);
         }
+
+        $response->assertSee('superadmin@imam.com');
+
+        $adminData = $service->forLoginPage(null, 'Admin');
+        $adminEmail = (string) ($adminData['active_account']['email'] ?? '');
+
+        $this->assertNotSame('', $adminEmail);
+        $this->assertNotSame('superadmin@imam.com', $adminEmail);
+
+        $responseAdmin = $this->get('/login?role=Admin');
+        $responseAdmin->assertOk();
+        $responseAdmin->assertSee($adminEmail);
+        $responseAdmin->assertSee('activeRole: \'Admin\'', false);
     }
 
     public function test_login_page_hides_demo_accounts_when_disabled_in_cms_component(): void

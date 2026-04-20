@@ -7,6 +7,10 @@
             </div>
             @can('create', \App\Models\Hasil::class)
                 <div class="flex items-center gap-2">
+                    <a href="{{ route('admin.hasil.import.index') }}"
+                        class="inline-flex items-center rounded-md border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm hover:bg-emerald-100">
+                        {{ __('hasil.import.title') }}
+                    </a>
                     <a href="{{ route('admin.hasil.create') }}"
                         class="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">
                         {{ __('hasil.add') }}

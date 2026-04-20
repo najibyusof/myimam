@@ -44,7 +44,7 @@ class SidebarMenuVisibilityTest extends TestCase
         $response = $this->actingAs($user)->get(route('dashboard'));
 
         $response->assertOk();
-        $response->assertSee('Dashboard');
+        $response->assertSee('Papan Pemuka');
         $response->assertSee('Akaun');
         $response->assertDontSee('Pengurusan Pengguna');
         $response->assertDontSee('Laporan');
@@ -70,7 +70,7 @@ class SidebarMenuVisibilityTest extends TestCase
         $response = $this->actingAs($superAdmin)->get(route('dashboard'));
 
         $response->assertOk();
-        $response->assertSee('Dashboard');
+        $response->assertSee('Papan Pemuka');
         $response->assertSee('Akaun');
         $response->assertSee('Hasil');
         $response->assertSee('Belanja');
@@ -114,7 +114,7 @@ class SidebarMenuVisibilityTest extends TestCase
 
         $html = (string) view('components.sidebar')->render();
 
-        $this->assertStringContainsString('Dashboard', $html);
+        $this->assertStringContainsString('Papan Pemuka', $html);
         $this->assertStringContainsString('Akaun', $html);
         $this->assertStringNotContainsString('Pengurusan Pengguna', $html);
         $this->assertStringNotContainsString('Laporan', $html);
@@ -141,7 +141,7 @@ class SidebarMenuVisibilityTest extends TestCase
 
         $html = (string) view('components.sidebar')->render();
 
-        $this->assertStringContainsString('Dashboard', $html);
+        $this->assertStringContainsString('Papan Pemuka', $html);
         $this->assertStringContainsString('Akaun', $html);
         $this->assertStringContainsString('Hasil', $html);
         $this->assertStringContainsString('Belanja', $html);
@@ -176,7 +176,7 @@ class SidebarMenuVisibilityTest extends TestCase
 
         $html = (string) view('components.sidebar')->render();
 
-        $this->assertStringContainsString('Dashboard', $html);
+        $this->assertStringContainsString('Papan Pemuka', $html);
         $this->assertStringNotContainsString('Akaun', $html);
     }
 

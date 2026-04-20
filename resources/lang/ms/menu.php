@@ -5,6 +5,7 @@ return [
     'akaun' => 'Akaun',
     'hasil' => 'Hasil',
     'belanja' => 'Belanja',
+    'bank_import' => 'Import Bank',
     'baucar' => 'Baucar Bayaran',
     'laporan' => 'Laporan',
     'laporan_buku_tunai' => 'Laporan Buku Tunai',

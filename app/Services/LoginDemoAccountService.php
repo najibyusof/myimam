@@ -8,9 +8,9 @@ use App\Models\User;
 class LoginDemoAccountService
 {
     /**
-     * @return array{accounts: array<int, array<string, string>>, copy_payload: string}
+     * @return array{accounts: array<int, array<string, string>>, active_role: ?string, active_account: ?array<string, string>, copy_payload: string}
      */
-    public function forLoginPage(?Masjid $masjid): array
+    public function forLoginPage(?Masjid $masjid, ?string $activeRole = null): array
     {
         $roles = ['Superadmin', 'Admin', 'Bendahari', 'AJK', 'Auditor'];
         $accounts = [];
@@ -43,12 +43,26 @@ class LoginDemoAccountService
             ];
         }
 
-        $copyPayload = collect($accounts)
-            ->map(fn(array $account): string => sprintf('%s: %s / %s', $account['label'], $account['email'], $account['password_hint']))
-            ->implode("\n");
+        $resolvedActiveRole = null;
+        if (!empty($accounts)) {
+            $resolvedActiveRole = collect($accounts)->contains(fn(array $account): bool => $account['role'] === $activeRole)
+                ? $activeRole
+                : ($accounts[0]['role'] ?? null);
+        }
+
+        $activeAccount = null;
+        if ($resolvedActiveRole !== null) {
+            $activeAccount = collect($accounts)->first(fn(array $account): bool => $account['role'] === $resolvedActiveRole);
+        }
+
+        $copyPayload = $activeAccount
+            ? sprintf('%s: %s / %s', $activeAccount['label'], $activeAccount['email'], $activeAccount['password_hint'])
+            : '';
 
         return [
             'accounts' => $accounts,
+            'active_role' => $resolvedActiveRole,
+            'active_account' => $activeAccount,
             'copy_payload' => $copyPayload,
         ];
     }

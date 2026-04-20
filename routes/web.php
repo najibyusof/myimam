@@ -7,6 +7,8 @@ use App\Http\Controllers\Admin\PindahanAkaunManagementController;
 use App\Http\Controllers\Admin\RunningNoManagementController;
 use App\Http\Controllers\Admin\LogAktivitiManagementController;
 use App\Http\Controllers\Admin\ReportingManagementController;
+use App\Http\Controllers\Admin\HasilImportController;
+use App\Http\Controllers\Admin\BankImportController;
 use App\Http\Controllers\Admin\HasilManagementController;
 use App\Http\Controllers\Admin\KategoriBelanjaManagementController;
 use App\Http\Controllers\Admin\ProgramMasjidManagementController;
@@ -208,6 +210,21 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
         Route::get('/admin/hasil', [HasilManagementController::class, 'index'])
             ->middleware('permission:hasil.view')
             ->name('admin.hasil.index');
+        Route::get('/hasil/import', [HasilImportController::class, 'index'])
+            ->middleware('permission:hasil.create')
+            ->name('admin.hasil.import.index');
+        Route::post('/hasil/import/preview', [HasilImportController::class, 'preview'])
+            ->middleware('permission:hasil.create')
+            ->name('admin.hasil.import.preview');
+        Route::post('/hasil/import/store', [HasilImportController::class, 'store'])
+            ->middleware('permission:hasil.create')
+            ->name('admin.hasil.import.store');
+        Route::get('/hasil/import/error-report/{token}', [HasilImportController::class, 'errorReport'])
+            ->middleware('permission:hasil.create')
+            ->name('admin.hasil.import.error-report');
+        Route::get('/hasil/import/sample', [HasilImportController::class, 'sample'])
+            ->middleware('permission:hasil.create')
+            ->name('admin.hasil.import.sample');
         Route::get('/admin/hasil/create', [HasilManagementController::class, 'create'])
             ->middleware('permission:hasil.create')
             ->name('admin.hasil.create');
@@ -234,6 +251,17 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
         Route::get('/admin/hasil/{hasil}/receipt', [HasilManagementController::class, 'receipt'])
             ->middleware('permission:hasil.view')
             ->name('admin.hasil.receipt');
+    });
+
+    Route::middleware('role_or_permission:Admin|bank_import.access|hasil.create|belanja.create')->group(function () {
+        Route::get('/bank/import', [BankImportController::class, 'index'])
+            ->name('admin.bank.import.index');
+        Route::get('/bank/import/sample', [BankImportController::class, 'sample'])
+            ->name('admin.bank.import.sample');
+        Route::post('/bank/import/preview', [BankImportController::class, 'preview'])
+            ->name('admin.bank.import.preview');
+        Route::post('/bank/import/store', [BankImportController::class, 'store'])
+            ->name('admin.bank.import.store');
     });
 
     Route::middleware('role_or_permission:Admin|belanja.view|belanja.create|belanja.update|belanja.delete')->group(function () {

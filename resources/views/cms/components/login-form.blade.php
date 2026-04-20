@@ -14,6 +14,8 @@
         $showDemoAccountsParsed ??
         !in_array(strtolower(trim((string) $showDemoAccountsValue)), ['0', 'false', 'no', 'off', 'hidden'], true);
     $demoAccounts = $context['demoAccounts'] ?? [];
+    $activeDemoRole = $context['activeDemoRole'] ?? ($demoAccounts[0]['role'] ?? null);
+    $activeDemoAccount = $context['activeDemoAccount'] ?? collect($demoAccounts)->firstWhere('role', $activeDemoRole);
     $demoCopyPayload = $context['demoCopyPayload'] ?? '';
 @endphp
 
@@ -57,7 +59,27 @@
                 <x-auth-session-status class="mt-4 mb-2" :status="session('status')" />
 
                 @if ($showDemoAccounts)
-                    <div class="mt-5 mb-4 rounded-xl border border-sky-200 bg-sky-50 p-4" x-data="{ open: false }">
+                    <div class="mt-5 mb-4 rounded-xl border border-sky-200 bg-sky-50 p-4" x-data="{
+                        open: false,
+                        accounts: @js(array_values($demoAccounts)),
+                        activeRole: @js($activeDemoRole),
+                        activeAccount: @js($activeDemoAccount),
+                        setActiveRole(role) {
+                            const found = this.accounts.find((account) => account.role === role);
+                            if (!found) {
+                                return;
+                            }
+                            this.activeRole = role;
+                            this.activeAccount = found;
+                        },
+                        copyActive() {
+                            if (!this.activeAccount) {
+                                return;
+                            }
+                            const payload = `${this.activeAccount.label}: ${this.activeAccount.email} / ${this.activeAccount.password_hint}`;
+                            navigator.clipboard.writeText(payload);
+                        }
+                    }">
                         <div class="flex items-center justify-between gap-3">
                             <button type="button" @click="open = !open"
                                 class="inline-flex items-center gap-2 text-sm font-semibold text-sky-800">
@@ -71,20 +93,35 @@
                             </button>
                             <button type="button"
                                 class="rounded-md border border-sky-300 px-2.5 py-1 text-xs font-semibold text-sky-700 transition hover:bg-sky-100"
-                                @click="navigator.clipboard.writeText(@js($demoCopyPayload))">
+                                @click="copyActive()">
                                 {{ __('form.copy_all') }}
                             </button>
                         </div>
-                        <div x-show="open" x-cloak class="mt-3 space-y-2 text-xs text-sky-900">
-                            @forelse ($demoAccounts as $account)
-                                <p>
-                                    <span class="font-semibold">{{ $account['label'] ?? '' }}:</span>
-                                    {{ $account['email'] ?? '' }} /
-                                    {{ $account['password_hint'] ?? __('auth.password') }}
+                        <div x-show="open" x-cloak class="mt-3 space-y-3 text-xs text-sky-900">
+                            @if (!empty($demoAccounts))
+                                <div class="flex flex-wrap gap-2">
+                                    <template x-for="account in accounts" :key="account.role">
+                                        <button type="button" @click="setActiveRole(account.role)"
+                                            class="rounded-md border px-2.5 py-1 font-semibold transition"
+                                            :class="account.role === activeRole ? 'border-sky-500 bg-sky-100 text-sky-900' :
+                                                'border-sky-300 bg-white text-sky-700 hover:bg-sky-100'"
+                                            x-text="account.role"></button>
+                                    </template>
+                                </div>
+
+                                <p class="rounded-md border border-sky-200 bg-white px-3 py-2">
+                                    <span class="font-semibold"
+                                        x-text="(activeAccount && activeAccount.label) ? activeAccount.label : ''">{{ $activeDemoAccount['label'] ?? '' }}</span><span
+                                        class="font-semibold">:</span>
+                                    <span
+                                        x-text="(activeAccount && activeAccount.email) ? activeAccount.email : ''">{{ $activeDemoAccount['email'] ?? '' }}</span>
+                                    /
+                                    <span
+                                        x-text="(activeAccount && activeAccount.password_hint) ? activeAccount.password_hint : ''">{{ $activeDemoAccount['password_hint'] ?? __('auth.password') }}</span>
                                 </p>
-                            @empty
+                            @else
                                 <p class="text-sky-700">Tiada akaun demo tersedia.</p>
-                            @endforelse
+                            @endif
                         </div>
                     </div>
                 @endif
