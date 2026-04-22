@@ -9,6 +9,7 @@ use App\Models\KategoriBelanja;
 use App\Models\Masjid;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -210,5 +211,72 @@ class BelanjaModuleSmokeTest extends TestCase
             ->get(route('admin.belanja.index'))
             ->assertOk()
             ->assertDontSeeText('450.00');
+    }
+
+    public function test_belanja_attachment_can_be_viewed_by_read_only_user_in_same_masjid(): void
+    {
+        Storage::fake('public');
+
+        $viewPermission = Permission::query()->firstOrCreate([
+            'name' => 'belanja.view',
+            'guard_name' => 'web',
+        ]);
+
+        $viewerRole = Role::query()->firstOrCreate([
+            'name' => 'AJK',
+            'guard_name' => 'web',
+        ]);
+        $viewerRole->syncPermissions([$viewPermission]);
+
+        $masjid = Masjid::query()->create([
+            'nama' => 'Masjid Attachment View',
+            'status' => 'active',
+            'subscription_status' => 'active',
+            'subscription_expiry' => now()->addDays(30),
+        ]);
+
+        $viewer = User::query()->create([
+            'name' => 'AJK Viewer',
+            'email' => 'ajk.viewer@example.test',
+            'password' => 'password',
+            'id_masjid' => $masjid->id,
+            'aktif' => true,
+        ]);
+        $viewer->assignRole($viewerRole);
+
+        $akaun = Akaun::query()->create([
+            'id_masjid' => $masjid->id,
+            'nama_akaun' => 'Bank Attachment',
+            'jenis' => 'bank',
+            'status_aktif' => true,
+        ]);
+
+        $kategori = KategoriBelanja::query()->create([
+            'id_masjid' => $masjid->id,
+            'kod' => 'DOC',
+            'nama_kategori' => 'Dokumen',
+            'aktif' => true,
+        ]);
+
+        $attachmentPath = 'belanja-bukti/test-attachment.pdf';
+        Storage::disk('public')->put($attachmentPath, 'fake pdf content');
+        Storage::disk('public')->assertExists($attachmentPath);
+
+        $belanja = Belanja::query()->create([
+            'id_masjid' => $masjid->id,
+            'tarikh' => '2026-04-15',
+            'id_akaun' => $akaun->id,
+            'id_kategori_belanja' => $kategori->id,
+            'amaun' => 50,
+            'created_by' => $viewer->id,
+            'status' => 'LULUS',
+            'is_deleted' => false,
+            'bukti_fail' => $attachmentPath,
+        ]);
+
+        $this->actingAs($viewer)
+            ->get(route('admin.belanja.viewAttachment', $belanja))
+            ->assertOk()
+            ->assertHeader('content-disposition', 'inline; filename="test-attachment.pdf"');
     }
 }

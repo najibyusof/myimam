@@ -6,6 +6,7 @@ return [
     'hasil' => 'Hasil',
     'belanja' => 'Belanja',
     'bank_import' => 'Import Bank',
+    'bank_pdf_import' => 'Import Bank PDF',
     'baucar' => 'Baucar Bayaran',
     'laporan' => 'Laporan',
     'laporan_buku_tunai' => 'Laporan Buku Tunai',

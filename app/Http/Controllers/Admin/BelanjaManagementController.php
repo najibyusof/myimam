@@ -14,9 +14,9 @@ use App\Services\BelanjaManagementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BelanjaManagementController extends Controller
 {
@@ -162,6 +162,27 @@ class BelanjaManagementController extends Controller
         }
 
         return response()->json(['success' => true], 200);
+    }
+
+    public function viewAttachment(int $belanja): StreamedResponse
+    {
+        $belanja = Belanja::query()
+            ->withoutTenantScope()
+            ->findOrFail($belanja);
+
+        $this->authorize('view', $belanja);
+
+        abort_if(empty($belanja->bukti_fail), 404);
+
+        $disk = Storage::disk('public');
+        abort_unless($disk->exists($belanja->bukti_fail), 404);
+
+        return $disk->response(
+            $belanja->bukti_fail,
+            basename($belanja->bukti_fail),
+            ['Content-Disposition' => 'inline; filename="' . basename($belanja->bukti_fail) . '"'],
+            'inline'
+        );
     }
 
     private function formData(Request $request, ?Belanja $belanja = null): array

@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\LogAktivitiManagementController;
 use App\Http\Controllers\Admin\ReportingManagementController;
 use App\Http\Controllers\Admin\HasilImportController;
 use App\Http\Controllers\Admin\BankImportController;
+use App\Http\Controllers\Admin\BankPdfImportController;
 use App\Http\Controllers\Admin\HasilManagementController;
 use App\Http\Controllers\Admin\KategoriBelanjaManagementController;
 use App\Http\Controllers\Admin\ProgramMasjidManagementController;
@@ -262,6 +263,13 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
             ->name('admin.bank.import.preview');
         Route::post('/bank/import/store', [BankImportController::class, 'store'])
             ->name('admin.bank.import.store');
+
+        Route::get('/bank/pdf-import', [BankPdfImportController::class, 'index'])
+            ->name('admin.bank.pdf-import.index');
+        Route::post('/bank/pdf-import/preview', [BankPdfImportController::class, 'preview'])
+            ->name('admin.bank.pdf-import.preview');
+        Route::post('/bank/pdf-import/store', [BankPdfImportController::class, 'store'])
+            ->name('admin.bank.pdf-import.store');
     });
 
     Route::middleware('role_or_permission:Admin|belanja.view|belanja.create|belanja.update|belanja.delete')->group(function () {
@@ -280,6 +288,8 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
         Route::put('/admin/belanja/{belanja}', [BelanjaManagementController::class, 'update'])
             ->middleware('permission:belanja.update')
             ->name('admin.belanja.update');
+        Route::get('/admin/belanja/{belanja}/attachment', [BelanjaManagementController::class, 'viewAttachment'])
+            ->name('admin.belanja.viewAttachment');
         Route::delete('/admin/belanja/{belanja}', [BelanjaManagementController::class, 'destroy'])
             ->middleware('permission:belanja.delete')
             ->name('admin.belanja.destroy');

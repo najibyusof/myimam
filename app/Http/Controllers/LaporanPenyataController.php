@@ -275,9 +275,7 @@ class LaporanPenyataController extends Controller
             ->map(function ($row): array {
                 $buktiUrl = null;
                 if (!empty($row->bukti_fail)) {
-                    $buktiUrl = str_starts_with((string) $row->bukti_fail, 'http')
-                        ? $row->bukti_fail
-                        : asset('storage/' . ltrim((string) $row->bukti_fail, '/'));
+                    $buktiUrl = route('admin.belanja.viewAttachment', $row);
                 }
 
                 return [

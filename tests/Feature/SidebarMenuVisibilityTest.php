@@ -74,6 +74,7 @@ class SidebarMenuVisibilityTest extends TestCase
         $response->assertSee('Akaun');
         $response->assertSee('Hasil');
         $response->assertSee('Belanja');
+        $response->assertSee('Import Bank PDF');
         $response->assertSee('Laporan');
         $response->assertSee('Pengurusan Pengguna');
     }
@@ -145,6 +146,7 @@ class SidebarMenuVisibilityTest extends TestCase
         $this->assertStringContainsString('Akaun', $html);
         $this->assertStringContainsString('Hasil', $html);
         $this->assertStringContainsString('Belanja', $html);
+        $this->assertStringContainsString('Import Bank PDF', $html);
         $this->assertStringContainsString('Laporan', $html);
         $this->assertStringContainsString('Pengurusan Pengguna', $html);
     }

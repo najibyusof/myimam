@@ -39,6 +39,13 @@ return [
     ],
     [
         'group_key' => 'menu.group_finance',
+        'title_key' => 'menu.bank_pdf_import',
+        'route' => ['admin.bank.pdf-import.index'],
+        'icon' => 'file',
+        'permission' => ['bank_import.access', 'hasil.create', 'belanja.create'],
+    ],
+    [
+        'group_key' => 'menu.group_finance',
         'title_key' => 'menu.baucar',
         'route' => ['baucar.index'],
         'icon' => 'file',
