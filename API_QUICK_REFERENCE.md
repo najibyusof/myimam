@@ -203,6 +203,90 @@ GET /masjids/{id}/members[?per_page=15][&page=1]
 
 ---
 
+## 💰 Finance Module
+
+### Current Status
+
+```bash
+Finance API Phase B and Phase C endpoints are implemented under /finance/* (as of April 29, 2026).
+All six reports endpoints now return JSON data.
+```
+
+### Finance Endpoints (Phase B)
+
+#### Accounts (`akaun`)
+
+```bash
+GET    /finance/akaun[?search=NAME][&status_aktif=1][&jenis=tunai][&per_page=15][&page=1]
+POST   /finance/akaun
+GET    /finance/akaun/{id}
+PATCH  /finance/akaun/{id}
+DELETE /finance/akaun/{id}
+```
+
+#### Income (`hasil`)
+
+```bash
+GET    /finance/hasil[?search=KEYWORD][&tarikh_mula=YYYY-MM-DD][&tarikh_tamat=YYYY-MM-DD][&id_akaun=1][&id_sumber_hasil=1][&per_page=15][&page=1]
+POST   /finance/hasil
+GET    /finance/hasil/{id}
+PATCH  /finance/hasil/{id}
+DELETE /finance/hasil/{id}
+GET    /finance/hasil/{id}/receipt
+```
+
+#### Expenses (`belanja`)
+
+```bash
+GET    /finance/belanja[?search=KEYWORD][&status=draft|approved][&tarikh_mula=YYYY-MM-DD][&tarikh_tamat=YYYY-MM-DD][&id_kategori_belanja=1][&per_page=15][&page=1]
+POST   /finance/belanja
+GET    /finance/belanja/{id}
+PATCH  /finance/belanja/{id}
+DELETE /finance/belanja/{id}
+PATCH  /finance/belanja/{id}/approve
+```
+
+#### Account Transfers (`pindahan-akaun`)
+
+```bash
+GET    /finance/pindahan-akaun[?akaun_id=1][&tarikh_mula=YYYY-MM-DD][&tarikh_tamat=YYYY-MM-DD][&per_page=15][&page=1]
+POST   /finance/pindahan-akaun
+GET    /finance/pindahan-akaun/{id}
+PATCH  /finance/pindahan-akaun/{id}
+DELETE /finance/pindahan-akaun/{id}
+```
+
+#### Finance Master Data
+
+```bash
+GET|POST|PATCH|DELETE /finance/sumber-hasil
+PATCH                /finance/sumber-hasil/{id}/status
+GET|POST|PATCH|DELETE /finance/kategori-belanja
+PATCH                /finance/kategori-belanja/{id}/status
+GET|POST|PATCH|DELETE /finance/tabung-khas
+PATCH                /finance/tabung-khas/{id}/status
+GET|POST|PATCH|DELETE /finance/program-masjid
+PATCH                /finance/program-masjid/{id}/status
+GET                  /finance/running-no
+POST                 /finance/running-no/generate
+PATCH                /finance/running-no/{idMasjid}/{prefix}/{tahun}/{bulan}
+```
+
+#### Finance Reports (Phase C - Implemented)
+
+```bash
+GET /finance/reports/buku-tunai[?akaun_id=1][&tarikh_mula=YYYY-MM-DD][&tarikh_tamat=YYYY-MM-DD][&baki_awal=0][&id_masjid=1]
+GET /finance/reports/jumaat[?tahun=2026][&bulan=4][&jenis_paparan=ringkasan_bulanan|senarai_jumaat][&id_masjid=1]
+GET /finance/reports/derma[?tarikh_dari=YYYY-MM-DD][&tarikh_hingga=YYYY-MM-DD][&jenis_paparan=ringkasan_sumber|ringkasan_bulan|senarai_transaksi][&id_masjid=1]
+GET /finance/reports/belanja[?tarikh_dari=YYYY-MM-DD][&tarikh_hingga=YYYY-MM-DD][&jenis_paparan=ringkasan_kategori|ringkasan_bulan|senarai_transaksi][&kategori_id=1][&akaun_id=1][&status=all|draf|lulus][&id_masjid=1]
+GET /finance/reports/penyata[?jenis_penyata=bulanan|tahunan][&tahun=2026][&bulan=4][&id_masjid=1]
+GET /finance/reports/tabung[?tarikh_dari=YYYY-MM-DD][&tarikh_hingga=YYYY-MM-DD][&id_masjid=1]
+```
+
+> Note: For superadmin users, `id_masjid` is required on reports endpoints.
+
+---
+
 ## 🔔 Notifications
 
 ### List Notifications
@@ -423,6 +507,7 @@ curl -X GET http://localhost:8000/api/users \
 | `/auth/me`, `/auth/profile`, `/auth/logout` | `auth:sanctum`         | Authenticated |
 | `/users`                                    | `users.manage`         | Admin         |
 | `/masjids`                                  | `masjid.manage`        | Admin         |
+| `/finance/*`                                | Module-specific perms  | Implemented (Phase B) |
 | `/notifications`                            | `auth:sanctum`         | Authenticated |
 
 ---
@@ -466,6 +551,7 @@ curl -X GET http://localhost:8000/api/users \
 ## 📚 Full Documentation
 
 - **API_DOCUMENTATION.md** - Complete reference
+- **docs/FINANCE_API_IMPLEMENTATION_CHECKLIST.md** - Finance API build checklist for mobile
 - **SETUP_AND_INTEGRATION_GUIDE.md** - Integration guide
 - **POSTMAN_COLLECTION.json** - Interactive testing
 - **API_IMPLEMENTATION_SUMMARY.md** - Project overview
@@ -509,5 +595,5 @@ curl -X GET http://localhost:8000/api/users \
 ---
 
 **Version**: 1.0.0  
-**Last Updated**: April 14, 2026  
+**Last Updated**: April 29, 2026  
 **Status**: Production Ready

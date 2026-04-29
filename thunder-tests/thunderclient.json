@@ -28,6 +28,13 @@
       "containerId": "",
       "created": "2026-04-29T00:00:00.000Z",
       "sortNum": 4
+    },
+    {
+      "_id": "f-finance-reports",
+      "name": "Finance Reports",
+      "containerId": "",
+      "created": "2026-04-29T00:00:00.000Z",
+      "sortNum": 5
     }
   ],
   "requests": [
@@ -610,6 +617,135 @@
         "type": "json",
         "raw": "{\n  \"email_notifications\": true,\n  \"push_notifications\": true,\n  \"notification_types\": [\"finance\", \"masjid\"]\n}"
       }
+    },
+    {
+      "_id": "req-fin-reports-buku-tunai",
+      "colId": "col-imam",
+      "containerId": "f-finance-reports",
+      "name": "Reports - Buku Tunai",
+      "url": "{{baseUrl}}/finance/reports/buku-tunai",
+      "method": "GET",
+      "sortNum": 500,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [
+        { "name": "akaun_id", "value": "{{akaunId}}" },
+        { "name": "tarikh_mula", "value": "2026-04-01", "isDisabled": true },
+        { "name": "tarikh_tamat", "value": "2026-04-30", "isDisabled": true },
+        { "name": "baki_awal", "value": "0", "isDisabled": true },
+        { "name": "id_masjid", "value": "{{masjidId}}", "isDisabled": true }
+      ],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-fin-reports-jumaat",
+      "colId": "col-imam",
+      "containerId": "f-finance-reports",
+      "name": "Reports - Jumaat",
+      "url": "{{baseUrl}}/finance/reports/jumaat",
+      "method": "GET",
+      "sortNum": 510,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [
+        { "name": "tahun", "value": "2026" },
+        { "name": "bulan", "value": "4", "isDisabled": true },
+        { "name": "jenis_paparan", "value": "ringkasan_bulanan", "isDisabled": true },
+        { "name": "id_masjid", "value": "{{masjidId}}", "isDisabled": true }
+      ],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-fin-reports-derma",
+      "colId": "col-imam",
+      "containerId": "f-finance-reports",
+      "name": "Reports - Derma",
+      "url": "{{baseUrl}}/finance/reports/derma",
+      "method": "GET",
+      "sortNum": 520,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [
+        { "name": "tarikh_dari", "value": "2026-04-01" },
+        { "name": "tarikh_hingga", "value": "2026-04-30" },
+        { "name": "jenis_paparan", "value": "ringkasan_sumber", "isDisabled": true },
+        { "name": "id_masjid", "value": "{{masjidId}}", "isDisabled": true }
+      ],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-fin-reports-belanja",
+      "colId": "col-imam",
+      "containerId": "f-finance-reports",
+      "name": "Reports - Belanja",
+      "url": "{{baseUrl}}/finance/reports/belanja",
+      "method": "GET",
+      "sortNum": 530,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [
+        { "name": "tarikh_dari", "value": "2026-04-01" },
+        { "name": "tarikh_hingga", "value": "2026-04-30" },
+        { "name": "jenis_paparan", "value": "ringkasan_kategori", "isDisabled": true },
+        { "name": "kategori_id", "value": "{{kategoriBelanjaId}}", "isDisabled": true },
+        { "name": "akaun_id", "value": "{{akaunId}}", "isDisabled": true },
+        { "name": "status", "value": "all", "isDisabled": true },
+        { "name": "id_masjid", "value": "{{masjidId}}", "isDisabled": true }
+      ],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-fin-reports-penyata",
+      "colId": "col-imam",
+      "containerId": "f-finance-reports",
+      "name": "Reports - Penyata",
+      "url": "{{baseUrl}}/finance/reports/penyata",
+      "method": "GET",
+      "sortNum": 540,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [
+        { "name": "jenis_penyata", "value": "bulanan" },
+        { "name": "tahun", "value": "2026" },
+        { "name": "bulan", "value": "4", "isDisabled": true },
+        { "name": "id_masjid", "value": "{{masjidId}}", "isDisabled": true }
+      ],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-fin-reports-tabung",
+      "colId": "col-imam",
+      "containerId": "f-finance-reports",
+      "name": "Reports - Tabung",
+      "url": "{{baseUrl}}/finance/reports/tabung",
+      "method": "GET",
+      "sortNum": 550,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [
+        { "name": "tarikh_dari", "value": "2026-04-01" },
+        { "name": "tarikh_hingga", "value": "2026-04-30" },
+        { "name": "id_masjid", "value": "{{masjidId}}", "isDisabled": true }
+      ],
+      "body": { "type": "none" }
     }
   ]
 }

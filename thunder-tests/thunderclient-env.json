@@ -33,6 +33,16 @@
       "isSecret": false
     },
     {
+      "name": "akaunId",
+      "value": "1",
+      "isSecret": false
+    },
+    {
+      "name": "kategoriBelanjaId",
+      "value": "1",
+      "isSecret": false
+    },
+    {
       "name": "notificationId",
       "value": "1",
       "isSecret": false
