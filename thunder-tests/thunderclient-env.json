@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "name": "IMAM API - Local",
+  "data": [
+    {
+      "name": "baseUrl",
+      "value": "http://localhost:8000/api",
+      "isSecret": false
+    },
+    {
+      "name": "authToken",
+      "value": "",
+      "isSecret": true
+    },
+    {
+      "name": "email",
+      "value": "admin@example.com",
+      "isSecret": false
+    },
+    {
+      "name": "password",
+      "value": "password123",
+      "isSecret": true
+    },
+    {
+      "name": "userId",
+      "value": "1",
+      "isSecret": false
+    },
+    {
+      "name": "masjidId",
+      "value": "1",
+      "isSecret": false
+    },
+    {
+      "name": "notificationId",
+      "value": "1",
+      "isSecret": false
+    }
+  ]
+}

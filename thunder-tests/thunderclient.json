@@ -1,0 +1,615 @@
+{
+  "version": "1.0",
+  "folders": [
+    {
+      "_id": "f-auth",
+      "name": "Auth",
+      "containerId": "",
+      "created": "2026-04-29T00:00:00.000Z",
+      "sortNum": 1
+    },
+    {
+      "_id": "f-users",
+      "name": "User Management",
+      "containerId": "",
+      "created": "2026-04-29T00:00:00.000Z",
+      "sortNum": 2
+    },
+    {
+      "_id": "f-masjids",
+      "name": "Masjid Management",
+      "containerId": "",
+      "created": "2026-04-29T00:00:00.000Z",
+      "sortNum": 3
+    },
+    {
+      "_id": "f-notifications",
+      "name": "Notifications",
+      "containerId": "",
+      "created": "2026-04-29T00:00:00.000Z",
+      "sortNum": 4
+    }
+  ],
+  "requests": [
+    {
+      "_id": "req-health",
+      "colId": "col-imam",
+      "containerId": "",
+      "name": "Health Check",
+      "url": "{{baseUrl}}/health",
+      "method": "GET",
+      "sortNum": 0,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-register",
+      "colId": "col-imam",
+      "containerId": "f-auth",
+      "name": "Register",
+      "url": "{{baseUrl}}/auth/register",
+      "method": "POST",
+      "sortNum": 10,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\"\n}"
+      }
+    },
+    {
+      "_id": "req-login",
+      "colId": "col-imam",
+      "containerId": "f-auth",
+      "name": "Login",
+      "url": "{{baseUrl}}/auth/login",
+      "method": "POST",
+      "sortNum": 20,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+      },
+      "tests": [
+        {
+          "type": "setto",
+          "custom": "json.token",
+          "action": "setenv",
+          "value": "authToken"
+        }
+      ]
+    },
+    {
+      "_id": "req-me",
+      "colId": "col-imam",
+      "containerId": "f-auth",
+      "name": "Get Current User (me)",
+      "url": "{{baseUrl}}/auth/me",
+      "method": "GET",
+      "sortNum": 30,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-profile",
+      "colId": "col-imam",
+      "containerId": "f-auth",
+      "name": "Update Profile",
+      "url": "{{baseUrl}}/auth/profile",
+      "method": "PATCH",
+      "sortNum": 40,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"updated@example.com\"\n}"
+      }
+    },
+    {
+      "_id": "req-change-password",
+      "colId": "col-imam",
+      "containerId": "f-auth",
+      "name": "Change Password",
+      "url": "{{baseUrl}}/auth/change-password",
+      "method": "POST",
+      "sortNum": 50,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"current_password\": \"password123\",\n  \"new_password\": \"newpassword123\",\n  \"new_password_confirmation\": \"newpassword123\"\n}"
+      }
+    },
+    {
+      "_id": "req-refresh",
+      "colId": "col-imam",
+      "containerId": "f-auth",
+      "name": "Refresh Token",
+      "url": "{{baseUrl}}/auth/refresh",
+      "method": "POST",
+      "sortNum": 60,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-logout",
+      "colId": "col-imam",
+      "containerId": "f-auth",
+      "name": "Logout",
+      "url": "{{baseUrl}}/auth/logout",
+      "method": "POST",
+      "sortNum": 70,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-forgot-password",
+      "colId": "col-imam",
+      "containerId": "f-auth",
+      "name": "Forgot Password",
+      "url": "{{baseUrl}}/auth/forgot-password",
+      "method": "POST",
+      "sortNum": 80,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"email\": \"{{email}}\"\n}"
+      }
+    },
+    {
+      "_id": "req-users-list",
+      "colId": "col-imam",
+      "containerId": "f-users",
+      "name": "List Users",
+      "url": "{{baseUrl}}/users",
+      "method": "GET",
+      "sortNum": 100,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [
+        { "name": "per_page", "value": "15", "isDisabled": true },
+        { "name": "page", "value": "1", "isDisabled": true },
+        { "name": "search", "value": "", "isDisabled": true },
+        { "name": "aktif", "value": "1", "isDisabled": true },
+        { "name": "role", "value": "", "isDisabled": true }
+      ],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-users-create",
+      "colId": "col-imam",
+      "containerId": "f-users",
+      "name": "Create User",
+      "url": "{{baseUrl}}/users",
+      "method": "POST",
+      "sortNum": 110,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"name\": \"New User\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\",\n  \"peranan\": \"Officer\",\n  \"id_masjid\": 1,\n  \"roles\": [\"officer\"]\n}"
+      }
+    },
+    {
+      "_id": "req-users-show",
+      "colId": "col-imam",
+      "containerId": "f-users",
+      "name": "Get User",
+      "url": "{{baseUrl}}/users/{{userId}}",
+      "method": "GET",
+      "sortNum": 120,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-users-update",
+      "colId": "col-imam",
+      "containerId": "f-users",
+      "name": "Update User",
+      "url": "{{baseUrl}}/users/{{userId}}",
+      "method": "PATCH",
+      "sortNum": 130,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"updated@example.com\",\n  \"peranan\": \"Officer\"\n}"
+      }
+    },
+    {
+      "_id": "req-users-delete",
+      "colId": "col-imam",
+      "containerId": "f-users",
+      "name": "Delete User",
+      "url": "{{baseUrl}}/users/{{userId}}",
+      "method": "DELETE",
+      "sortNum": 140,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-users-toggle-status",
+      "colId": "col-imam",
+      "containerId": "f-users",
+      "name": "Toggle User Status",
+      "url": "{{baseUrl}}/users/{{userId}}/status",
+      "method": "PATCH",
+      "sortNum": 150,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-users-roles",
+      "colId": "col-imam",
+      "containerId": "f-users",
+      "name": "Assign Roles",
+      "url": "{{baseUrl}}/users/{{userId}}/roles",
+      "method": "POST",
+      "sortNum": 160,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"roles\": [\"officer\", \"analyst\"]\n}"
+      }
+    },
+    {
+      "_id": "req-users-permissions",
+      "colId": "col-imam",
+      "containerId": "f-users",
+      "name": "Get User Permissions",
+      "url": "{{baseUrl}}/users/{{userId}}/permissions",
+      "method": "GET",
+      "sortNum": 170,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-masjids-list",
+      "colId": "col-imam",
+      "containerId": "f-masjids",
+      "name": "List Masjids",
+      "url": "{{baseUrl}}/masjids",
+      "method": "GET",
+      "sortNum": 200,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [
+        { "name": "per_page", "value": "15", "isDisabled": true },
+        { "name": "page", "value": "1", "isDisabled": true },
+        { "name": "search", "value": "", "isDisabled": true },
+        { "name": "status", "value": "active", "isDisabled": true },
+        { "name": "negeri", "value": "", "isDisabled": true }
+      ],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-masjids-create",
+      "colId": "col-imam",
+      "containerId": "f-masjids",
+      "name": "Create Masjid",
+      "url": "{{baseUrl}}/masjids",
+      "method": "POST",
+      "sortNum": 210,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"nama\": \"Masjid Al-Falah\",\n  \"alamat\": \"Jalan Utama 1\",\n  \"bandar\": \"Kuala Lumpur\",\n  \"negeri\": \"Kuala Lumpur\",\n  \"poskod\": \"50000\",\n  \"no_telefon\": \"03-1234-5678\",\n  \"emel\": \"alfalah@masjid.com\",\n  \"kapasiti_solat\": 5000,\n  \"imam\": \"Ustaz Ahmad\",\n  \"tahun_ditubuhkan\": 2005,\n  \"status\": \"active\"\n}"
+      }
+    },
+    {
+      "_id": "req-masjids-show",
+      "colId": "col-imam",
+      "containerId": "f-masjids",
+      "name": "Get Masjid",
+      "url": "{{baseUrl}}/masjids/{{masjidId}}",
+      "method": "GET",
+      "sortNum": 220,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-masjids-update",
+      "colId": "col-imam",
+      "containerId": "f-masjids",
+      "name": "Update Masjid",
+      "url": "{{baseUrl}}/masjids/{{masjidId}}",
+      "method": "PATCH",
+      "sortNum": 230,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"nama\": \"Masjid Al-Falah Baru\",\n  \"kapasiti_solat\": 6000\n}"
+      }
+    },
+    {
+      "_id": "req-masjids-delete",
+      "colId": "col-imam",
+      "containerId": "f-masjids",
+      "name": "Delete Masjid",
+      "url": "{{baseUrl}}/masjids/{{masjidId}}",
+      "method": "DELETE",
+      "sortNum": 240,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-masjids-programs",
+      "colId": "col-imam",
+      "containerId": "f-masjids",
+      "name": "Get Masjid Programs",
+      "url": "{{baseUrl}}/masjids/{{masjidId}}/programs",
+      "method": "GET",
+      "sortNum": 250,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [
+        { "name": "per_page", "value": "15", "isDisabled": true },
+        { "name": "page", "value": "1", "isDisabled": true }
+      ],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-masjids-members",
+      "colId": "col-imam",
+      "containerId": "f-masjids",
+      "name": "Get Masjid Members",
+      "url": "{{baseUrl}}/masjids/{{masjidId}}/members",
+      "method": "GET",
+      "sortNum": 260,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [
+        { "name": "per_page", "value": "15", "isDisabled": true },
+        { "name": "page", "value": "1", "isDisabled": true }
+      ],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-notif-list",
+      "colId": "col-imam",
+      "containerId": "f-notifications",
+      "name": "List Notifications",
+      "url": "{{baseUrl}}/notifications",
+      "method": "GET",
+      "sortNum": 300,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [
+        { "name": "per_page", "value": "20", "isDisabled": true },
+        { "name": "page", "value": "1", "isDisabled": true }
+      ],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-notif-unread",
+      "colId": "col-imam",
+      "containerId": "f-notifications",
+      "name": "Get Unread Notifications",
+      "url": "{{baseUrl}}/notifications/unread",
+      "method": "GET",
+      "sortNum": 310,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-notif-mark-read",
+      "colId": "col-imam",
+      "containerId": "f-notifications",
+      "name": "Mark Notification as Read",
+      "url": "{{baseUrl}}/notifications/{{notificationId}}/read",
+      "method": "PATCH",
+      "sortNum": 320,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-notif-mark-all-read",
+      "colId": "col-imam",
+      "containerId": "f-notifications",
+      "name": "Mark All as Read",
+      "url": "{{baseUrl}}/notifications/read-all",
+      "method": "PATCH",
+      "sortNum": 330,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-notif-delete",
+      "colId": "col-imam",
+      "containerId": "f-notifications",
+      "name": "Delete Notification",
+      "url": "{{baseUrl}}/notifications/{{notificationId}}",
+      "method": "DELETE",
+      "sortNum": 340,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-notif-delete-all",
+      "colId": "col-imam",
+      "containerId": "f-notifications",
+      "name": "Delete All Notifications",
+      "url": "{{baseUrl}}/notifications",
+      "method": "DELETE",
+      "sortNum": 350,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-notif-prefs-get",
+      "colId": "col-imam",
+      "containerId": "f-notifications",
+      "name": "Get Notification Preferences",
+      "url": "{{baseUrl}}/notifications/preferences",
+      "method": "GET",
+      "sortNum": 360,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "_id": "req-notif-prefs-update",
+      "colId": "col-imam",
+      "containerId": "f-notifications",
+      "name": "Update Notification Preferences",
+      "url": "{{baseUrl}}/notifications/preferences",
+      "method": "PATCH",
+      "sortNum": 370,
+      "created": "2026-04-29T00:00:00.000Z",
+      "modified": "2026-04-29T00:00:00.000Z",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{authToken}}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"email_notifications\": true,\n  \"push_notifications\": true,\n  \"notification_types\": [\"finance\", \"masjid\"]\n}"
+      }
+    }
+  ]
+}
