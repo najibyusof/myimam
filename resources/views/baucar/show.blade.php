@@ -302,7 +302,8 @@
                         </div>
                     </div>
                     <div class="shrink-0 text-center">
-                        <div class="mx-auto h-28 w-28 rounded-lg border border-slate-200 p-1 [&>svg]:h-full [&>svg]:w-full">
+                        <div
+                            class="mx-auto h-28 w-28 rounded-lg border border-slate-200 p-1 [&>svg]:h-full [&>svg]:w-full">
                             {!! $qrCode !!}
                         </div>
                         <p class="mt-1 text-xs text-slate-400">Imbas untuk pengesahan</p>
