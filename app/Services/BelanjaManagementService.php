@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Akaun;
-use App\Models\BaucarBayaran;
 use App\Models\Belanja;
 use App\Models\KategoriBelanja;
 use App\Models\User;
@@ -26,6 +25,7 @@ class BelanjaManagementService
     {
         return DB::transaction(function () use ($belanja, $actor, $data): Belanja {
             $this->ensureScoped($belanja, $actor);
+            $this->ensureNotLocked($belanja);
             $payload = $this->sanitizePayload($actor, $data);
             $this->validateRelations($payload);
             $payload['created_by'] = $belanja->created_by;
@@ -44,6 +44,7 @@ class BelanjaManagementService
     {
         return DB::transaction(function () use ($belanja, $actor): Belanja {
             $this->ensureScoped($belanja, $actor);
+            $this->ensureNotLocked($belanja);
             $belanja->update([
                 'is_deleted' => true,
                 'deleted_by' => $actor->id,
@@ -57,7 +58,6 @@ class BelanjaManagementService
     private function sanitizePayload(User $actor, array $data): array
     {
         $masjidId = $actor->peranan === 'superadmin' ? ($data['id_masjid'] ?? null) : $actor->id_masjid;
-        $submitted = ($data['submit_action'] ?? 'submitted') === 'submitted';
         return [
             'id_masjid' => $masjidId,
             'tarikh' => $data['tarikh'],
@@ -70,14 +70,32 @@ class BelanjaManagementService
             'catatan' => $data['catatan'] ?? null,
             'bukti_fail' => $data['bukti_fail'] ?? null,
             'created_by' => $actor->id,
-            'status' => $submitted ? 'LULUS' : 'DRAF',
-            'id_baucar' => $data['id_baucar'] ?? null,
+            'status' => 'DRAF',
             'is_deleted' => false,
             'deleted_by' => null,
             'deleted_at' => null,
-            'dilulus_oleh' => $submitted ? $actor->id : null,
-            'tarikh_lulus' => $submitted ? now() : null,
+            'dilulus_oleh' => null,
+            'tarikh_lulus' => null,
+            'approval_step' => 0,
+            'bendahari_lulus_oleh' => null,
+            'bendahari_lulus_pada' => null,
+            'bendahari_signature' => null,
+            'pengerusi_lulus_oleh' => null,
+            'pengerusi_lulus_pada' => null,
+            'pengerusi_signature' => null,
+            'is_baucar_locked' => false,
+            'locked_at' => null,
+            'locked_by' => null,
         ];
+    }
+
+    private function ensureNotLocked(Belanja $belanja): void
+    {
+        if ($belanja->is_baucar_locked) {
+            throw ValidationException::withMessages([
+                'status' => 'Baucar telah diluluskan muktamad dan dikunci. Rekod tidak boleh diubah.',
+            ]);
+        }
     }
 
     private function validateRelations(array $payload): void
@@ -92,7 +110,6 @@ class BelanjaManagementService
 
         $akaun = Akaun::query()->find($payload['id_akaun']);
         $kategori = KategoriBelanja::query()->find($payload['id_kategori_belanja']);
-        $baucar = !empty($payload['id_baucar']) ? BaucarBayaran::query()->find($payload['id_baucar']) : null;
 
         if (!$akaun || $akaun->id_masjid !== $masjidId) {
             throw ValidationException::withMessages([
@@ -103,12 +120,6 @@ class BelanjaManagementService
         if (!$kategori || $kategori->id_masjid !== $masjidId) {
             throw ValidationException::withMessages([
                 'id_kategori_belanja' => 'Kategori belanja yang dipilih tidak sepadan dengan masjid transaksi.',
-            ]);
-        }
-
-        if ($baucar && $baucar->id_masjid !== $masjidId) {
-            throw ValidationException::withMessages([
-                'id_baucar' => 'Baucar yang dipilih tidak sepadan dengan masjid transaksi.',
             ]);
         }
     }

@@ -20,7 +20,7 @@
                 <div class="rounded-md bg-green-50 p-3 text-sm text-green-800">{{ session('status') }}</div>
             @endif
 
-            <div class="grid gap-4 md:grid-cols-4">
+            <div class="grid gap-4 md:grid-cols-3">
                 <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                     <p class="text-sm font-medium text-slate-500">{{ __('belanja.stats.active') }}</p>
                     <p class="mt-2 text-3xl font-semibold text-slate-900">{{ $stats['total'] }}</p>
@@ -33,14 +33,10 @@
                     <p class="text-sm font-medium text-emerald-700">{{ __('belanja.stats.submitted') }}</p>
                     <p class="mt-2 text-3xl font-semibold text-emerald-900">{{ $stats['submitted'] }}</p>
                 </div>
-                <div class="rounded-3xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
-                    <p class="text-sm font-medium text-sky-700">{{ __('belanja.stats.linked_voucher') }}</p>
-                    <p class="mt-2 text-3xl font-semibold text-sky-900">{{ $stats['linked_baucar'] }}</p>
-                </div>
             </div>
 
             <form method="GET" class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-                <div class="grid gap-3 md:grid-cols-[220px_220px_auto_auto]">
+                <div class="grid gap-3 md:grid-cols-[220px_auto_auto]">
                     <select name="status"
                         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                         <option value="all" @selected($status === 'all')>{{ __('belanja.filters.all_status') }}
@@ -48,14 +44,6 @@
                         <option value="draft" @selected($status === 'draft')>{{ __('belanja.filters.draft') }}</option>
                         <option value="submitted" @selected($status === 'submitted')>{{ __('belanja.filters.submitted') }}
                         </option>
-                    </select>
-                    <select name="baucar_id"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="0">{{ __('belanja.filters.all_voucher') }}</option>
-                        @foreach ($baucarOptions as $option)
-                            <option value="{{ $option->id }}" @selected($baucarId === $option->id)>{{ $option->no_baucar }}
-                            </option>
-                        @endforeach
                     </select>
                     <x-primary-button>{{ __('belanja.filters.filter') }}</x-primary-button>
                     <a href="{{ route('admin.belanja.index') }}"
@@ -95,7 +83,9 @@
                                 <td class="px-4 py-3 text-sm text-gray-700">
                                     {{ $item->kategoriBelanja->nama_kategori ?? '-' }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-700">{{ $item->akaun->nama_akaun ?? '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-700">{{ $item->baucar->no_baucar ?? '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-700">
+                                    {{ $item->no_baucar ?? '-' }}
+                                </td>
                                 <td class="px-4 py-3 text-sm">
                                     <span
                                         class="inline-flex rounded-full px-2 py-1 text-xs font-medium {{ $item->status === 'DRAF' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800' }}">
@@ -103,6 +93,8 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-3 text-right text-sm space-x-3">
+                                    <a href="{{ route('baucar.show', ['belanja_id' => $item->id]) }}"
+                                        class="text-sky-600 hover:text-sky-900">Lihat Baucar</a>
                                     @can('update', $item)
                                         <a href="{{ route('admin.belanja.edit', $item) }}"
                                             class="text-indigo-600 hover:text-indigo-900">{{ __('belanja.table.edit') }}</a>

@@ -5,7 +5,6 @@
     'masjidOptions' => collect(),
     'akaunOptions' => collect(),
     'kategoriOptions' => collect(),
-    'baucarOptions' => collect(),
 ])
 
 <form method="POST" action="{{ $action }}" class="space-y-6" enctype="multipart/form-data">
@@ -70,18 +69,6 @@
                 @endforeach
             </select>
             <x-input-error class="mt-2" :messages="$errors->get('id_kategori_belanja')" />
-        </div>
-
-        <div>
-            <x-input-label for="id_baucar" :value="__('belanja.form.voucher_optional')" />
-            <select id="id_baucar" name="id_baucar"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                <option value="">{{ __('belanja.form.no_voucher') }}</option>
-                @foreach ($baucarOptions as $option)
-                    <option value="{{ $option->id }}" @selected(old('id_baucar', $belanjaRecord?->id_baucar) == $option->id)>{{ $option->no_baucar }}</option>
-                @endforeach
-            </select>
-            <x-input-error class="mt-2" :messages="$errors->get('id_baucar')" />
         </div>
 
         <div>

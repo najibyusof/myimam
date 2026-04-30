@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\MasjidController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\Finance\AkaunController;
+use App\Http\Controllers\Api\Finance\BaucarApiController;
 use App\Http\Controllers\Api\Finance\BelanjaController;
 use App\Http\Controllers\Api\Finance\HasilController;
 use App\Http\Controllers\Api\Finance\KategoriBelanjaController;
@@ -43,6 +44,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('refresh', [LoginController::class, 'refresh'])->name('api.auth.refresh');
         Route::get('me', [ProfileController::class, 'me'])->name('api.auth.me');
         Route::patch('profile', [ProfileController::class, 'updateProfile'])->name('api.auth.profile.update');
+        Route::post('profile/signature', [ProfileController::class, 'uploadSignature'])->middleware('throttle:3,1')->name('api.auth.profile.signature.upload');
+        Route::delete('profile/signature', [ProfileController::class, 'removeSignature'])->middleware('throttle:5,1')->name('api.auth.profile.signature.remove');
         Route::post('change-password', [ProfileController::class, 'changePassword'])->name('api.auth.change-password');
     });
 
@@ -114,6 +117,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::patch('{id}', [BelanjaController::class, 'update'])->middleware('permission:belanja.update')->name('api.finance.belanja.update');
             Route::delete('{id}', [BelanjaController::class, 'destroy'])->middleware('permission:belanja.delete')->name('api.finance.belanja.destroy');
             Route::patch('{id}/approve', [BelanjaController::class, 'approve'])->middleware('permission:finance.approve')->name('api.finance.belanja.approve');
+        });
+
+        // Baucar (read-only view of belanja as official payment vouchers)
+        Route::prefix('baucar')->group(function () {
+            Route::get('/', [BaucarApiController::class, 'index'])->middleware('permission:belanja.view')->name('api.finance.baucar.index');
+            Route::get('{id}', [BaucarApiController::class, 'show'])->middleware('permission:belanja.view')->name('api.finance.baucar.show');
+            Route::get('{id}/pdf', [BaucarApiController::class, 'pdf'])->middleware('permission:belanja.view')->name('api.finance.baucar.pdf');
         });
 
         // Account transfers (pindahan-akaun)

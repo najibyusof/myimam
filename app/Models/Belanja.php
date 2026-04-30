@@ -27,12 +27,25 @@ class Belanja extends Model
         'bukti_fail',
         'created_by',
         'status',
-        'id_baucar',
+        'no_baucar',
         'is_deleted',
         'deleted_by',
         'deleted_at',
         'dilulus_oleh',
         'tarikh_lulus',
+        'approval_step',
+        'bendahari_lulus_oleh',
+        'bendahari_lulus_pada',
+        'bendahari_signature',
+        'pengerusi_lulus_oleh',
+        'pengerusi_lulus_pada',
+        'pengerusi_signature',
+        'is_baucar_locked',
+        'locked_at',
+        'locked_by',
+        'ditolak_oleh',
+        'tarikh_tolak',
+        'catatan_tolak',
     ];
 
     protected function casts(): array
@@ -43,7 +56,18 @@ class Belanja extends Model
             'is_deleted' => 'boolean',
             'deleted_at' => 'datetime',
             'tarikh_lulus' => 'datetime',
+            'tarikh_tolak' => 'datetime',
+            'approval_step' => 'integer',
+            'bendahari_lulus_pada' => 'datetime',
+            'pengerusi_lulus_pada' => 'datetime',
+            'is_baucar_locked' => 'boolean',
+            'locked_at' => 'datetime',
         ];
+    }
+
+    public function ditolakOleh(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'ditolak_oleh');
     }
 
     public function masjid(): BelongsTo
@@ -86,9 +110,19 @@ class Belanja extends Model
         return $this->belongsTo(User::class, 'dilulus_oleh');
     }
 
-    public function baucar(): BelongsTo
+    public function bendahariLulusOleh(): BelongsTo
     {
-        return $this->belongsTo(BaucarBayaran::class, 'id_baucar');
+        return $this->belongsTo(User::class, 'bendahari_lulus_oleh');
+    }
+
+    public function pengerusiLulusOleh(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'pengerusi_lulus_oleh');
+    }
+
+    public function lockedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'locked_by');
     }
 
     public function scopeNotDeleted(Builder $query): Builder
@@ -114,10 +148,5 @@ class Belanja extends Model
     public function scopeBetweenDates(Builder $query, string $from, string $to): Builder
     {
         return $query->whereBetween('tarikh', [$from, $to]);
-    }
-
-    public function scopeForBaucar(Builder $query, int $idBaucar): Builder
-    {
-        return $query->where('id_baucar', $idBaucar);
     }
 }

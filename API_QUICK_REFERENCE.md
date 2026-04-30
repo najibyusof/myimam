@@ -54,6 +54,26 @@ PATCH /auth/profile
 Body: { "name": "New Name", "email": "new@email.com" }
 ```
 
+### Upload Digital Signature (Profile)
+
+```bash
+POST /auth/profile/signature
+Content-Type: multipart/form-data
+Body: {
+  "signature_image": <file>   # JPG/PNG/WebP, max 2MB, min 200×50px, max 2000×600px
+}
+Returns: { message, data: UserResource }
+Rate limit: 3 uploads/min
+```
+
+### Remove Digital Signature
+
+```bash
+DELETE /auth/profile/signature
+Returns: { message, data: UserResource }
+Rate limit: 5 removals/min
+```
+
 ### Change Password
 
 ```bash
@@ -208,11 +228,15 @@ GET /masjids/{id}/members[?per_page=15][&page=1]
 ### Current Status
 
 ```bash
-Finance API Phase B and Phase C endpoints are implemented under /finance/* (as of April 29, 2026).
-All six reports endpoints now return JSON data.
+Finance API Phase B and Phase C endpoints are implemented under /finance/* (as of April 30, 2026).
+All six reports endpoints return JSON data.
+Baucar API added: GET /finance/baucar and GET /finance/baucar/{id}.
+Digital signature upload/remove added: POST/DELETE /auth/profile/signature.
 ```
 
 ### Finance Endpoints (Phase B)
+
+> **Note:** As of April 30, 2026 — Baucar API and digital signature endpoints have been added.
 
 #### Accounts (`akaun`)
 
@@ -238,13 +262,66 @@ GET    /finance/hasil/{id}/receipt
 #### Expenses (`belanja`)
 
 ```bash
-GET    /finance/belanja[?search=KEYWORD][&status=draft|approved][&tarikh_mula=YYYY-MM-DD][&tarikh_tamat=YYYY-MM-DD][&id_kategori_belanja=1][&per_page=15][&page=1]
+GET    /finance/belanja[?search=KEYWORD][&status=draft|pending-pengerusi|approved][&tarikh_mula=YYYY-MM-DD][&tarikh_tamat=YYYY-MM-DD][&id_kategori_belanja=1][&per_page=15][&page=1]
 POST   /finance/belanja
 GET    /finance/belanja/{id}
 PATCH  /finance/belanja/{id}
 DELETE /finance/belanja/{id}
-PATCH  /finance/belanja/{id}/approve
+PATCH  /finance/belanja/{id}/approve          # Requires permission:finance.approve + profile signature image
 ```
+
+> **Approval workflow:** Bendahari approves first (`status=pending-pengerusi`), then Pengerusi finalises (`status=approved`). Both approvers must have a digital signature image on their profile before approving.
+
+#### Payment Vouchers (`baucar`)
+
+Read-only view of belanja records formatted as official payment vouchers.
+
+```bash
+GET    /finance/baucar[?search=KEYWORD][&status=draft|pending-pengerusi|rejected|approved][&tarikh_mula=YYYY-MM-DD][&tarikh_tamat=YYYY-MM-DD][&id_kategori_belanja=1][&per_page=15][&page=1]
+GET    /finance/baucar/{id}
+GET    /finance/baucar/{id}/pdf               # Returns 501 with pdf_url pointing to web route (planned)
+```
+
+**Baucar response format:**
+
+```json
+{
+  "id": 10,
+  "baucar_no": "BV-2026-000010",
+  "tarikh": "2026-03-01",
+  "akaun": { "id": 1, "nama": "Tunai" },
+  "kategori": { "id": 2, "nama": "UTILITI" },
+  "penerima": "Tenaga Nasional Berhad",
+  "catatan": "Bayaran elektrik",
+  "amaun": 350.00,
+  "status": "approved",
+  "approval_step": 2,
+  "is_locked": true,
+  "bendahari": {
+    "nama": "Ahmad Bendahari",
+    "lulus_pada": "2026-03-02T10:00:00+08:00",
+    "signature": "A1B2C3D4E5F6A1B2C3D4E5F6"
+  },
+  "pengerusi": {
+    "nama": "Haji Pengerusi",
+    "lulus_pada": "2026-03-03T14:30:00+08:00",
+    "signature": "F6E5D4C3B2A1F6E5D4C3B2A1"
+  },
+  "links": {
+    "show": "/api/finance/baucar/10",
+    "pdf": "/baucar/10/pdf"
+  }
+}
+```
+
+**Status values:**
+
+| Value               | Meaning                                      |
+| ------------------- | -------------------------------------------- |
+| `draft`             | New — awaiting Bendahari review              |
+| `pending-pengerusi` | Bendahari approved — awaiting Pengerusi      |
+| `rejected`          | Rejected — has rejection note                |
+| `approved`          | Fully approved & locked by Pengerusi         |
 
 #### Account Transfers (`pindahan-akaun`)
 
@@ -370,10 +447,13 @@ Body: {
 
 ## 🔍 Search & Filter Query Parameters
 
-| Endpoint   | Available Filters            |
-| ---------- | ---------------------------- |
-| `/users`   | `search`, `aktif`, `role`    |
-| `/masjids` | `search`, `status`, `negeri` |
+| Endpoint           | Available Filters                                                                   |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| `/users`           | `search`, `aktif`, `role`                                                           |
+| `/masjids`         | `search`, `status`, `negeri`                                                        |
+| `/finance/hasil`   | `search`, `tarikh_mula`, `tarikh_tamat`, `id_akaun`, `id_sumber_hasil`             |
+| `/finance/belanja` | `search`, `status` (draft\|pending-pengerusi\|approved), `tarikh_mula`, `tarikh_tamat`, `id_kategori_belanja` |
+| `/finance/baucar`  | `search`, `status` (draft\|pending-pengerusi\|rejected\|approved), `tarikh_mula`, `tarikh_tamat`, `id_kategori_belanja` |
 
 ---
 
@@ -505,9 +585,12 @@ curl -X GET http://localhost:8000/api/users \
 | ------------------------------------------- | ---------------------- | ------------- |
 | `/auth/*`                                   | None (register, login) | Public        |
 | `/auth/me`, `/auth/profile`, `/auth/logout` | `auth:sanctum`         | Authenticated |
+| `/auth/profile/signature` (POST/DELETE)     | `auth:sanctum`         | Authenticated |
 | `/users`                                    | `users.manage`         | Admin         |
 | `/masjids`                                  | `masjid.manage`        | Admin         |
-| `/finance/*`                                | Module-specific perms  | Implemented (Phase B) |
+| `/finance/belanja/{id}/approve`             | `finance.approve`      | Bendahari / Pengerusi |
+| `/finance/baucar`                           | `belanja.view`         | Finance roles |
+| `/finance/*`                                | Module-specific perms  | Finance roles |
 | `/notifications`                            | `auth:sanctum`         | Authenticated |
 
 ---

@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Akaun;
-use App\Models\BaucarBayaran;
 use App\Models\Belanja;
 use App\Models\Hasil;
 use App\Models\KategoriBelanja;
@@ -93,126 +92,222 @@ class WorkflowScenarioSeeder extends Seeder
 
     private function seedExpenseWorkflow(Masjid $masjid, int $index): void
     {
-        $bankAccount = Akaun::query()->where('id_masjid', $masjid->id)->where('nama_akaun', 'Bank Operasi')->firstOrFail();
+        $bankAccount    = Akaun::query()->where('id_masjid', $masjid->id)->where('nama_akaun', 'Bank Operasi')->firstOrFail();
         $programAccount = Akaun::query()->where('id_masjid', $masjid->id)->where('nama_akaun', 'Bank Program Komuniti')->firstOrFail();
-        $utilities = KategoriBelanja::query()->where('id_masjid', $masjid->id)->where('kod', 'UTIL')->firstOrFail();
+        $utilities      = KategoriBelanja::query()->where('id_masjid', $masjid->id)->where('kod', 'UTIL')->firstOrFail();
         $programmeCategory = KategoriBelanja::query()->where('id_masjid', $masjid->id)->where('kod', 'PENCERAMAH')->firstOrFail();
-        $fund = TabungKhas::query()->where('id_masjid', $masjid->id)->where('nama_tabung', 'Wakaf Bangunan Masjid')->firstOrFail();
-        $program = ProgramMasjid::query()->where('id_masjid', $masjid->id)->where('nama_program', 'Iftar Jamaie')->firstOrFail();
+        $fund           = TabungKhas::query()->where('id_masjid', $masjid->id)->where('nama_tabung', 'Wakaf Bangunan Masjid')->firstOrFail();
+        $program        = ProgramMasjid::query()->where('id_masjid', $masjid->id)->where('nama_program', 'Iftar Jamaie')->firstOrFail();
 
-        $creator = User::query()->where('id_masjid', $masjid->id)
-            ->whereHas('roles', fn($query) => $query->where('name', 'FinanceOfficer'))
-            ->orderBy('id')
-            ->firstOrFail();
-        $approver = User::query()->whereHas('roles', fn($query) => $query->where('name', 'Manager'))->orderBy('id')->first()
-            ?? User::query()->whereHas('roles', fn($query) => $query->where('name', 'Admin'))->orderBy('id')->firstOrFail();
+        $creator    = User::query()->where('id_masjid', $masjid->id)
+            ->whereHas('roles', fn($q) => $q->where('name', 'FinanceOfficer'))
+            ->orderBy('id')->firstOrFail();
 
-        $approvedVoucher = BaucarBayaran::query()->updateOrCreate(
-            ['id_masjid' => $masjid->id, 'no_baucar' => sprintf('BV-%02d-%s-001', $masjid->id, now()->format('Ym'))],
+        $bendahari  = User::query()->where('id_masjid', $masjid->id)
+            ->whereHas('roles', fn($q) => $q->where('name', 'Bendahari'))
+            ->orderBy('id')->first();
+
+        $pengerusi  = User::query()->where('id_masjid', $masjid->id)
+            ->whereHas('roles', fn($q) => $q->where('name', 'Pengerusi'))
+            ->orderBy('id')->first();
+
+        // --- Scenario 1: FULLY APPROVED & LOCKED (Pengerusi signed) ---
+        $sig1 = strtoupper(substr(hash_hmac('sha256', 'bendahari|seeded|' . $masjid->id, (string) config('app.key')), 0, 24));
+        $sig2 = strtoupper(substr(hash_hmac('sha256', 'pengerusi|seeded|' . $masjid->id, (string) config('app.key')), 0, 24));
+
+        $baucarNo1 = 'BV-' . now()->year . '-' . str_pad((string) ($masjid->id * 100 + 1), 6, '0', STR_PAD_LEFT);
+
+        $locked = Belanja::query()->updateOrCreate(
             [
-                'tarikh' => now()->subDays(10)->toDateString(),
-                'id_akaun' => $bankAccount->id,
-                'kaedah' => 'bank',
-                'no_rujukan' => 'IBG-' . $masjid->id . '-001',
-                'jumlah' => 3600 + ($index * 450),
-                'catatan' => 'Pembayaran utiliti dan perkhidmatan penyelenggaraan bulanan',
-                'status' => 'LULUS',
-                'created_by' => $creator->id,
-                'dilulus_oleh' => $approver->id,
-                'tarikh_lulus' => now()->subDays(9),
+                'id_masjid'            => $masjid->id,
+                'penerima'             => 'Tenaga Nasional Berhad',
+                'id_kategori_belanja'  => $utilities->id,
+                'tarikh'               => now()->subDays(15)->toDateString(),
+            ],
+            [
+                'id_akaun'             => $bankAccount->id,
+                'amaun'                => 1800 + ($index * 150),
+                'catatan'              => 'Bil utiliti bulanan masjid - diluluskan sepenuhnya',
+                'bukti_fail'           => 'bukti/utiliti-' . $masjid->id . '.pdf',
+                'created_by'           => $creator->id,
+                'no_baucar'            => $baucarNo1,
+                'status'               => 'LULUS',
+                'approval_step'        => 2,
+                'bendahari_lulus_oleh' => $bendahari?->id,
+                'bendahari_lulus_pada' => now()->subDays(13),
+                'bendahari_signature'  => $sig1,
+                'pengerusi_lulus_oleh' => $pengerusi?->id,
+                'pengerusi_lulus_pada' => now()->subDays(12),
+                'pengerusi_signature'  => $sig2,
+                'dilulus_oleh'         => $pengerusi?->id,
+                'tarikh_lulus'         => now()->subDays(12),
+                'is_baucar_locked'     => true,
+                'locked_at'            => now()->subDays(12),
+                'locked_by'            => $pengerusi?->id,
+                'is_deleted'           => false,
             ]
         );
 
+        // --- Scenario 2: PENDING PENGERUSI (Bendahari approved, Pengerusi not yet) ---
+        $sig3 = strtoupper(substr(hash_hmac('sha256', 'bendahari|pending|' . $masjid->id, (string) config('app.key')), 0, 24));
+
+        $baucarNo2 = 'BV-' . now()->year . '-' . str_pad((string) ($masjid->id * 100 + 2), 6, '0', STR_PAD_LEFT);
+
         Belanja::query()->updateOrCreate(
             [
-                'id_masjid' => $masjid->id,
-                'tarikh' => now()->subDays(10)->toDateString(),
-                'id_akaun' => $bankAccount->id,
+                'id_masjid'           => $masjid->id,
+                'penerima'            => 'Ustaz Ahmad bin Ismail',
+                'id_kategori_belanja' => $programmeCategory->id,
+                'tarikh'              => now()->subDays(4)->toDateString(),
+            ],
+            [
+                'id_akaun'             => $programAccount->id,
+                'amaun'                => 2200 + ($index * 200),
+                'catatan'              => 'Honorarium penceramah majlis - menunggu kelulusan Pengerusi',
+                'bukti_fail'           => null,
+                'created_by'           => $creator->id,
+                'no_baucar'            => $baucarNo2,
+                'id_tabung_khas'       => $fund->id,
+                'id_program'           => $program->id,
+                'status'               => 'DRAF',
+                'approval_step'        => 1,
+                'bendahari_lulus_oleh' => $bendahari?->id,
+                'bendahari_lulus_pada' => now()->subDays(2),
+                'bendahari_signature'  => $sig3,
+                'pengerusi_lulus_oleh' => null,
+                'pengerusi_lulus_pada' => null,
+                'pengerusi_signature'  => null,
+                'dilulus_oleh'         => null,
+                'tarikh_lulus'         => null,
+                'is_baucar_locked'     => false,
+                'is_deleted'           => false,
+            ]
+        );
+
+        // --- Scenario 3: DRAFT — new, not yet submitted to Bendahari ---
+        $baucarNo3 = 'BV-' . now()->year . '-' . str_pad((string) ($masjid->id * 100 + 3), 6, '0', STR_PAD_LEFT);
+
+        Belanja::query()->updateOrCreate(
+            [
+                'id_masjid'           => $masjid->id,
+                'penerima'            => 'Syarikat Penyelenggaraan Maju Sdn Bhd',
                 'id_kategori_belanja' => $utilities->id,
-                'amaun' => 1800 + ($index * 150),
-                'penerima' => 'Tenaga Nasional Berhad',
+                'tarikh'              => now()->subDays(1)->toDateString(),
             ],
             [
-                'id_tabung_khas' => null,
-                'id_program' => null,
-                'catatan' => 'Bil utiliti bulanan masjid',
-                'bukti_fail' => 'bukti/utiliti-' . $masjid->id . '.pdf',
-                'created_by' => $creator->id,
-                'status' => 'LULUS',
-                'id_baucar' => $approvedVoucher->id,
-                'is_deleted' => false,
-                'deleted_by' => null,
-                'deleted_at' => null,
-                'dilulus_oleh' => $approver->id,
-                'tarikh_lulus' => now()->subDays(9),
+                'id_akaun'             => $bankAccount->id,
+                'amaun'                => 650 + ($index * 50),
+                'catatan'              => 'Kerja-kerja penyelenggaraan elektrik dan paip - draf baru',
+                'bukti_fail'           => null,
+                'created_by'           => $creator->id,
+                'no_baucar'            => $baucarNo3,
+                'status'               => 'DRAF',
+                'approval_step'        => 0,
+                'bendahari_lulus_oleh' => null,
+                'bendahari_lulus_pada' => null,
+                'bendahari_signature'  => null,
+                'pengerusi_lulus_oleh' => null,
+                'pengerusi_lulus_pada' => null,
+                'pengerusi_signature'  => null,
+                'dilulus_oleh'         => null,
+                'tarikh_lulus'         => null,
+                'is_baucar_locked'     => false,
+                'is_deleted'           => false,
             ]
         );
 
-        $draftVoucher = BaucarBayaran::query()->updateOrCreate(
-            ['id_masjid' => $masjid->id, 'no_baucar' => sprintf('BV-%02d-%s-099', $masjid->id, now()->format('Ym'))],
-            [
-                'tarikh' => now()->subDays(2)->toDateString(),
-                'id_akaun' => $programAccount->id,
-                'kaedah' => 'tunai',
-                'no_rujukan' => null,
-                'jumlah' => 2200 + ($index * 200),
-                'catatan' => 'Draf baucar bagi bayaran penceramah hujung minggu',
-                'status' => 'DRAF',
-                'created_by' => $creator->id,
-                'dilulus_oleh' => null,
-                'tarikh_lulus' => null,
-            ]
-        );
-
+        // --- Scenario 4: REJECTED ---
         Belanja::query()->updateOrCreate(
             [
-                'id_masjid' => $masjid->id,
-                'tarikh' => now()->subDays(2)->toDateString(),
-                'id_akaun' => $programAccount->id,
+                'id_masjid'           => $masjid->id,
+                'penerima'            => 'Percetakan Al-Amin',
                 'id_kategori_belanja' => $programmeCategory->id,
-                'amaun' => 2200 + ($index * 200),
-                'penerima' => 'Ustaz Ahmad bin Ismail',
+                'tarikh'              => now()->subDays(20)->toDateString(),
             ],
             [
-                'id_tabung_khas' => $fund->id,
-                'id_program' => $program->id,
-                'catatan' => 'Belanja draf menunggu semakan akhir',
-                'bukti_fail' => null,
-                'created_by' => $creator->id,
-                'status' => 'DRAF',
-                'id_baucar' => $draftVoucher->id,
-                'is_deleted' => false,
-                'deleted_by' => null,
-                'deleted_at' => null,
-                'dilulus_oleh' => null,
-                'tarikh_lulus' => null,
+                'id_akaun'             => $bankAccount->id,
+                'amaun'                => 480 + ($index * 30),
+                'catatan'              => 'Cetakan brosur program - ditolak, perlu semak semula',
+                'bukti_fail'           => null,
+                'created_by'           => $creator->id,
+                'status'               => 'DRAF',
+                'approval_step'        => 0,
+                'ditolak_oleh'         => $bendahari?->id,
+                'tarikh_tolak'         => now()->subDays(18),
+                'catatan_tolak'        => 'Jumlah tidak sepadan dengan sebut harga. Sila semak semula.',
+                'bendahari_lulus_oleh' => null,
+                'bendahari_lulus_pada' => null,
+                'bendahari_signature'  => null,
+                'dilulus_oleh'         => null,
+                'tarikh_lulus'         => null,
+                'is_baucar_locked'     => false,
+                'is_deleted'           => false,
             ]
         );
 
+        // --- Scenario 5: SOFT DELETED ---
         Belanja::query()->updateOrCreate(
             [
-                'id_masjid' => $masjid->id,
-                'tarikh' => now()->subDays(18)->toDateString(),
-                'id_akaun' => $bankAccount->id,
+                'id_masjid'           => $masjid->id,
+                'penerima'            => 'Syarikat Maju Jaya',
                 'id_kategori_belanja' => $programmeCategory->id,
-                'amaun' => 750.00,
-                'penerima' => 'Syarikat Maju Jaya',
+                'tarikh'              => now()->subDays(18)->toDateString(),
             ],
             [
-                'id_tabung_khas' => $fund->id,
-                'id_program' => $program->id,
-                'catatan' => 'Contoh rekod untuk kes padam logik',
-                'bukti_fail' => null,
-                'created_by' => $creator->id,
-                'status' => 'DRAF',
-                'id_baucar' => null,
-                'is_deleted' => true,
-                'deleted_by' => $creator->id,
-                'deleted_at' => now()->subDays(17),
-                'dilulus_oleh' => null,
-                'tarikh_lulus' => null,
+                'id_akaun'         => $bankAccount->id,
+                'amaun'            => 750.00,
+                'catatan'          => 'Contoh rekod untuk kes padam logik',
+                'bukti_fail'       => null,
+                'created_by'       => $creator->id,
+                'status'           => 'DRAF',
+                'approval_step'    => 0,
+                'is_deleted'       => true,
+                'deleted_by'       => $creator->id,
+                'deleted_at'       => now()->subDays(17),
+                'dilulus_oleh'     => null,
+                'tarikh_lulus'     => null,
+                'is_baucar_locked' => false,
             ]
         );
+
+        // Log approval events for the locked baucar
+        if ($locked->id && $bendahari && $pengerusi) {
+            LogAktiviti::query()->updateOrCreate(
+                [
+                    'id_masjid'  => $masjid->id,
+                    'id_user'    => $bendahari->id,
+                    'modul'      => 'Baucar',
+                    'aksi'       => 'Lulus Bendahari',
+                    'rujukan_id' => $locked->id,
+                ],
+                [
+                    'jenis'      => 'APPROVE',
+                    'butiran'    => 'Baucar ' . $baucarNo1 . ' telah disemak dan diluluskan oleh Bendahari.',
+                    'data_baru'  => ['approval_step' => 1, 'scenario' => 'seeded'],
+                    'ip'         => '127.0.0.1',
+                    'user_agent' => 'Seeder/WorkflowScenarioSeeder',
+                    'created_at' => now()->subDays(13),
+                ]
+            );
+
+            LogAktiviti::query()->updateOrCreate(
+                [
+                    'id_masjid'  => $masjid->id,
+                    'id_user'    => $pengerusi->id,
+                    'modul'      => 'Baucar',
+                    'aksi'       => 'Lulus Pengerusi',
+                    'rujukan_id' => $locked->id,
+                ],
+                [
+                    'jenis'      => 'APPROVE',
+                    'butiran'    => 'Baucar ' . $baucarNo1 . ' telah diluluskan oleh Pengerusi dan dikunci.',
+                    'data_baru'  => ['approval_step' => 2, 'is_locked' => true, 'scenario' => 'seeded'],
+                    'ip'         => '127.0.0.1',
+                    'user_agent' => 'Seeder/WorkflowScenarioSeeder',
+                    'created_at' => now()->subDays(12),
+                ]
+            );
+        }
     }
 
     private function seedTransferWorkflow(Masjid $masjid, int $index): void
@@ -249,9 +344,11 @@ class WorkflowScenarioSeeder extends Seeder
             ?? User::query()->whereHas('roles', fn($query) => $query->where('name', 'Admin'))->orderBy('id')->firstOrFail();
 
         $activities = [
-            ['jenis' => 'CREATE', 'modul' => 'Hasil', 'aksi' => 'rekod kutipan Jumaat', 'butiran' => 'Kutipan mingguan berjaya direkodkan', 'user_id' => $financeOfficer->id, 'created_at' => now()->subHours(18)],
-            ['jenis' => 'UPDATE', 'modul' => 'Belanja', 'aksi' => 'semakan draft baucar', 'butiran' => 'Draf baucar komuniti dikemaskini untuk semakan', 'user_id' => $financeOfficer->id, 'created_at' => now()->subHours(9)],
-            ['jenis' => 'UPDATE', 'modul' => 'Baucar', 'aksi' => 'lulus pembayaran', 'butiran' => 'Baucar operasi telah diluluskan pengurus', 'user_id' => $manager->id, 'created_at' => now()->subHours(4)],
+            ['jenis' => 'CREATE',  'modul' => 'Hasil',   'aksi' => 'rekod kutipan Jumaat',    'butiran' => 'Kutipan mingguan berjaya direkodkan',                          'user_id' => $financeOfficer->id, 'created_at' => now()->subHours(18)],
+            ['jenis' => 'UPDATE',  'modul' => 'Belanja',  'aksi' => 'semakan draft baucar',    'butiran' => 'Draf baucar komuniti dikemaskini untuk semakan',                'user_id' => $financeOfficer->id, 'created_at' => now()->subHours(9)],
+            ['jenis' => 'APPROVE', 'modul' => 'Baucar',   'aksi' => 'Lulus Bendahari',         'butiran' => 'Baucar diluluskan oleh Bendahari — menunggu kelulusan Pengerusi', 'user_id' => $manager->id,        'created_at' => now()->subHours(6)],
+            ['jenis' => 'APPROVE', 'modul' => 'Baucar',   'aksi' => 'Lulus Pengerusi',         'butiran' => 'Baucar diluluskan oleh Pengerusi dan dikunci sebagai rasmi.',    'user_id' => $manager->id,        'created_at' => now()->subHours(4)],
+            ['jenis' => 'UPDATE',  'modul' => 'Profil',   'aksi' => 'Tandatangan Dimuat Naik', 'butiran' => 'Tandatangan digital dimuat naik ke profil pengguna.',            'user_id' => $manager->id,        'created_at' => now()->subHours(2)],
         ];
 
         foreach ($activities as $activity) {

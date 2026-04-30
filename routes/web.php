@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\CmsLandingController;
 use App\Http\Controllers\Admin\AiPageGeneratorController;
 use App\Http\Controllers\Admin\SystemSettingController;
 use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\BaucarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LaporanBukuTunaiController;
 use App\Http\Controllers\LaporanJumaatController;
@@ -276,6 +277,18 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
         Route::get('/admin/belanja', [BelanjaManagementController::class, 'index'])
             ->middleware('permission:belanja.view')
             ->name('admin.belanja.index');
+        Route::get('/baucar/{belanja_id}', [BaucarController::class, 'show'])
+            ->middleware('permission:belanja.view')
+            ->name('baucar.show');
+        Route::get('/baucar/{belanja_id}/pdf', [BaucarController::class, 'exportPdf'])
+            ->middleware('permission:belanja.view')
+            ->name('baucar.pdf');
+        Route::post('/baucar/{belanja_id}/approve', [BaucarController::class, 'approve'])
+            ->middleware('permission:belanja.view')
+            ->name('baucar.approve');
+        Route::post('/baucar/{belanja_id}/reject', [BaucarController::class, 'reject'])
+            ->middleware('permission:belanja.view')
+            ->name('baucar.reject');
         Route::get('/admin/belanja/create', [BelanjaManagementController::class, 'create'])
             ->middleware('permission:belanja.create')
             ->name('admin.belanja.create');

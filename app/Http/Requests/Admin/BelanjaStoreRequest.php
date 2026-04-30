@@ -19,7 +19,6 @@ class BelanjaStoreRequest extends FormRequest
             'amaun' => ['required', 'numeric', 'min:0.01'],
             'id_akaun' => ['required', 'integer', 'exists:akaun,id'],
             'id_kategori_belanja' => ['required', 'integer', 'exists:kategori_belanja,id'],
-            'id_baucar' => ['nullable', 'integer', 'exists:baucar_bayaran,id'],
             'submit_action' => ['nullable', 'in:draft,submitted'],
             'penerima' => ['nullable', 'string', 'max:190'],
             'catatan' => ['nullable', 'string'],
@@ -37,7 +36,6 @@ class BelanjaStoreRequest extends FormRequest
                 : 'submitted',
             'penerima' => trim((string) $this->input('penerima')) ?: null,
             'catatan' => trim((string) $this->input('catatan')) ?: null,
-            'id_baucar' => $this->filled('id_baucar') ? $this->input('id_baucar') : null,
         ]);
     }
 }

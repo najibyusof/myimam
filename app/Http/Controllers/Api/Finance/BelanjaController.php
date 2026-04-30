@@ -6,13 +6,18 @@ use App\Http\Requests\Admin\BelanjaStoreRequest;
 use App\Http\Requests\Admin\BelanjaUpdateRequest;
 use App\Models\Belanja;
 use App\Services\BelanjaManagementService;
+use App\Services\LogAktivitiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class BelanjaController extends BaseFinanceController
 {
-    public function __construct(private readonly BelanjaManagementService $service) {}
+    public function __construct(
+        private readonly BelanjaManagementService $service,
+        private readonly LogAktivitiService $log,
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -36,6 +41,8 @@ class BelanjaController extends BaseFinanceController
                 $query->where('status', 'DRAF');
             } elseif (in_array($status, ['submitted', 'approved', 'lulus'], true)) {
                 $query->where('status', 'LULUS');
+            } elseif (in_array($status, ['menunggu-pengerusi', 'pending-chair'], true)) {
+                $query->where('status', 'DRAF')->where('approval_step', 1);
             }
         }
 
@@ -133,15 +140,86 @@ class BelanjaController extends BaseFinanceController
         $record = Belanja::query()->withoutTenantScope()->findOrFail($id);
         $this->enforceActorScopeForModel($actor, $record);
 
+        if ($record->is_baucar_locked) {
+            return response()->json([
+                'message' => 'Baucar telah dikunci.',
+            ], 422);
+        }
+
+        if (empty($actor->signature_path)) {
+            $this->log->record(LogAktivitiService::JENIS_APPROVE, 'Baucar', 'Kelulusan Ditolak - Tiada Tandatangan', [
+                'rujukan_id' => $record->id,
+                'butiran'    => 'Percubaan meluluskan baucar ditolak kerana pengguna tiada tandatangan digital.',
+            ], $request);
+
+            return response()->json([
+                'message' => 'Sila muat naik tandatangan digital pada profil sebelum meluluskan baucar.',
+            ], 422);
+        }
+
+        if ((int) $record->approval_step === 0) {
+            abort_unless($actor->hasRole('Bendahari') || $actor->peranan === 'superadmin', 403, 'Unauthorized');
+
+            $record->update([
+                'status'               => 'DRAF',
+                'approval_step'        => 1,
+                'bendahari_lulus_oleh' => $actor->id,
+                'bendahari_lulus_pada' => now(),
+                'bendahari_signature'  => $this->generateDigitalSignature($record, $actor->id, 'bendahari'),
+                'ditolak_oleh'         => null,
+                'tarikh_tolak'         => null,
+                'catatan_tolak'        => null,
+            ]);
+
+            $this->log->record(LogAktivitiService::JENIS_APPROVE, 'Baucar', 'Lulus Bendahari', [
+                'rujukan_id' => $record->id,
+                'butiran'    => 'Baucar ' . ($record->no_baucar ?: '#' . $record->id) . ' telah disemak dan diluluskan oleh Bendahari.',
+            ], $request);
+
+            return response()->json([
+                'message' => 'Semakan bendahari selesai. Menunggu kelulusan pengerusi.',
+                'data' => $record->refresh(),
+            ]);
+        }
+
+        abort_unless((int) $record->approval_step === 1, 422, 'Langkah kelulusan tidak sah.');
+        abort_unless($actor->hasRole('Pengerusi') || $actor->peranan === 'superadmin', 403, 'Unauthorized');
+
         $record->update([
-            'status' => 'LULUS',
-            'dilulus_oleh' => $actor->id,
-            'tarikh_lulus' => now(),
+            'status'                => 'LULUS',
+            'approval_step'         => 2,
+            'pengerusi_lulus_oleh'  => $actor->id,
+            'pengerusi_lulus_pada'  => now(),
+            'pengerusi_signature'   => $this->generateDigitalSignature($record, $actor->id, 'pengerusi'),
+            'dilulus_oleh'          => $actor->id,
+            'tarikh_lulus'          => now(),
+            'is_baucar_locked'      => true,
+            'locked_at'             => now(),
+            'locked_by'             => $actor->id,
         ]);
+
+        $this->log->record(LogAktivitiService::JENIS_APPROVE, 'Baucar', 'Lulus Pengerusi', [
+            'rujukan_id' => $record->id,
+            'butiran'    => 'Baucar ' . ($record->no_baucar ?: '#' . $record->id) . ' telah diluluskan oleh Pengerusi dan dikunci.',
+        ], $request);
 
         return response()->json([
             'message' => 'Belanja approved successfully',
             'data' => $record->refresh(),
         ]);
+    }
+
+    private function generateDigitalSignature(Belanja $belanja, int $approverId, string $stage): string
+    {
+        $payload = implode('|', [
+            $belanja->id,
+            $belanja->no_baucar ?: 'pending',
+            $approverId,
+            $stage,
+            now()->format('YmdHis'),
+            Str::random(6),
+        ]);
+
+        return strtoupper(substr(hash_hmac('sha256', $payload, (string) config('app.key')), 0, 24));
     }
 }

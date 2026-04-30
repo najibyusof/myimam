@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BelanjaStoreRequest;
 use App\Http\Requests\Admin\BelanjaUpdateRequest;
 use App\Models\Akaun;
-use App\Models\BaucarBayaran;
 use App\Models\Belanja;
 use App\Models\KategoriBelanja;
 use App\Models\Masjid;
@@ -29,12 +28,11 @@ class BelanjaManagementController extends Controller
         $actor = $request->user();
         $masjidScope = $actor->peranan === 'superadmin' ? null : $actor->id_masjid;
         $status = (string) $request->query('status', 'all');
-        $baucarId = (int) $request->query('baucar_id', 0);
 
         $query = Belanja::query()
             ->when($masjidScope, fn($builder) => $builder->byMasjid($masjidScope))
             ->notDeleted()
-            ->with(['akaun:id,nama_akaun', 'kategoriBelanja:id,nama_kategori', 'baucar:id,no_baucar'])
+            ->with(['akaun:id,nama_akaun', 'kategoriBelanja:id,nama_kategori'])
             ->latest('tarikh')
             ->latest('id');
 
@@ -42,10 +40,6 @@ class BelanjaManagementController extends Controller
             $query->draft();
         } elseif ($status === 'submitted') {
             $query->where('status', 'LULUS');
-        }
-
-        if ($baucarId > 0) {
-            $query->forBaucar($baucarId);
         }
 
         $belanja = $query->paginate(15)->withQueryString();
@@ -58,21 +52,12 @@ class BelanjaManagementController extends Controller
             'total' => (clone $baseStats)->count(),
             'draft' => (clone $baseStats)->draft()->count(),
             'submitted' => (clone $baseStats)->where('status', 'LULUS')->count(),
-            'linked_baucar' => (clone $baseStats)->whereNotNull('id_baucar')->count(),
         ];
-
-        $baucarOptions = BaucarBayaran::query()
-            ->when($masjidScope, fn($builder) => $builder->byMasjid($masjidScope))
-            ->orderByDesc('tarikh')
-            ->orderBy('no_baucar')
-            ->get(['id', 'no_baucar']);
 
         return view('admin.belanja.index', [
             'belanja' => $belanja,
             'stats' => $stats,
             'status' => $status,
-            'baucarId' => $baucarId,
-            'baucarOptions' => $baucarOptions,
         ]);
     }
 
@@ -200,7 +185,6 @@ class BelanjaManagementController extends Controller
                 : Masjid::query()->whereKey($request->user()->id_masjid)->get(['id', 'nama']),
             'akaunOptions' => Akaun::query()->tap($scope)->aktif()->orderBy('nama_akaun')->get(['id', 'nama_akaun']),
             'kategoriOptions' => KategoriBelanja::query()->tap($scope)->aktif()->orderBy('nama_kategori')->get(['id', 'nama_kategori']),
-            'baucarOptions' => BaucarBayaran::query()->tap($scope)->orderByDesc('tarikh')->orderBy('no_baucar')->get(['id', 'no_baucar']),
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Resources\Api;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class UserResource extends JsonResource
 {
@@ -26,6 +27,8 @@ class UserResource extends JsonResource
             'masjid' => new MasjidResource($this->whenLoaded('masjid')),
             'roles' => $this->getRoleNames(),
             'permissions' => $this->getAllPermissions()->pluck('name'),
+            'signature_path' => $this->signature_path,
+            'signature_url' => $this->signature_path ? Storage::disk('public')->url($this->signature_path) : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -20,7 +20,6 @@
                     'masjidOptions' => $masjidOptions,
                     'akaunOptions' => $akaunOptions,
                     'kategoriOptions' => $kategoriOptions,
-                    'baucarOptions' => $baucarOptions,
                 ])
             </div>
         </div>

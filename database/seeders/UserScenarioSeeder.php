@@ -29,6 +29,14 @@ class UserScenarioSeeder extends Seeder
             ['name' => 'Azman bin Ali', 'email' => 'azman.bin.ali@masjid.com', 'role' => 'Auditor', 'peranan' => 'staff', 'aktif' => true, 'masjid' => null, 'verified' => true],
             ['name' => 'Aisyah binti Muhammad', 'email' => 'aisyah.binti.muhammad@masjid.com', 'role' => 'Auditor', 'peranan' => 'staff', 'aktif' => true, 'masjid' => null, 'verified' => true],
 
+            // Bendahari — approves baucar step 1
+            ['name' => 'Zulkifli bin Hamid', 'email' => 'zulkifli.bendahari@masjid.com', 'role' => 'Bendahari', 'peranan' => 'staff', 'aktif' => true, 'masjid' => 'Masjid Al-Hidayah Putrajaya', 'verified' => true],
+            ['name' => 'Norazimah binti Yusof', 'email' => 'norazimah.bendahari@masjid.com', 'role' => 'Bendahari', 'peranan' => 'staff', 'aktif' => true, 'masjid' => 'Masjid An-Nur Cyberjaya', 'verified' => true],
+
+            // Pengerusi — approves baucar step 2 (final lock)
+            ['name' => 'Haji Roslan bin Ghazali', 'email' => 'roslan.pengerusi@masjid.com', 'role' => 'Pengerusi', 'peranan' => 'staff', 'aktif' => true, 'masjid' => 'Masjid Al-Hidayah Putrajaya', 'verified' => true],
+            ['name' => 'Haji Fauzi bin Idris', 'email' => 'fauzi.pengerusi@masjid.com', 'role' => 'Pengerusi', 'peranan' => 'staff', 'aktif' => true, 'masjid' => 'Masjid An-Nur Cyberjaya', 'verified' => true],
+
             ['name' => 'Hakim bin Azman', 'email' => 'hakim.bin.azman@masjid.com', 'role' => 'MasjidOfficer', 'peranan' => 'staff', 'aktif' => true, 'masjid' => 'Masjid Al-Hidayah Putrajaya', 'verified' => true],
             ['name' => 'Liyana binti Zulkifli', 'email' => 'liyana.binti.zulkifli@masjid.com', 'role' => 'MasjidOfficer', 'peranan' => 'staff', 'aktif' => true, 'masjid' => 'Masjid An-Nur Cyberjaya', 'verified' => true],
             ['name' => 'Rohana binti Ismail', 'email' => 'rohana.binti.ismail@masjid.com', 'role' => 'MasjidOfficer', 'peranan' => 'staff', 'aktif' => true, 'masjid' => 'Masjid Al-Falah Shah Alam', 'verified' => false],
@@ -53,6 +61,10 @@ class UserScenarioSeeder extends Seeder
                     'aktif' => $userData['aktif'],
                     'id_masjid' => $masjidId,
                     'email_verified_at' => $userData['verified'] ? now() : null,
+                    // Bendahari and Pengerusi get a seeded signature path so they can approve baucar
+                    'signature_path' => in_array($userData['role'], ['Bendahari', 'Pengerusi'], true)
+                        ? 'signature-images/seeded-signature-' . strtolower((string) $userData['role']) . '.png'
+                        : null,
                 ]
             );
 

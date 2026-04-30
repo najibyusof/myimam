@@ -27,6 +27,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'id_masjid',
         'name',
         'email',
+        'signature_path',
         'password',
         'peranan',
         'aktif',
