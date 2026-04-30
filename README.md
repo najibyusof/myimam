@@ -73,6 +73,7 @@ npm run build
 - `docs/RBAC.md`
 - `docs/NOTIFICATION_SYSTEM.md`
 - `docs/IMPLEMENTATION_REPORT.md`
+- `docs/SUBSCRIPTION_PAYMENT_CRON_SETUP.md`
 
 ## Testing
 
@@ -136,6 +137,8 @@ php artisan test --testsuite=Unit
     php artisan queue:restart
 
 ### Scheduler and Queues
+
+- See `docs/SUBSCRIPTION_PAYMENT_CRON_SETUP.md` for full subscription/payment gateway cron setup and verification steps.
 
 - Add scheduler cron entry (runs every minute):
 

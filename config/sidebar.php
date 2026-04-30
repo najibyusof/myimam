@@ -117,9 +117,24 @@ return [
     [
         'group_key' => 'menu.group_administration',
         'title_key' => 'menu.langganan',
+        'route' => ['subscription.index'],
+        'icon' => 'credit-card',
+        'tenant_scoped' => true,
+    ],
+    [
+        'group_key' => 'menu.group_administration',
+        'title_key' => 'menu.langganan',
         'route' => ['admin.subscriptions.index'],
         'icon' => 'credit-card',
         'permission' => ['subscriptions.manage'],
+        'tenant_scoped' => false,
+    ],
+    [
+        'group_key' => 'menu.group_superadmin',
+        'title_key' => 'menu.pemantauan_pembayaran',
+        'route' => ['superadmin.payments.index'],
+        'icon' => 'credit-card',
+        'superadmin_only' => true,
         'tenant_scoped' => false,
     ],
     [

@@ -5,6 +5,15 @@
 
     <div class="py-10">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+            @if (session('sync_status'))
+                <div class="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    {{ session('sync_status') }}
+                    @if (session('created_plan_name'))
+                        <span class="font-medium">({{ session('created_plan_name') }})</span>
+                    @endif
+                </div>
+            @endif
+
             <div class="bg-white shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <form action="{{ route('admin.subscriptions.plans.store') }}" method="POST" class="space-y-4">

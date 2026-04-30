@@ -19,6 +19,7 @@ return [
     'pengguna' => 'Pengurusan Pengguna',
     'roles' => 'Pengurusan Peranan',
     'langganan' => 'Pengurusan Langganan',
+    'pemantauan_pembayaran' => 'Pemantauan Pembayaran',
 
     'sumber_hasil' => 'Sumber Hasil',
     'tabung_khas' => 'Tabung Khas',

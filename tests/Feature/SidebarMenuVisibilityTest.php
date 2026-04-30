@@ -182,6 +182,37 @@ class SidebarMenuVisibilityTest extends TestCase
         $this->assertStringNotContainsString('Akaun', $html);
     }
 
+    public function test_tenant_admin_sees_subscription_link_in_sidebar(): void
+    {
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $this->ensurePermissions([
+            'dashboard.view',
+        ]);
+
+        $role = Role::query()->firstOrCreate([
+            'name' => 'Admin',
+            'guard_name' => 'web',
+        ]);
+        $role->syncPermissions(['dashboard.view']);
+
+        $masjid = $this->createActiveMasjid('Masjid Subscription Sidebar');
+
+        $user = User::factory()->create([
+            'id_masjid' => $masjid->id,
+            'peranan' => 'admin',
+            'aktif' => true,
+            'email_verified_at' => now(),
+        ]);
+        $user->assignRole($role);
+
+        $this->actingAs($user);
+
+        $html = (string) view('components.sidebar')->render();
+
+        $this->assertStringContainsString('Langganan', $html);
+    }
+
     private function ensurePermissions(array $names): void
     {
         foreach ($names as $name) {

@@ -49,10 +49,12 @@ class SubscriptionManagementController extends Controller
     {
         $this->ensureSuperAdmin();
 
-        $this->service->createPlan($request->validated());
+        $plan = $this->service->createPlan($request->validated());
 
-        return redirect()->route('admin.subscriptions.index')
-            ->with('status', 'Pelan langganan berjaya dicipta.');
+        return redirect()->route('admin.subscriptions.plans.edit', $plan)
+            ->with('status', 'Pelan langganan berjaya dicipta.')
+            ->with('sync_status', 'Pelan baru berjaya diselaraskan ke pelan bil tenant.')
+            ->with('created_plan_name', $plan->name);
     }
 
     public function editPlan(SubscriptionPlan $plan)
@@ -70,8 +72,9 @@ class SubscriptionManagementController extends Controller
 
         $this->service->updatePlan($plan, $request->validated());
 
-        return redirect()->route('admin.subscriptions.index')
-            ->with('status', 'Pelan langganan berjaya dikemaskini.');
+        return redirect()->route('admin.subscriptions.plans.edit', $plan)
+            ->with('status', 'Pelan langganan berjaya dikemaskini.')
+            ->with('sync_status', 'Perubahan pelan telah diselaraskan ke pelan bil tenant.');
     }
 
     public function assignForm(Masjid $masjid)

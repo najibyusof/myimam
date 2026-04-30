@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\CheckSubscription;
 use App\Http\Middleware\CheckTenantActive;
+use App\Http\Middleware\CheckRoleOrPeranan;
 use App\Http\Middleware\ResolveTenant;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'role'               => RoleMiddleware::class,
+            'role_or_peranan'    => CheckRoleOrPeranan::class,
             'permission'         => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'resolve.tenant'     => ResolveTenant::class,

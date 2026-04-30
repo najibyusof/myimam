@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use App\Models\Payment;
+use App\Models\Subscription;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,6 +25,7 @@ class Masjid extends Model
         'daerah',
         'negeri',
         'no_pendaftaran',
+        'whatsapp_no',
         'tarikh_daftar',
         'status',
         'subscription_status',
@@ -98,6 +101,16 @@ class Masjid extends Model
     public function subscriptions(): HasMany
     {
         return $this->hasMany(TenantSubscription::class, 'masjid_id');
+    }
+
+    public function billingSubscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class, 'tenant_id');
+    }
+
+    public function billingPayments(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'tenant_id');
     }
 
     public function activeSubscription(): HasOne

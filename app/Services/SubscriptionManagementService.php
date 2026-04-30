@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Masjid;
+use App\Models\Plan;
 use App\Models\SubscriptionPlan;
 use App\Models\TenantSubscription;
 use App\Models\User;
@@ -13,7 +14,7 @@ class SubscriptionManagementService
 {
     public function createPlan(array $data): SubscriptionPlan
     {
-        return SubscriptionPlan::create([
+        $plan = SubscriptionPlan::create([
             'name' => $data['name'],
             'slug' => $data['slug'],
             'price' => $data['price'],
@@ -23,10 +24,16 @@ class SubscriptionManagementService
             'is_active' => $data['is_active'] ?? true,
             'sort_order' => $data['sort_order'] ?? 0,
         ]);
+
+        $this->syncToNewPlanCatalog($plan);
+
+        return $plan;
     }
 
     public function updatePlan(SubscriptionPlan $plan, array $data): SubscriptionPlan
     {
+        $originalName = (string) $plan->name;
+
         $plan->update([
             'name' => $data['name'],
             'slug' => $data['slug'],
@@ -38,7 +45,34 @@ class SubscriptionManagementService
             'sort_order' => $data['sort_order'] ?? 0,
         ]);
 
-        return $plan->refresh();
+        $plan = $plan->refresh();
+        $this->syncToNewPlanCatalog($plan, $originalName);
+
+        return $plan;
+    }
+
+    private function syncToNewPlanCatalog(SubscriptionPlan $legacyPlan, ?string $originalName = null): void
+    {
+        $targetName = (string) $legacyPlan->name;
+
+        $newPlan = Plan::query()
+            ->when($originalName, fn ($query) => $query->where('name', $originalName))
+            ->orWhere('name', $targetName)
+            ->first();
+
+        $payload = [
+            'name' => $targetName,
+            'price' => $legacyPlan->price,
+            'duration_days' => max(1, ((int) $legacyPlan->duration_months) * 30),
+            'features' => $legacyPlan->features,
+        ];
+
+        if ($newPlan) {
+            $newPlan->update($payload);
+            return;
+        }
+
+        Plan::query()->create($payload);
     }
 
     public function assignTenantSubscription(Masjid $masjid, array $data, User $actor): TenantSubscription

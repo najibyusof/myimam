@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Masjid;
+use App\Models\Subscription;
 use App\Tenant\TenantContext;
 use Carbon\Carbon;
 use Closure;
@@ -53,28 +54,32 @@ class CheckSubscription
             ? Carbon::parse($masjid->subscription_expiry)
             : null;
 
-        // Subscription is explicitly 'none' → blocked.
-        if ($subscriptionStatus === 'none') {
-            return redirect()->route('subscription.expired');
-        }
-
-        // Active and not yet expired → allow.
         if ($subscriptionStatus === 'active' && ($expiry === null || $expiry->isFuture())) {
             return $next($request);
         }
 
-        // Subscription is expired — determine grace period from the tenant_subscriptions record.
+        $latestBillingSubscription = Subscription::query()
+            ->where('tenant_id', $masjidId)
+            ->latest('id')
+            ->first();
+
+        if (
+            $latestBillingSubscription
+            && $latestBillingSubscription->status === 'active'
+            && $latestBillingSubscription->end_date
+            && Carbon::parse($latestBillingSubscription->end_date)->isFuture()
+        ) {
+            return $next($request);
+        }
+
+        // Backward compatibility for legacy tenant_subscriptions grace period.
         $graceDays = Cache::remember(
             "tenant_grace:{$masjidId}",
             300,
-            function () use ($masjidId): int {
-                $sub = \App\Models\TenantSubscription::withoutGlobalScopes()
-                    ->where('masjid_id', $masjidId)
-                    ->orderByDesc('end_date')
-                    ->value('grace_days');
-
-                return (int) ($sub ?? 0);
-            }
+            fn () => (int) (\App\Models\TenantSubscription::withoutGlobalScopes()
+                ->where('masjid_id', $masjidId)
+                ->orderByDesc('end_date')
+                ->value('grace_days') ?? 0)
         );
 
         if ($expiry && $graceDays > 0) {
@@ -90,8 +95,8 @@ class CheckSubscription
             }
         }
 
-        // Fully expired, beyond grace → block.
-        return redirect()->route('subscription.expired')
-            ->with('expiry', $expiry?->format('d M Y'));
+        return redirect()->route('subscription.index')
+            ->with('payment_status', 'pending')
+            ->with('payment_message', 'Langganan anda tiada/expired. Sila langgan pelan untuk teruskan penggunaan sistem.');
     }
 }
