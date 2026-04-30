@@ -33,6 +33,8 @@ use App\Http\Controllers\NotificationCenterController;
 use App\Http\Controllers\SidebarBadgeController;
 use App\Http\Controllers\PublicLandingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SubscriptionController;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', PublicLandingController::class)
@@ -53,6 +55,19 @@ Route::middleware('auth')->group(function () {
         return view('errors.subscription-expired');
     })->name('subscription.expired');
 });
+
+Route::middleware(['auth', 'resolve.tenant', 'tenant.active'])->group(function () {
+    Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
+    Route::get('/subscription/payments', [SubscriptionController::class, 'paymentHistory'])->name('subscription.payments');
+    Route::post('/subscription/{plan_id}/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
+    Route::post('/subscription/{plan_id}/trial', [SubscriptionController::class, 'startTrial'])->name('subscription.trial');
+    Route::get('/subscription/status/{payment}', [SubscriptionController::class, 'paymentStatus'])->name('subscription.status');
+    Route::get('/subscription/invoice/{payment}/download', [SubscriptionController::class, 'downloadInvoice'])->name('subscription.invoice.download');
+});
+
+Route::post('/payment/callback', [SubscriptionController::class, 'paymentCallback'])
+    ->withoutMiddleware([ValidateCsrfToken::class])
+    ->name('payment.callback');
 
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified', 'resolve.tenant', 'tenant.active', 'tenant.subscription'])->name('dashboard');
 
@@ -179,7 +194,7 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
     });
 
     // System Settings — superadmin only
-    Route::middleware('role:Superadmin')->group(function () {
+    Route::middleware('role_or_peranan:superadmin')->group(function () {
         Route::get('/admin/settings', [SystemSettingController::class, 'index'])
             ->name('admin.settings.index');
         Route::put('/admin/settings', [SystemSettingController::class, 'update'])
@@ -541,7 +556,7 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
             ->name('admin.program-masjid.destroy');
     });
 
-    Route::middleware('role:Superadmin|Admin')->group(function () {
+    Route::middleware('role_or_peranan:superadmin|admin')->group(function () {
         Route::get('/admin/users', [UserManagementController::class, 'index'])->name('admin.users.index');
         Route::get('/admin/users/create', [UserManagementController::class, 'create'])->name('admin.users.create');
         Route::post('/admin/users', [UserManagementController::class, 'store'])->name('admin.users.store');
@@ -573,6 +588,19 @@ Route::middleware(['auth', 'resolve.tenant', 'tenant.active', 'tenant.subscripti
     Route::delete('/admin/roles/{role}', [RolePermissionController::class, 'destroy'])
         ->middleware(['permission:roles.assign', 'role_or_permission:Admin|roles.assign'])
         ->name('admin.roles.destroy');
+
+    Route::middleware('role_or_peranan:superadmin')->group(function () {
+        Route::get('/superadmin/subscriptions', [SubscriptionController::class, 'superadminIndex'])
+            ->name('superadmin.subscriptions.index');
+        Route::get('/superadmin/payments', [SubscriptionController::class, 'superadminPayments'])
+            ->name('superadmin.payments.index');
+        Route::get('/superadmin/payments/export', [SubscriptionController::class, 'superadminPaymentsExport'])
+            ->name('superadmin.payments.export');
+        Route::post('/superadmin/subscriptions/tenant/{masjid}/toggle', [SubscriptionController::class, 'toggleTenant'])
+            ->name('superadmin.subscriptions.toggle-tenant');
+        Route::post('/superadmin/subscriptions/tenant/{masjid}/override', [SubscriptionController::class, 'overrideSubscription'])
+            ->name('superadmin.subscriptions.override');
+    });
 });
 
 require __DIR__ . '/auth.php';

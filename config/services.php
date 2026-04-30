@@ -59,4 +59,30 @@ return [
         'provider' => env('AI_PROVIDER', 'openai'),
     ],
 
+    'payment' => [
+        'default_gateway' => env('PAYMENT_GATEWAY', 'billplz'),
+        'gateways' => [
+            'billplz' => [
+                'base_url' => env('BILLPLZ_BASE_URL', 'https://www.billplz.com'),
+                'api_key' => env('BILLPLZ_API_KEY'),
+                'collection_id' => env('BILLPLZ_COLLECTION_ID'),
+                'x_signature' => env('BILLPLZ_X_SIGNATURE'),
+            ],
+            'toyyibpay' => [
+                'base_url' => env('TOYYIBPAY_BASE_URL', 'https://toyyibpay.com'),
+                'secret_key' => env('TOYYIBPAY_SECRET_KEY'),
+                'category_code' => env('TOYYIBPAY_CATEGORY_CODE'),
+                'callback_token' => env('TOYYIBPAY_CALLBACK_TOKEN'),
+                'verify_ssl' => env('TOYYIBPAY_VERIFY_SSL', true),
+            ],
+        ],
+    ],
+
+    'whatsapp' => [
+        'base_url' => env('WHATSAPP_BASE_URL', 'https://graph.facebook.com'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'access_token' => env('WHATSAPP_ACCESS_TOKEN'),
+        'fallback_to' => env('WHATSAPP_FALLBACK_TO'),
+    ],
+
 ];

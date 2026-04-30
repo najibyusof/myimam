@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('subscriptions:sync-status')->hourly();
+Schedule::command('subscriptions:process-lifecycle --days=3')->dailyAt('08:00');
